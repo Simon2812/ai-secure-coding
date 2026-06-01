@@ -636,41 +636,18 @@ class SecureCodingModel:
 
 
     def extract_json(self, text):
-        """
-        Extract first complete JSON object
-        from model output.
-        """
-
         start = text.find("{")
     
         if start == -1:
-            raise ValueError(
-                "No JSON found."
-            )
+            raise ValueError("No JSON found.")
     
-        depth = 0
+        decoder = json.JSONDecoder()
     
-        for i in range(start, len(text)):
-    
-            if text[i] == "{":
-                depth += 1
-    
-            elif text[i] == "}":
-                depth -= 1
-    
-                if depth == 0:
-    
-                    candidate = text[
-                        start : i + 1
-                    ]
-    
-                    return json.loads(
-                        candidate
-                    )
-    
-        raise ValueError(
-            "Incomplete JSON."
-        )
+        try:
+            obj, _ = decoder.raw_decode(text[start:])
+            return obj
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Invalid JSON: {error}") from error
     
 
     def test(self, test_data, evaluator):
