@@ -81,6 +81,7 @@ class SecureCodingModel:
 
         # Qwen usually behaves better with left padding.
         self.tokenizer.padding_side = "left"
+        self.tokenizer.truncation_side = "left"
 
         # Explicit generation tokens for stable decoding.
         self.generation_config["pad_token_id"] = self.tokenizer.eos_token_id
@@ -139,6 +140,7 @@ class SecureCodingModel:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
         self.tokenizer.padding_side = "left"
+        self.tokenizer.truncation_side = "left"
 
         # Recreate quantized base model.
         base_model = AutoModelForCausalLM.from_pretrained(
@@ -289,7 +291,6 @@ class SecureCodingModel:
             input_text,
             return_tensors="pt",
             truncation=True,
-            truncation_side="left",
             max_length=self.training_config["max_length"],
         )
 
