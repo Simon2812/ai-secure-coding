@@ -4,6 +4,14 @@ Analyze the provided source code together with static analyzer findings.
 
 Identify vulnerabilities and suggest exact minimal fixes.
 
+Important:
+
+Do not return an empty vulnerabilities array when a vulnerability is clearly supported by the source code or analyzer findings.
+
+If a vulnerability is supported by the code, report it even if analyzer findings are incomplete.
+
+Use the empty array only when there is no supported vulnerability.
+
 Source Code:
 {code}
 
