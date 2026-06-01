@@ -638,16 +638,40 @@ class SecureCodingModel:
 
     def extract_json(self, text):
         """
-        Extract first JSON object from model output.
+        Extract first complete JSON object
+        from model output.
         """
 
         start = text.find("{")
-        end = text.rfind("}")
-
-        if start == -1 or end == -1:
-            raise ValueError("No JSON found.")
-
-        return json.loads(text[start : end + 1])
+    
+        if start == -1:
+            raise ValueError(
+                "No JSON found."
+            )
+    
+        depth = 0
+    
+        for i in range(start, len(text)):
+    
+            if text[i] == "{":
+                depth += 1
+    
+            elif text[i] == "}":
+                depth -= 1
+    
+                if depth == 0:
+    
+                    candidate = text[
+                        start : i + 1
+                    ]
+    
+                    return json.loads(
+                        candidate
+                    )
+    
+        raise ValueError(
+            "Incomplete JSON."
+        )
     
 
     def test(self, test_data, evaluator):
