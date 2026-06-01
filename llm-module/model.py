@@ -40,7 +40,7 @@ class SecureCodingModel:
         # Deterministic JSON generation.
         self.generation_config = {
             "do_sample": False,
-            "max_new_tokens": 256,
+            "max_new_tokens": 768,
         }
 
         # Experiment configuration (tunable between runs).
