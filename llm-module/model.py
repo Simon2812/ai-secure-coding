@@ -577,12 +577,22 @@ class SecureCodingModel:
             with torch.no_grad():
                 for sample in val_data:
 
-                    pred = self.predict(
-                        sample["code"],
-                        sample["line_offset"],
-                        sample["static_findings"],
-                    )
-
+                    try:
+                        pred = self.predict(
+                            sample["code"],
+                            sample["line_offset"],
+                            sample["static_findings"],
+                        )
+                    except Exception as e:
+                    
+                        print(
+                            f"Validation failure: {e}"
+                        )
+                    
+                        pred = {
+                            "vulnerabilities": []
+                        }
+                        
                     scores = evaluator.evaluate(sample, pred)
 
                     val_final_score += scores["final_score"]
