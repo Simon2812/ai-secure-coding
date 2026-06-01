@@ -39,7 +39,6 @@ class SecureCodingModel:
 
         # Deterministic JSON generation.
         self.generation_config = {
-            "temperature": 0.0,
             "do_sample": False,
             "max_new_tokens": 256,
         }
@@ -471,10 +470,7 @@ class SecureCodingModel:
                     "vulnerabilities": sample["target"]
                 }
                 
-                target_text = "\n" + json.dumps(
-                    target,
-                    indent=2,
-                )
+                target_text = "\n" + json.dumps(target, indent=2) + self.tokenizer.eos_token
                 
                 target_tokens = self.tokenizer(
                     target_text,
