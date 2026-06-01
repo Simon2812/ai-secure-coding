@@ -41,7 +41,7 @@ class SecureCodingModel:
         self.generation_config = {
             "temperature": 0.0,
             "do_sample": False,
-            "max_new_tokens": 1024,
+            "max_new_tokens": 256,
         }
 
         # Experiment configuration (tunable between runs).
