@@ -289,6 +289,7 @@ class SecureCodingModel:
             input_text,
             return_tensors="pt",
             truncation=True,
+            truncation_side="left",
             max_length=self.training_config["max_length"],
         )
 
@@ -497,6 +498,7 @@ class SecureCodingModel:
                     prompt,
                     return_tensors="pt",
                     truncation=True,
+                    truncation_side="left",
                     max_length=prompt_max_length,
                     add_special_tokens=True,
                 )
