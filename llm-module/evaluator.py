@@ -13,9 +13,11 @@ class Evaluator:
     Responsibilities:
     - compare predicted and ground-truth CWEs
     - apply predicted fixes
-    - validate fixes through compilation
     - validate fixes through analyzer reruns
     - compute final evaluation scores
+
+    Note:
+    - compilation is intentionally not used for scoring.
     """
 
     def __init__(self):
@@ -47,14 +49,20 @@ class Evaluator:
 
         self.language_suffix = {
             "c": ".c",
+            "cpp": ".cpp",
             "python": ".py",
             "java": ".java",
         }
 
-
     def evaluate(self, sample, prediction):
         """
         Evaluate a single prediction.
+
+        Scoring:
+        - cwe_score compares predicted CWE IDs with ground truth CWE IDs.
+        - fix_score measures whether analyzer findings for ground-truth CWEs
+          are reduced after applying predicted fixes.
+        - final_score is the average of cwe_score and fix_score.
 
         Returns:
             dict with keys:
@@ -115,23 +123,13 @@ class Evaluator:
             0.05 * introduced_findings,
         )
 
-        if sample["language"] == "java":
-            fix_score = (
-                analyzer_score -
-                introduced_penalty
-            )
-
-        else:
-            compile_score = self._compile_code(
-                code=patched_code,
-                language=sample["language"],
-            )
-
-            fix_score = (
-                0.8 * analyzer_score +
-                0.2 * compile_score -
-                introduced_penalty
-            )
+        # Compilation is intentionally ignored.
+        # Fix quality is measured only by analyzer finding reduction,
+        # with a penalty for newly introduced findings.
+        fix_score = (
+            analyzer_score -
+            introduced_penalty
+        )
 
         fix_score = max(
             0.0,
@@ -148,7 +146,6 @@ class Evaluator:
             "cwe_score": cwe_score,
             "fix_score": fix_score,
         }
-
 
     def _get_predicted_vulns(self, prediction):
         """
@@ -169,7 +166,6 @@ class Evaluator:
 
         return pred_vulns
 
-
     def _extract_predicted_cwes(self, pred_vulns):
         """
         Extract CWE IDs from prediction.
@@ -181,7 +177,6 @@ class Evaluator:
             if isinstance(vuln, dict)
             and isinstance(vuln.get("cwe"), str)
         }
-
 
     def _f1_score(self, gt_cwes, pred_cwes):
         """
@@ -231,7 +226,6 @@ class Evaluator:
             recall /
             (precision + recall)
         )
-
 
     def _apply_fixes(
         self,
@@ -286,69 +280,6 @@ class Evaluator:
                     )
 
         return patched_code
-
-
-    def _compile_code(self, code, language):
-        """
-        Compile or syntax-check patched code.
-
-        Java compilation is skipped by design.
-        Java fix scoring uses analyzer reduction only.
-        """
-
-        suffix = self.language_suffix.get(
-            language
-        )
-
-        if suffix is None:
-            return 0.0
-
-        if language == "java":
-            return 0.0
-
-        with tempfile.TemporaryDirectory() as tmp:
-            source_file = Path(tmp) / f"patched{suffix}"
-
-            source_file.write_text(
-                code,
-                encoding="utf-8",
-            )
-
-            try:
-                if language == "python":
-                    command = [
-                        "python",
-                        "-m",
-                        "py_compile",
-                        str(source_file),
-                    ]
-
-                elif language == "c":
-                    command = [
-                        "gcc",
-                        "-fsyntax-only",
-                        str(source_file),
-                    ]
-
-                else:
-                    return 0.0
-
-                result = subprocess.run(
-                    command,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=10,
-                )
-
-                return (
-                    1.0
-                    if result.returncode == 0
-                    else 0.0
-                )
-
-            except Exception:
-                return 0.0
-
 
     def _analyze_reduction(
         self,
@@ -426,7 +357,6 @@ class Evaluator:
 
         return analyzer_score, introduced_findings
 
-
     def _count_introduced_findings(
         self,
         original_findings,
@@ -464,7 +394,6 @@ class Evaluator:
 
         return introduced
 
-
     def _count_findings_by_cwe(self, findings):
         """
         Count analyzer findings by CWE ID.
@@ -482,7 +411,6 @@ class Evaluator:
                 counts[cwe] += 1
 
         return counts
-
 
     def _run_analyzer(self, code, language):
         """
