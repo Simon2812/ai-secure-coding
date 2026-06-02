@@ -46,11 +46,11 @@ class SecureCodingModel:
         # Experiment configuration (tunable between runs).
         self.training_config = {
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-            "prompt_version": "v1",
+            "prompt_version": "v2",
             "max_length": 2048,
             "epochs": 3,
-            "learning_rate": 1e-4,
-            "lora_rank": 8,
+            "learning_rate": 2e-4,
+            "lora_rank": 16,
         }
 
         # Shared QLoRA quantization config.
@@ -130,43 +130,34 @@ class SecureCodingModel:
         )
     
         if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
+            self.tokenizer.pad_token = (
+                self.tokenizer.eos_token
+            )
     
         self.tokenizer.padding_side = "left"
         self.tokenizer.truncation_side = "left"
     
-        # Restore generation token IDs.
-        self.generation_config["pad_token_id"] = self.tokenizer.pad_token_id
-        self.generation_config["eos_token_id"] = self.tokenizer.eos_token_id
-    
-        # Optional: restore saved configs if present locally.
-        checkpoint_path = Path(checkpoint_dir)
-    
-        training_config_path = checkpoint_path / "training_config.json"
-        if training_config_path.exists():
-            with open(training_config_path, "r", encoding="utf-8") as f:
-                self.training_config.update(json.load(f))
-    
-        generation_config_path = checkpoint_path / "generation_config.json"
-        if generation_config_path.exists():
-            with open(generation_config_path, "r", encoding="utf-8") as f:
-                self.generation_config.update(json.load(f))
-    
-        base_model = AutoModelForCausalLM.from_pretrained(
-            self.training_config["model_name"],
-            device_map="auto",
-            trust_remote_code=True,
-            quantization_config=self.quantization_config,
+        # Recreate quantized base model.
+        base_model = (
+            AutoModelForCausalLM
+            .from_pretrained(
+                self.training_config["model_name"],
+                device_map="auto",
+                trust_remote_code=True,
+                quantization_config=
+                    self.quantization_config,
+            )
         )
     
-        self.model = PeftModel.from_pretrained(
-            base_model,
-            checkpoint_dir,
+        self.model = (
+            PeftModel.from_pretrained(
+                base_model,
+                checkpoint_dir,
+            )
         )
-    
-        self.model.eval()
     
         self.model.print_trainable_parameters()
+    
         print("Checkpoint loaded.")
 
 
@@ -200,7 +191,7 @@ class SecureCodingModel:
         print("Checkpoint saved.")
 
 
-    def build_input(self, code, line_offset, static_findings):
+    def build_input(self, code, static_findings):
         """
         Build unified prompt used for:
         - training
@@ -223,56 +214,10 @@ class SecureCodingModel:
         # Inject dynamic content.
         prompt = template \
             .replace("{code}", code) \
-            .replace("{line_offset}", str(line_offset)) \
             .replace(
                 "{static_findings}",
                 json.dumps(static_findings, indent=2)
             )
-
-        return prompt.strip()
-
-
-    def build_regeneration_input(
-        self,
-        code,
-        line_offset,
-        static_findings,
-        cwe,
-        rejected_fixes,
-    ):
-        """
-        Build prompt for
-        fix regeneration.
-        """
-
-        prompt_path = (
-            Path(__file__).parent
-            / "prompts"
-            / "regenerate_fix.txt"
-        )
-
-        if not prompt_path.exists():
-            raise FileNotFoundError(
-                f"Prompt not found: {prompt_path}"
-            )
-
-        with open(prompt_path, "r", encoding="utf-8") as file:
-            template = file.read()
-
-        prompt = (
-            template
-            .replace("{code}", code)
-            .replace("{line_offset}", str(line_offset))
-            .replace(
-                "{static_findings}",
-                json.dumps(static_findings, indent=2),
-            )
-            .replace("{cwe}", cwe)
-            .replace(
-                "{rejected_fixes}",
-                json.dumps(rejected_fixes, indent=2),
-            )
-        )
 
         return prompt.strip()
 
@@ -288,7 +233,6 @@ class SecureCodingModel:
         """
 
         if self.model is None:
-
             raise RuntimeError("Model must be loaded.")
 
         self.model.eval()
@@ -312,7 +256,7 @@ class SecureCodingModel:
 
         if generation_overrides:
             generation_config.update(generation_overrides)
-        
+
         outputs = self.model.generate(
             **inputs,
             **generation_config,
@@ -327,10 +271,14 @@ class SecureCodingModel:
             skip_special_tokens=True,
         )
 
+        print("\n===== MODEL OUTPUT =====")
+        print(text)
+        print("========================\n")
+
         return self.extract_json(text)
 
 
-    def predict(self, code, line_offset, static_findings):
+    def predict(self, code, static_findings):
         """
         Generate structured vulnerability prediction.
         """
@@ -340,44 +288,10 @@ class SecureCodingModel:
 
         input_text = self.build_input(
             code,
-            line_offset,
             static_findings,
         )
 
         return self._generate_json(input_text)
-
-
-    def regenerate_fix(
-        self,
-        code,
-        line_offset,
-        static_findings,
-        cwe,
-        rejected_fixes,
-    ):
-        """
-        Generate alternative fixes
-        for one vulnerability.
-        """
-
-        if self.model is None:
-            raise RuntimeError("Model must be loaded.")
-
-        input_text = self.build_regeneration_input(
-            code,
-            line_offset,
-            static_findings,
-            cwe,
-            rejected_fixes,
-        )
-
-        return self._generate_json(
-            input_text,
-            generation_overrides={
-                "temperature": 0.2,
-                "do_sample": True,
-            },
-        )
 
 
     def load_dataset(self, metadata_root):
@@ -403,7 +317,6 @@ class SecureCodingModel:
 
             sample = {
                 "code": code,
-                "line_offset": 0,  # Can be used for line number adjustments if needed.
                 "target": metadata["vulnerabilities"],
                 "split": metadata["split"],
                 "language": metadata["language"],
@@ -465,7 +378,6 @@ class SecureCodingModel:
             for sample in train_data:
                 prompt = self.build_input(
                     sample["code"],
-                    sample["line_offset"],
                     sample["static_findings"],
                 )
 
@@ -581,7 +493,6 @@ class SecureCodingModel:
                     try:
                         pred = self.predict(
                             sample["code"],
-                            sample["line_offset"],
                             sample["static_findings"],
                         )
                     except Exception as e:
@@ -675,7 +586,6 @@ class SecureCodingModel:
                 try:
                     pred = self.predict(
                         sample["code"],
-                        sample["line_offset"],
                         sample["static_findings"],
                     )
                 except Exception as e:
