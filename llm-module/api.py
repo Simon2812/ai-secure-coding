@@ -39,7 +39,6 @@ class AnalyzeRequest(BaseModel):
 
     code: str
     analysis: Any
-    line_offset: int = 0
 
 
 class AnalyzeResponse(BaseModel):
@@ -48,27 +47,6 @@ class AnalyzeResponse(BaseModel):
     """
 
     vulnerabilities: List[VulnerabilityModel]
-
-
-class RegenerateFixRequest(BaseModel):
-    """
-    Alternative fix generation.
-    """
-
-    code: str
-    analysis: Any
-    cwe: str
-    rejected_fixes: List[FixModel]
-    line_offset: int = 0
-
-
-class RegenerateFixResponse(BaseModel):
-    """
-    Alternative fix response.
-    """
-
-    cwe: str
-    fixes: List[FixModel]
 
 
 @asynccontextmanager
@@ -128,43 +106,8 @@ def analyze(request: AnalyzeRequest):
     try:
         return llm_model.predict(
             code=request.code,
-            line_offset=request.line_offset,
             static_findings=request.analysis,
         )
-
-    except Exception as error:
-        raise HTTPException(
-            status_code=500,
-            detail=str(error),
-        ) from error
-
-
-@app.post(
-    "/regenerate-fix",
-    response_model=RegenerateFixResponse,
-)
-def regenerate_fix(request: RegenerateFixRequest):
-    """
-    Generate alternative
-    fixes for one CWE.
-    """
-
-    try:
-        prediction = llm_model.regenerate_fix(
-            code=request.code,
-            line_offset=request.line_offset,
-            static_findings=request.analysis,
-            cwe=request.cwe,
-            rejected_fixes=[
-                fix.model_dump()
-                for fix in request.rejected_fixes
-            ],
-        )
-
-        return {
-            "cwe": request.cwe,
-            "fixes": prediction.get("fixes", []),
-        }
 
     except Exception as error:
         raise HTTPException(
