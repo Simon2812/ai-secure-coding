@@ -130,34 +130,43 @@ class SecureCodingModel:
         )
     
         if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = (
-                self.tokenizer.eos_token
-            )
+            self.tokenizer.pad_token = self.tokenizer.eos_token
     
         self.tokenizer.padding_side = "left"
         self.tokenizer.truncation_side = "left"
     
-        # Recreate quantized base model.
-        base_model = (
-            AutoModelForCausalLM
-            .from_pretrained(
-                self.training_config["model_name"],
-                device_map="auto",
-                trust_remote_code=True,
-                quantization_config=
-                    self.quantization_config,
-            )
+        # Restore generation token IDs.
+        self.generation_config["pad_token_id"] = self.tokenizer.pad_token_id
+        self.generation_config["eos_token_id"] = self.tokenizer.eos_token_id
+    
+        # Optional: restore saved configs if present locally.
+        checkpoint_path = Path(checkpoint_dir)
+    
+        training_config_path = checkpoint_path / "training_config.json"
+        if training_config_path.exists():
+            with open(training_config_path, "r", encoding="utf-8") as f:
+                self.training_config.update(json.load(f))
+    
+        generation_config_path = checkpoint_path / "generation_config.json"
+        if generation_config_path.exists():
+            with open(generation_config_path, "r", encoding="utf-8") as f:
+                self.generation_config.update(json.load(f))
+    
+        base_model = AutoModelForCausalLM.from_pretrained(
+            self.training_config["model_name"],
+            device_map="auto",
+            trust_remote_code=True,
+            quantization_config=self.quantization_config,
         )
     
-        self.model = (
-            PeftModel.from_pretrained(
-                base_model,
-                checkpoint_dir,
-            )
+        self.model = PeftModel.from_pretrained(
+            base_model,
+            checkpoint_dir,
         )
+    
+        self.model.eval()
     
         self.model.print_trainable_parameters()
-    
         print("Checkpoint loaded.")
 
 
