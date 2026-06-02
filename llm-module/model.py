@@ -121,47 +121,43 @@ class SecureCodingModel:
         Restore trained LoRA adapters
         from an existing checkpoint.
         """
-
-        checkpoint_path = Path(checkpoint_dir)
-
-        if not checkpoint_path.exists():
-            raise FileNotFoundError(
-                f"Checkpoint not found: {checkpoint_path}"
-            )
-
-        print(f"Loading checkpoint from {checkpoint_path}")
-
+    
+        print(f"Loading checkpoint from {checkpoint_dir}")
+    
         self.tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint_path,
+            checkpoint_dir,
             trust_remote_code=True,
         )
-
+    
         if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-
+            self.tokenizer.pad_token = (
+                self.tokenizer.eos_token
+            )
+    
         self.tokenizer.padding_side = "left"
         self.tokenizer.truncation_side = "left"
-
+    
         # Recreate quantized base model.
-        base_model = AutoModelForCausalLM.from_pretrained(
-            self.training_config["model_name"],
-            device_map="auto",
-            trust_remote_code=True,
-            quantization_config=self.quantization_config,
+        base_model = (
+            AutoModelForCausalLM
+            .from_pretrained(
+                self.training_config["model_name"],
+                device_map="auto",
+                trust_remote_code=True,
+                quantization_config=
+                    self.quantization_config,
+            )
         )
-
-        self.model = PeftModel.from_pretrained(
-            base_model,
-            checkpoint_path,
+    
+        self.model = (
+            PeftModel.from_pretrained(
+                base_model,
+                checkpoint_dir,
+            )
         )
-
-        # Restore generation settings.
-        gen_path = checkpoint_path / "generation_config.json"
-        if gen_path.exists():
-            with open(gen_path, "r") as f:
-                self.generation_config = json.load(f)
-
+    
         self.model.print_trainable_parameters()
+    
         print("Checkpoint loaded.")
 
 
