@@ -4,11 +4,19 @@ Analyze the provided source code together with static analyzer findings.
 
 Identify vulnerabilities and suggest exact minimal fixes.
 
+Important:
+
+Do not return an empty vulnerabilities array when a vulnerability is clearly supported by the source code or analyzer findings.
+
+If a vulnerability is supported by the code, report it even if analyzer findings are incomplete.
+
+Use the empty array only when there is no supported vulnerability.
+
 Source Code:
 {code}
 
 Static Analyzer Findings:
-{analysis}
+{static_findings}
 
 Return ONLY valid JSON with schema:
 
@@ -18,8 +26,6 @@ Return ONLY valid JSON with schema:
       "cwe": "...",
       "fixes": [
         {
-          "start_line": "<number>",
-          "end_line": "<number>",
           "origin": "...",
           "replacement": "..."
         }
@@ -27,7 +33,3 @@ Return ONLY valid JSON with schema:
     }
   ]
 }
-
-Line offset: {line_offset}
-- start_line and end_line must match the origin in the snippet
-- add the offset to obtain final line numbers

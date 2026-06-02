@@ -1,4 +1,4 @@
-from llm_model import SecureCodingModel
+from model import SecureCodingModel
 
 
 model = SecureCodingModel()

@@ -19,7 +19,7 @@ Source Code:
 {code}
 
 Static Analyzer Findings:
-{analysis}
+{static_findings}
 
 Return ONLY valid JSON with schema:
 

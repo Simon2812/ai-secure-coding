@@ -39,15 +39,14 @@ class SecureCodingModel:
 
         # Deterministic JSON generation.
         self.generation_config = {
-            "temperature": 0.0,
             "do_sample": False,
-            "max_new_tokens": 1024,
+            "max_new_tokens": 768,
         }
 
         # Experiment configuration (tunable between runs).
         self.training_config = {
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-            "prompt_version": "v1",
+            "prompt_version": "v2",
             "max_length": 2048,
             "epochs": 3,
             "learning_rate": 2e-4,
@@ -82,6 +81,7 @@ class SecureCodingModel:
 
         # Qwen usually behaves better with left padding.
         self.tokenizer.padding_side = "left"
+        self.tokenizer.truncation_side = "left"
 
         # Explicit generation tokens for stable decoding.
         self.generation_config["pad_token_id"] = self.tokenizer.eos_token_id
@@ -121,46 +121,43 @@ class SecureCodingModel:
         Restore trained LoRA adapters
         from an existing checkpoint.
         """
-
-        checkpoint_path = Path(checkpoint_dir)
-
-        if not checkpoint_path.exists():
-            raise FileNotFoundError(
-                f"Checkpoint not found: {checkpoint_path}"
-            )
-
-        print(f"Loading checkpoint from {checkpoint_path}")
-
+    
+        print(f"Loading checkpoint from {checkpoint_dir}")
+    
         self.tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint_path,
+            checkpoint_dir,
             trust_remote_code=True,
         )
-
+    
         if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-
+            self.tokenizer.pad_token = (
+                self.tokenizer.eos_token
+            )
+    
         self.tokenizer.padding_side = "left"
-
+        self.tokenizer.truncation_side = "left"
+    
         # Recreate quantized base model.
-        base_model = AutoModelForCausalLM.from_pretrained(
-            self.training_config["model_name"],
-            device_map="auto",
-            trust_remote_code=True,
-            quantization_config=self.quantization_config,
+        base_model = (
+            AutoModelForCausalLM
+            .from_pretrained(
+                self.training_config["model_name"],
+                device_map="auto",
+                trust_remote_code=True,
+                quantization_config=
+                    self.quantization_config,
+            )
         )
-
-        self.model = PeftModel.from_pretrained(
-            base_model,
-            checkpoint_path,
+    
+        self.model = (
+            PeftModel.from_pretrained(
+                base_model,
+                checkpoint_dir,
+            )
         )
-
-        # Restore generation settings.
-        gen_path = checkpoint_path / "generation_config.json"
-        if gen_path.exists():
-            with open(gen_path, "r") as f:
-                self.generation_config = json.load(f)
-
+    
         self.model.print_trainable_parameters()
+    
         print("Checkpoint loaded.")
 
 
@@ -194,7 +191,7 @@ class SecureCodingModel:
         print("Checkpoint saved.")
 
 
-    def build_input(self, code, line_offset, analysis):
+    def build_input(self, code, line_offset, static_findings):
         """
         Build unified prompt used for:
         - training
@@ -219,8 +216,8 @@ class SecureCodingModel:
             .replace("{code}", code) \
             .replace("{line_offset}", str(line_offset)) \
             .replace(
-                "{analysis}",
-                json.dumps(analysis, indent=2)
+                "{static_findings}",
+                json.dumps(static_findings, indent=2)
             )
 
         return prompt.strip()
@@ -230,7 +227,7 @@ class SecureCodingModel:
         self,
         code,
         line_offset,
-        analysis,
+        static_findings,
         cwe,
         rejected_fixes,
     ):
@@ -258,8 +255,8 @@ class SecureCodingModel:
             .replace("{code}", code)
             .replace("{line_offset}", str(line_offset))
             .replace(
-                "{analysis}",
-                json.dumps(analysis, indent=2),
+                "{static_findings}",
+                json.dumps(static_findings, indent=2),
             )
             .replace("{cwe}", cwe)
             .replace(
@@ -320,10 +317,14 @@ class SecureCodingModel:
             skip_special_tokens=True,
         )
 
+        print("\n===== MODEL OUTPUT =====")
+        print(text)
+        print("========================\n")
+
         return self.extract_json(text)
 
 
-    def predict(self, code, line_offset, analysis):
+    def predict(self, code, line_offset, static_findings):
         """
         Generate structured vulnerability prediction.
         """
@@ -334,7 +335,7 @@ class SecureCodingModel:
         input_text = self.build_input(
             code,
             line_offset,
-            analysis,
+            static_findings,
         )
 
         return self._generate_json(input_text)
@@ -344,7 +345,7 @@ class SecureCodingModel:
         self,
         code,
         line_offset,
-        analysis,
+        static_findings,
         cwe,
         rejected_fixes,
     ):
@@ -359,7 +360,7 @@ class SecureCodingModel:
         input_text = self.build_regeneration_input(
             code,
             line_offset,
-            analysis,
+            static_findings,
             cwe,
             rejected_fixes,
         )
@@ -378,7 +379,9 @@ class SecureCodingModel:
         Load metadata files, resolve source code,
         and split samples into train/val/test.
         """
-
+        
+        repo_root = Path(__file__).resolve().parent.parent
+        
         train_data, val_data, test_data = [], [], []
         metadata_root = Path(metadata_root)
 
@@ -387,7 +390,7 @@ class SecureCodingModel:
                 metadata = json.load(f)
 
             # Source code path is stored inside metadata.
-            code_path = Path(metadata_root) / metadata["path"].lstrip("/")
+            code_path = repo_root / metadata["path"].lstrip("/")
 
             with open(code_path, "r", encoding="utf-8") as f:
                 code = f.read()
@@ -395,7 +398,6 @@ class SecureCodingModel:
             sample = {
                 "code": code,
                 "line_offset": 0,  # Can be used for line number adjustments if needed.
-                "analysis": metadata["analysis"],
                 "target": metadata["vulnerabilities"],
                 "split": metadata["split"],
                 "language": metadata["language"],
@@ -458,52 +460,99 @@ class SecureCodingModel:
                 prompt = self.build_input(
                     sample["code"],
                     sample["line_offset"],
-                    sample["analysis"],
+                    sample["static_findings"],
                 )
 
                 # Ground truth aligned with expected JSON format.
-                target = {"vulnerabilities": sample["target"]}
-
-                full_text = prompt + "\n" + json.dumps(target, indent=2)
-
-                # Tokenize prompt separately for masking.
+                target = {
+                    "vulnerabilities": sample["target"]
+                }
+                
+                target_text = "\n" + json.dumps(target, indent=2) + self.tokenizer.eos_token
+                
+                target_tokens = self.tokenizer(
+                    target_text,
+                    return_tensors="pt",
+                    add_special_tokens=False,
+                )
+                
+                max_length = self.training_config[
+                    "max_length"
+                ]
+                
+                target_len = target_tokens[
+                    "input_ids"
+                ].shape[1]
+                
+                prompt_max_length = (
+                    max_length - target_len
+                )
+                
+                if prompt_max_length <= 0:
+                    continue
+                
                 prompt_tokens = self.tokenizer(
                     prompt,
                     return_tensors="pt",
                     truncation=True,
-                    max_length=self.training_config["max_length"],
+                    truncation_side="left",
+                    max_length=prompt_max_length,
+                    add_special_tokens=True,
                 )
-
-                inputs = self.tokenizer(
-                    full_text,
-                    return_tensors="pt",
-                    truncation=True,
-                    max_length=self.training_config["max_length"],
+                
+                input_ids = torch.cat(
+                    [
+                        prompt_tokens["input_ids"],
+                        target_tokens["input_ids"],
+                    ],
+                    dim=1,
                 )
-
-                device = next(self.model.parameters()).device
-                inputs = {k: v.to(device) for k, v in inputs.items()}
-
-                # Train only on target JSON (mask prompt).
-                labels = inputs["input_ids"].clone()
-
-                prompt_len = min(
-                    prompt_tokens["input_ids"].shape[1],
-                    inputs["input_ids"].shape[1]
+                
+                attention_mask = torch.ones_like(
+                    input_ids
                 )
-
+                
+                labels = input_ids.clone()
+                
+                prompt_len = prompt_tokens[
+                    "input_ids"
+                ].shape[1]
+                
                 labels[:, :prompt_len] = -100
-
+                
+                device = next(
+                    self.model.parameters()
+                ).device
+                
+                inputs = {
+                    "input_ids": input_ids.to(device),
+                    "attention_mask": attention_mask.to(device),
+                }
+                
+                labels = labels.to(device)
+                
                 optimizer.zero_grad()
-
+                
                 loss = self.model(
                     **inputs,
                     labels=labels,
                 ).loss
-
+                
+                if torch.isnan(loss):
+                    print(
+                        "Skipping NaN loss sample."
+                    )
+                    continue
+                
                 total_loss += loss.item()
-
+                
                 loss.backward()
+                
+                torch.nn.utils.clip_grad_norm_(
+                    self.model.parameters(),
+                    1.0,
+                )
+                
                 optimizer.step()
 
             avg_loss = total_loss / len(train_data)
@@ -523,12 +572,22 @@ class SecureCodingModel:
             with torch.no_grad():
                 for sample in val_data:
 
-                    pred = self.predict(
-                        sample["code"],
-                        sample["line_offset"],
-                        sample["analysis"],
-                    )
-
+                    try:
+                        pred = self.predict(
+                            sample["code"],
+                            sample["line_offset"],
+                            sample["static_findings"],
+                        )
+                    except Exception as e:
+                    
+                        print(
+                            f"Validation failure: {e}"
+                        )
+                    
+                        pred = {
+                            "vulnerabilities": []
+                        }
+                        
                     scores = evaluator.evaluate(sample, pred)
 
                     val_final_score += scores["final_score"]
@@ -573,17 +632,18 @@ class SecureCodingModel:
 
 
     def extract_json(self, text):
-        """
-        Extract first JSON object from model output.
-        """
-
         start = text.find("{")
-        end = text.rfind("}")
-
-        if start == -1 or end == -1:
+    
+        if start == -1:
             raise ValueError("No JSON found.")
-
-        return json.loads(text[start : end + 1])
+    
+        decoder = json.JSONDecoder()
+    
+        try:
+            obj, _ = decoder.raw_decode(text[start:])
+            return obj
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Invalid JSON: {error}") from error
     
 
     def test(self, test_data, evaluator):
@@ -606,11 +666,15 @@ class SecureCodingModel:
         with torch.no_grad():
             for sample in test_data:
 
-                pred = self.predict(
-                    sample["code"],
-                    sample["line_offset"],
-                    sample["analysis"],
-                )
+                try:
+                    pred = self.predict(
+                        sample["code"],
+                        sample["line_offset"],
+                        sample["static_findings"],
+                    )
+                except Exception as e:
+                    print(f"Test failure: {e}")
+                    pred = {"vulnerabilities": []}
 
                 scores = evaluator.evaluate(sample, pred)
 
