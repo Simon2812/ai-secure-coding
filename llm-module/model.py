@@ -46,11 +46,11 @@ class SecureCodingModel:
         # Experiment configuration (tunable between runs).
         self.training_config = {
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-            "prompt_version": "v2",
+            "prompt_version": "v1",
             "max_length": 2048,
             "epochs": 3,
-            "learning_rate": 2e-4,
-            "lora_rank": 16,
+            "learning_rate": 1e-4,
+            "lora_rank": 8,
         }
 
         # Shared QLoRA quantization config.
@@ -312,21 +312,11 @@ class SecureCodingModel:
 
         if generation_overrides:
             generation_config.update(generation_overrides)
-
-        print("PROMPT VERSION:", self.training_config["prompt_version"])
-        print("GEN CONFIG:", generation_config)
-        print("INPUT LEN:", inputs["input_ids"].shape[1])
-        print("EOS:", self.tokenizer.eos_token, self.tokenizer.eos_token_id)
-        print("PAD:", self.tokenizer.pad_token, self.tokenizer.pad_token_id)
         
         outputs = self.model.generate(
             **inputs,
             **generation_config,
         )
-
-        print("OUTPUT LEN:", outputs.shape[1])
-        print("NEW TOKENS:", outputs.shape[1] - inputs["input_ids"].shape[1])
-        print("NEW TOKEN IDS:", outputs[0][inputs["input_ids"].shape[1]:].tolist()[:20])
 
         # Decode only generated tokens.
         prompt_len = inputs["input_ids"].shape[1]
