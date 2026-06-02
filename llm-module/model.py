@@ -324,9 +324,9 @@ class SecureCodingModel:
             **generation_config,
         )
 
-print("OUTPUT LEN:", outputs.shape[1])
-print("NEW TOKENS:", outputs.shape[1] - inputs["input_ids"].shape[1])
-print("NEW TOKEN IDS:", outputs[0][inputs["input_ids"].shape[1]:].tolist()[:20])
+        print("OUTPUT LEN:", outputs.shape[1])
+        print("NEW TOKENS:", outputs.shape[1] - inputs["input_ids"].shape[1])
+        print("NEW TOKEN IDS:", outputs[0][inputs["input_ids"].shape[1]:].tolist()[:20])
 
         # Decode only generated tokens.
         prompt_len = inputs["input_ids"].shape[1]
