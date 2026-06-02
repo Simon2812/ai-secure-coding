@@ -277,51 +277,126 @@ class SecureCodingModel:
         Run model inference
         on prepared prompt.
         """
-
-        if self.model is None:
-            raise RuntimeError("Model must be loaded.")
-
-        self.model.eval()
-
-        inputs = self.tokenizer(
-            input_text,
-            return_tensors="pt",
-            truncation=True,
-            max_length=self.training_config["max_length"],
-        )
-
-        # Align tensors with model device.
-        device = next(self.model.parameters()).device
-
-        inputs = {
-            key: value.to(device)
-            for key, value in inputs.items()
-        }
-
-        generation_config = self.generation_config.copy()
-
-        if generation_overrides:
-            generation_config.update(generation_overrides)
-
-        outputs = self.model.generate(
-            **inputs,
-            **generation_config,
-        )
-
-        # Decode only generated tokens.
-        prompt_len = inputs["input_ids"].shape[1]
-        generated = outputs[0][prompt_len:]
-
-        text = self.tokenizer.decode(
-            generated,
-            skip_special_tokens=True,
-        )
-
-        print("\n===== MODEL OUTPUT =====")
-        print(text)
-        print("========================\n")
-
-        return self.extract_json(text)
+    
+        try:
+    
+            print("STEP 1", flush=True)
+    
+            if self.model is None:
+                raise RuntimeError(
+                    "Model must be loaded."
+                )
+    
+            self.model.eval()
+    
+            print("STEP 2", flush=True)
+    
+            inputs = self.tokenizer(
+                input_text,
+                return_tensors="pt",
+                truncation=True,
+                max_length=self.training_config[
+                    "max_length"
+                ],
+            )
+    
+            print("STEP 3", flush=True)
+    
+            # Align tensors
+            # with model device.
+            device = next(
+                self.model.parameters()
+            ).device
+    
+            inputs = {
+                key: value.to(device)
+                for key, value
+                in inputs.items()
+            }
+    
+            generation_config = (
+                self.generation_config.copy()
+            )
+    
+            if generation_overrides:
+    
+                generation_config.update(
+                    generation_overrides
+                )
+    
+            print("STEP 4", flush=True)
+    
+            outputs = self.model.generate(
+                **inputs,
+                **generation_config,
+            )
+    
+            print("STEP 5", flush=True)
+    
+            # Decode only
+            # generated tokens.
+            prompt_len = (
+                inputs[
+                    "input_ids"
+                ].shape[1]
+            )
+    
+            generated = outputs[
+                0
+            ][prompt_len:]
+    
+            print("STEP 6", flush=True)
+    
+            text = self.tokenizer.decode(
+                generated,
+                skip_special_tokens=True,
+            )
+    
+            print("STEP 7", flush=True)
+    
+            print(
+                "\n===== MODEL OUTPUT =====",
+                flush=True,
+            )
+    
+            print(
+                repr(text),
+                flush=True,
+            )
+    
+            print(
+                "========================\n",
+                flush=True,
+            )
+    
+            result = self.extract_json(
+                text
+            )
+    
+            print(
+                "STEP 8",
+                flush=True,
+            )
+    
+            return result
+    
+        except Exception:
+    
+            import traceback
+    
+            print(
+                "\n===== EXCEPTION =====",
+                flush=True,
+            )
+    
+            traceback.print_exc()
+    
+            print(
+                "=====================\n",
+                flush=True,
+            )
+    
+            raise
 
 
     def predict(self, code, line_offset, static_findings):
