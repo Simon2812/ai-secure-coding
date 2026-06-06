@@ -38,6 +38,9 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
 
   seedJavaTaint(root, taint);
   seedJavaMethodParams(root, taint);
+  // Remove formal parameters that are validated by a guard (matches/contains + throw).
+  // Must run BEFORE propagateAssignments so the sanitized params don't spread their taint.
+  applyJavaValidationGuards(root, taint);
   taint.propagateAssignments(root, isJavaUserInputExpr);
   propagateJavaCollections(root, taint);
   taint.propagateAssignments(root, isJavaUserInputExpr);
@@ -127,7 +130,8 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
       // Path sinks: Paths.get(), Path.of()
       if (PATH_SINK_CALLS.has(fullName) && argsNode) {
         const args = getJavaArgs(argsNode);
-        if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))) {
+        if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))
+            && !isCallResultSanitized(node)) {
           findings.push(makeAstFinding({
             cweId: "CWE-22", ruleId: "ast-path-traversal",
             vulnerability: "Path Traversal",
@@ -241,12 +245,58 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
           }));
         }
       }
+
+      // Command injection via ProcessBuilder.command(args) — called after `new ProcessBuilder()`
+      // e.g.: builder.command(args);  or  pb.command(List.of("sh", "-c", userInput))
+      if (methodName === "command" && argsNode && obj) {
+        const args = getJavaArgs(argsNode);
+        const anyTainted = args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a));
+        if (anyTainted) {
+          // Only flag if the receiver is a known ProcessBuilder variable (not an arbitrary .command())
+          // We detect this by checking if the receiver was assigned from new ProcessBuilder().
+          if (isProcessBuilderVar(obj, root)) {
+            findings.push(makeAstFinding({
+              cweId: "CWE-78", ruleId: "ast-cmd-injection",
+              vulnerability: "OS Command Injection",
+              severity: "high",
+              message: "ProcessBuilder.command() receives user-controlled input.",
+              filePath, node, code,
+            }));
+          }
+        }
+      }
     }
   }
 
   findings.push(...findHardcodedCredentialsJava(root, filePath, code));
 
   return findings;
+}
+
+/** Returns true if `node` (identifier used as receiver of .command()) refers to a
+ *  ProcessBuilder variable — i.e., was declared/assigned as `new ProcessBuilder(...)`.
+ */
+function isProcessBuilderVar(node: Node, root: Node): boolean {
+  const name = node.text;
+  for (const n of walkAll(root)) {
+    // ProcessBuilder pb = new ProcessBuilder(...);
+    if (n.type === "local_variable_declaration") {
+      const typeNode = n.childForFieldName("type");
+      if (typeNode?.text === "ProcessBuilder") {
+        const decl = n.children.find(c => c.type === "variable_declarator");
+        if (decl?.childForFieldName("name")?.text === name) return true;
+      }
+    }
+    // pb = new ProcessBuilder(...);
+    if (n.type === "assignment_expression") {
+      const left = n.childForFieldName("left");
+      const right = n.childForFieldName("right");
+      if (left?.text === name && right?.type === "object_creation_expression") {
+        if (right.childForFieldName("type")?.text === "ProcessBuilder") return true;
+      }
+    }
+  }
+  return false;
 }
 
 function seedJavaTaint(root: Node, taint: TaintTracker): void {
@@ -361,6 +411,136 @@ function propagateJavaCollections(root: Node, taint: TaintTracker): void {
       }
     }
   }
+}
+
+/**
+ * Java method names whose output is sanitized regardless of their input.
+ * Used in the sink-level check: if a path-construction call (Path.of, Paths.get)
+ * is immediately chained through one of these methods, it is NOT a sink.
+ */
+const JAVA_RESULT_SANITIZING_METHODS = new Set([
+  "getFileName",  // Path.getFileName() — strips directory components, safe filename only
+]);
+
+/**
+ * Returns true if the result of `callNode` passes through a sanitizing method
+ * before being used elsewhere.
+ *
+ * Walks up the parent method_invocation chain from `callNode`.
+ * Example (returns true):
+ *   Path.of(userInput).getFileName()          ← callNode = Path.of(...), parent = getFileName()
+ *   Path.of(userInput).getFileName().toString()← callNode = Path.of(...), parent = getFileName()
+ */
+function isCallResultSanitized(callNode: Node): boolean {
+  let cur: Node | null = callNode.parent;
+  while (cur && cur.type === "method_invocation") {
+    const name = cur.childForFieldName("name")?.text;
+    if (name && JAVA_RESULT_SANITIZING_METHODS.has(name)) return true;
+    cur = cur.parent;
+  }
+  return false;
+}
+
+/**
+ * Removes formally-validated parameters from the taint set before propagation.
+ *
+ * Detects two validation-guard patterns used in Java security code:
+ *
+ * Pattern 1 — Regex whitelist (matches):
+ *   if (!var.matches("[A-Za-z0-9_-]+")) { throw new IOException(...); }
+ *   → var is guaranteed to contain only safe characters → remove from taint.
+ *
+ * Pattern 2 — Path traversal blacklist (contains):
+ *   if (var.contains("..") || var.contains("/") || var.contains("\\")) { throw ... }
+ *   → var cannot contain path traversal sequences → remove from taint.
+ *
+ * Both patterns require that the if-body unconditionally throws (or returns),
+ * ensuring no tainted value can reach the code after the guard.
+ *
+ * Called BEFORE propagateAssignments so that sanitized parameters do not
+ * spread their taint to derived variables.
+ */
+function applyJavaValidationGuards(root: Node, taint: TaintTracker): void {
+  for (const node of walkAll(root)) {
+    if (node.type !== "if_statement") continue;
+
+    const condNode  = node.childForFieldName("condition");
+    const bodyNode  = node.childForFieldName("consequence");
+    if (!condNode || !bodyNode) continue;
+
+    // Body must unconditionally throw (or return early) to act as a guard.
+    if (!blockContainsThrowOrReturn(bodyNode)) continue;
+
+    // Extract the variable protected by the guard condition.
+    const guardedVar = extractGuardedVar(condNode);
+    if (guardedVar && taint.has(guardedVar)) {
+      taint.remove(guardedVar);
+    }
+  }
+}
+
+/**
+ * Returns true when the block unconditionally throws or returns — meaning
+ * any code after the if statement is only reached when the condition was false.
+ */
+function blockContainsThrowOrReturn(block: Node): boolean {
+  for (const child of walkAll(block)) {
+    if (child.type === "throw_statement" || child.type === "return_statement") {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Extracts the name of the variable being validated by the guard condition.
+ *
+ * Handles:
+ *   !var.matches(regex)              → "var"
+ *   var.contains("..") || …         → "var"  (only when arg looks like a path sep)
+ *
+ * Returns null when the condition doesn't match a known validation pattern.
+ */
+function extractGuardedVar(condition: Node): string | null {
+  // Unwrap Java if-condition parentheses: if (expr) → condition field = parenthesized
+  let cond: Node = condition;
+  while (cond.type === "parenthesized_expression" && cond.namedChildren.length > 0) {
+    cond = cond.namedChildren[0];
+  }
+
+  // Pattern 1: !var.matches(regex)
+  // AST: unary_expression [ "!" method_invocation { object=identifier, name="matches" } ]
+  if (cond.type === "unary_expression") {
+    const operand = cond.namedChildren[0];
+    if (operand?.type === "method_invocation") {
+      const methodName = operand.childForFieldName("name")?.text;
+      if (methodName === "matches") {
+        const obj = operand.childForFieldName("object");
+        if (obj?.type === "identifier") return obj.text;
+      }
+    }
+  }
+
+  // Pattern 2: var.contains("..") || var.contains("/") ...
+  // Walk all method_invocations in the condition; the first one whose arg is a
+  // path-traversal indicator string identifies the variable being checked.
+  for (const child of walkAll(cond)) {
+    if (child.type !== "method_invocation") continue;
+    const methodName = child.childForFieldName("name")?.text;
+    if (methodName !== "contains") continue;
+    const argsNode = child.childForFieldName("arguments");
+    if (!argsNode) continue;
+    // Only treat as a path-traversal guard when the checked string is a
+    // well-known dangerous path component: "..", "/", or "\"
+    const argText = argsNode.text;
+    if (!argText.includes("..") && !argText.includes("/") && !argText.includes("\\\\")) {
+      continue;
+    }
+    const obj = child.childForFieldName("object");
+    if (obj?.type === "identifier") return obj.text;
+  }
+
+  return null;
 }
 
 function buildJavaValueMap(root: Node): Map<string, Node> {

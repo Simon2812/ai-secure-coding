@@ -98,14 +98,21 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
       const fnName = fnNode?.text ?? "";
 
       // CWE-787: out-of-bounds write
+      // For strcpy/strcat: only flag if the source (2nd arg) is non-literal (tainted or identifier)
+      // gets/sprintf/vsprintf are always unsafe regardless of args
       if (OOB_WRITE_FUNCS.has(fnName)) {
-        findings.push(makeAstFinding({
-          cweId: "CWE-787", ruleId: "ast-oob-write",
-          vulnerability: "Out-of-bounds Write",
-          severity: "high",
-          message: `${fnName}() does not perform bounds checking and may write past a buffer.`,
-          filePath, node, code,
-        }));
+        const alwaysUnsafe = fnName === "gets" || fnName === "sprintf" || fnName === "vsprintf";
+        const srcArg = argsNode ? getArgs(argsNode)[1] : undefined;
+        const srcIsLiteral = srcArg ? isStringLiteral(srcArg) : false;
+        if (alwaysUnsafe || !srcIsLiteral) {
+          findings.push(makeAstFinding({
+            cweId: "CWE-787", ruleId: "ast-oob-write",
+            vulnerability: "Out-of-bounds Write",
+            severity: "high",
+            message: `${fnName}() does not perform bounds checking and may write past a buffer.`,
+            filePath, node, code,
+          }));
+        }
       }
 
       // Also catch scanf with %s
@@ -175,11 +182,16 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
         }
       }
 
-      // CWE-190: integer overflow in allocation/memory functions
+      // CWE-190: integer overflow in allocation/memory functions.
+      // Flag when the size argument contains arithmetic that is not purely compile-time constant.
+      // Pure constant arithmetic (e.g. 5 * sizeof(char), 44 * sizeof(int)) cannot overflow at
+      // runtime, so skip those to avoid FPs. Non-constant operands (identifiers, calls, field
+      // expressions) indicate runtime values that can carry an overflowed quantity.
       if (OVERFLOW_ALLOC_FUNCS.has(fnName) && argsNode) {
         const args = getArgs(argsNode);
         const sizeArg = fnName === "realloc" ? args[1] : args[0];
-        if (sizeArg && containsArithmetic(sizeArg) && !isProtectedByBoundsCheck(node, sizeArg)) {
+        if (sizeArg && containsArithmetic(sizeArg) && !isConstantSizeExpr(sizeArg)
+            && !isProtectedByBoundsCheck(node, sizeArg)) {
           findings.push(makeAstFinding({
             cweId: "CWE-190", ruleId: "ast-integer-overflow",
             vulnerability: "Integer Overflow",
@@ -193,13 +205,27 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
       if (OVERFLOW_MEM_FUNCS.has(fnName) && argsNode) {
         const args = getArgs(argsNode);
         const sizeArg = args[2];
-        if (sizeArg && containsArithmetic(sizeArg) && !isProtectedByBoundsCheck(node, sizeArg)) {
+        if (sizeArg && containsArithmetic(sizeArg) && !isConstantSizeExpr(sizeArg)
+            && !isProtectedByBoundsCheck(node, sizeArg)) {
           findings.push(makeAstFinding({
             cweId: "CWE-190", ruleId: "ast-integer-overflow",
             vulnerability: "Integer Overflow",
             severity: "medium",
             message: `${fnName}() size argument contains arithmetic that may overflow.`,
             filePath, node: sizeArg, code,
+          }));
+        }
+        // CWE-787: tainted offset in destination pointer — memcpy(buf + user_offset, src, n)
+        const destArg = args[0];
+        if (destArg && destArg.type === "binary_expression"
+            && intTaint.expressionIsTainted(destArg)
+            && !isProtectedByBoundsCheck(node, destArg)) {
+          findings.push(makeAstFinding({
+            cweId: "CWE-787", ruleId: "ast-oob-write",
+            vulnerability: "Out-of-bounds Write",
+            severity: "high",
+            message: `${fnName}() destination pointer uses user-controlled offset without bounds check.`,
+            filePath, node: destArg, code,
           }));
         }
       }
@@ -288,22 +314,33 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
       }
     }
 
-    // CWE-787: loop with user-controlled bound writing to array
+    // CWE-787: loop writes to array with user-controlled access
+    // Two cases:
+    //   (1) the array index itself is tainted (direct control)
+    //   (2) the loop condition contains a tainted bound (e.g. i < user_n)
+    //       catches the common pattern where i is an untainted counter
+    // In both cases: skip if the index is protected by a visible bounds check
+    // (e.g. while (write_head < sizeof(buf)) correctly bounds the write).
     if (node.type === "for_statement" || node.type === "while_statement") {
       const condition = node.childForFieldName("condition");
-      if (condition && intTaint.expressionIsTainted(condition)) {
-        const body = node.childForFieldName("body");
-        if (body) {
-          for (const inner of walkAll(body)) {
-            if (inner.type === "assignment_expression") {
-              const left = inner.childForFieldName("left");
-              if (left?.type === "subscript_expression" || left?.type === "pointer_expression") {
+      const conditionTainted = condition != null && intTaint.expressionIsTainted(condition);
+      const body = node.childForFieldName("body");
+      if (body) {
+        for (const inner of walkAll(body)) {
+          if (inner.type === "assignment_expression") {
+            const left = inner.childForFieldName("left");
+            if (left?.type === "subscript_expression") {
+              const index = left.childForFieldName("index");
+              if (!index) continue;
+              const indexTainted = intTaint.expressionIsTainted(index);
+              if ((indexTainted || conditionTainted)
+                  && !isProtectedByBoundsCheck(inner, index)) {
                 findings.push(makeAstFinding({
                   cweId: "CWE-787", ruleId: "ast-oob-write",
                   vulnerability: "Out-of-bounds Write",
                   severity: "high",
-                  message: "Loop with user-controlled bound writes to array without bounds check.",
-                  filePath, node: condition, code,
+                  message: "Loop writes to array using a user-controlled bound or index without bounds check.",
+                  filePath, node: index, code,
                 }));
                 break;
               }
@@ -313,10 +350,30 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
       }
     }
 
+    // CWE-416: C++ delete — track delete p and delete[] p expressions.
+    // tree-sitter-c parses these as declaration/subscript_expression (see isInsideDeleteStatement).
+    if (node.type === "declaration") {
+      const first = node.children[0];
+      if (first?.type === "type_identifier" && first.text === "delete") {
+        const ident = node.children.find(c => c.type === "identifier");
+        if (ident) freedPointers.set(ident.text, node);
+      }
+    }
+    if (node.type === "expression_statement") {
+      const inner = node.namedChildren[0];
+      if (inner?.type === "subscript_expression") {
+        const firstNamed = inner.namedChildren[0];
+        if (firstNamed?.type === "identifier" && firstNamed.text === "delete") {
+          const ptrIdent = inner.namedChildren.find((c, i) => i > 0 && c.type === "identifier");
+          if (ptrIdent) freedPointers.set(ptrIdent.text, node);
+        }
+      }
+    }
+
     // CWE-416: use-after-free — detect use of freed pointer
     if (node.type === "identifier" && freedPointers.has(node.text)) {
       const parent = node.parent;
-      if (parent && !isFreeCall(parent) && !isAssignmentTarget(parent, node)) {
+      if (parent && !isInsideFreeCall(node) && !isInsideDeleteStatement(node) && !isAssignmentTarget(parent, node)) {
         const freeNode = freedPointers.get(node.text)!;
         if (node.startIndex > freeNode.startIndex) {
           findings.push(makeAstFinding({
@@ -391,6 +448,33 @@ function containsArithmetic(node: Node): boolean {
   return node.children.some(c => containsArithmetic(c));
 }
 
+/** Returns true iff every operand in the size expression is a compile-time constant:
+ *  number literals, sizeof(...), casts of constants, or constant arithmetic.
+ *  Identifiers, field expressions, and call expressions make it non-constant.
+ *  Examples that ARE constant:  5 * sizeof(char),  (size_t)44 * sizeof(int)
+ *  Examples that are NOT constant:  amount * sizeof(int),  strlen(val) + 1
+ */
+function isConstantSizeExpr(node: Node): boolean {
+  switch (node.type) {
+    case "number_literal":
+      return true;
+    case "sizeof_expression":
+      return true;
+    case "parenthesized_expression": {
+      const inner = node.namedChildren[0];
+      return inner ? isConstantSizeExpr(inner) : true;
+    }
+    case "cast_expression":
+    case "binary_expression":
+      return node.namedChildren.every(c => isConstantSizeExpr(c));
+    case "primitive_type":
+    case "type_identifier":
+      return true; // type children inside cast_expression or sizeof
+    default:
+      return false; // identifiers, field_expressions, call_expressions → not constant
+  }
+}
+
 function isProtectedByBoundsCheck(callNode: Node, sizeArg: Node): boolean {
   const vars = collectIdentifiers(sizeArg);
   if (vars.size === 0) return false;
@@ -398,15 +482,30 @@ function isProtectedByBoundsCheck(callNode: Node, sizeArg: Node): boolean {
   let cursor: Node | null = callNode.parent;
   let depth = 0;
   while (cursor && depth < 15) {
-    if (cursor.type === "if_statement") {
+    if (cursor.type === "if_statement" || cursor.type === "for_statement" || cursor.type === "while_statement") {
       const condition = cursor.childForFieldName("condition");
       if (condition) {
         const ctext = condition.text;
-        // Only consider it protected if the check involves INT_MAX/UINT_MAX or explicit division
-        // (prevents range checks like "x > 0" from masking real overflows)
-        if (/INT_MAX|UINT_MAX|INT_MIN|SIZE_MAX/.test(ctext)) {
-          for (const v of vars) {
-            if (new RegExp(`\\b${v}\\b`).test(ctext)) return true;
+        // In loop conditions (for/while), a numeric literal bound (e.g. pos < 10) controls
+        // iteration COUNT, not byte capacity — do NOT treat it as a bounds protection.
+        // Only sizeof(...) is byte-accurate and safe to trust in loop conditions.
+        // In if_statement conditions, numeric literal bounds are fine (e.g. if (n < 100)).
+        const isLoop = cursor.type === "for_statement" || cursor.type === "while_statement";
+        for (const v of vars) {
+          if (!new RegExp(`\\b${v}\\b`).test(ctext)) continue;
+          // Boundary constant check (INT_MAX / UINT_MAX / SIZE_MAX) — always valid
+          if (/INT_MAX|UINT_MAX|INT_MIN|SIZE_MAX/.test(ctext)) return true;
+          // sizeof(...) as upper bound — always valid (byte-accurate).
+          // Allow optional cast expression between operator and sizeof:
+          //   v < sizeof(buf)          → direct comparison
+          //   v < (int)sizeof(buf)     → cast before sizeof
+          //   v < (size_t)sizeof(buf)  → cast before sizeof
+          if (new RegExp(`\\b${v}\\s*<=?\\s*(?:\\([^)]*\\)\\s*)?sizeof\\s*\\(`).test(ctext)) return true;
+          if (new RegExp(`sizeof\\s*\\([^)]*\\)\\s*(?:\\([^)]*\\)\\s*)?>=?\\s*\\b${v}\\b`).test(ctext)) return true;
+          // Numeric literal bounds: only trust in if_statement (not loop conditions)
+          if (!isLoop) {
+            if (new RegExp(`\\b${v}\\s*<=?\\s*\\d+`).test(ctext)) return true;
+            if (new RegExp(`\\d+\\s*>=?\\s*\\b${v}\\b`).test(ctext)) return true;
           }
         }
       }
@@ -569,9 +668,39 @@ function isCStringSourceExpr(node: Node): boolean {
          /\bgetcwd\s*\(/.test(text);
 }
 
-function isFreeCall(node: Node): boolean {
-  return node.type === "call_expression" &&
-    node.childForFieldName("function")?.text === "free";
+// Walk up ancestors to check if this identifier is an argument of free()
+// (immediate parent is argument_list, not call_expression, so we climb one more level)
+function isInsideFreeCall(node: Node): boolean {
+  let cursor: Node | null = node.parent;
+  while (cursor) {
+    if (cursor.type === "call_expression") {
+      return cursor.childForFieldName("function")?.text === "free";
+    }
+    if (cursor.type === "expression_statement" || cursor.type === "compound_statement") break;
+    cursor = cursor.parent;
+  }
+  return false;
+}
+
+// Walk up ancestors to check if this identifier is the operand of a C++ delete expression.
+// tree-sitter-c parses:
+//   delete p;      → declaration { type_identifier:"delete", identifier:"p" }
+//   delete [] p;   → expression_statement { subscript_expression { identifier:"delete", ... identifier:"p" } }
+function isInsideDeleteStatement(node: Node): boolean {
+  let cursor: Node | null = node.parent;
+  while (cursor) {
+    if (cursor.type === "declaration") {
+      const first = cursor.children[0];
+      if (first?.type === "type_identifier" && first.text === "delete") return true;
+    }
+    if (cursor.type === "subscript_expression") {
+      const first = cursor.namedChildren[0];
+      if (first?.type === "identifier" && first.text === "delete") return true;
+    }
+    if (cursor.type === "expression_statement" || cursor.type === "translation_unit") break;
+    cursor = cursor.parent;
+  }
+  return false;
 }
 
 function isAssignmentTarget(parent: Node, node: Node): boolean {

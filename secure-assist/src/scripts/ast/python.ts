@@ -27,6 +27,7 @@ const CMD_SINKS = new Set([
   "os.system", "os.popen",
   "subprocess.run", "subprocess.Popen", "subprocess.call",
   "subprocess.check_call", "subprocess.check_output",
+  "asyncio.create_subprocess_shell", "asyncio.create_subprocess_exec",
 ]);
 
 // Regex-based: catches weak algorithm names regardless of library.
@@ -46,6 +47,8 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
   taint.propagateAssignments(root, isPythonUserInputExpr);
 
   const valueMap = buildPythonValueMap(root);
+  // Resolve module aliases: `import subprocess as sp` → sp.run ≡ subprocess.run
+  const moduleAliases = buildModuleAliasMap(root);
 
   for (const node of walkAll(root)) {
 
@@ -69,11 +72,13 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
     if (node.type !== "call") continue;
 
     const fnName = callName(node);
+    // Resolve module alias so `sp.run` matches `subprocess.run` in CMD_SINKS
+    const resolvedFnName = fnName ? resolveModuleAlias(fnName, moduleAliases) : null;
     const args = callArgs(node);
 
     // CWE-22: path traversal
-    if (fnName && PATH_SINKS.has(fnName) && args.length > 0) {
-      const checkArgs = PATH_SINKS_ANY_ARG.has(fnName) ? args : [args[0]];
+    if (resolvedFnName && PATH_SINKS.has(resolvedFnName) && args.length > 0) {
+      const checkArgs = PATH_SINKS_ANY_ARG.has(resolvedFnName) ? args : [args[0]];
       const taintedArg = checkArgs.find(a => taint.expressionIsTainted(a) || isPythonUserInputExpr(a));
       if (taintedArg) {
         findings.push(makeAstFinding({
@@ -87,7 +92,7 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
     }
 
     // CWE-78: command injection
-    if (fnName && CMD_SINKS.has(fnName) && args.length > 0) {
+    if (resolvedFnName && CMD_SINKS.has(resolvedFnName) && args.length > 0) {
       const firstArg = args[0];
       if (firstArg.type !== "list" && (taint.expressionIsTainted(firstArg) || isPythonUserInputExpr(firstArg))) {
         findings.push(makeAstFinding({
@@ -160,13 +165,25 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
 }
 
 function seedPythonTaint(root: Node, taint: TaintTracker): void {
-  // Seed Flask/web framework globals — 'request' is always user-controlled in web apps
+  // Seed Flask/web framework globals — 'request' is always user-controlled in web apps.
+  // Also detect aliases: `from flask import request as req` → taint "req" too.
   let hasFlaskImport = false;
   for (const node of walkAll(root)) {
     if (node.type === "import_from_statement") {
       const moduleName = node.childForFieldName("module_name")?.text ?? "";
       if (moduleName === "flask" || moduleName === "quart" || moduleName === "fastapi") {
         hasFlaskImport = true;
+        // Walk the import names looking for `request as <alias>` patterns
+        for (const child of walkAll(node)) {
+          if (child.type === "aliased_import") {
+            // namedChildren: [original_name, alias]
+            const importedName = child.namedChildren[0]?.text;
+            const alias = child.namedChildren[1]?.text;
+            if (importedName === "request" && alias) {
+              taint.add(alias);
+            }
+          }
+        }
       }
     }
     if (node.type === "import_statement") {
@@ -312,6 +329,43 @@ function buildPythonValueMap(root: Node): Map<string, Node> {
     }
   }
   return map;
+}
+
+/**
+ * Build a map from module alias → original module name.
+ * Handles: `import subprocess as sp` → {"sp": "subprocess"}
+ *          `import os as operating_system` → {"operating_system": "os"}
+ * Used to resolve aliased calls like `sp.run(...)` to `subprocess.run(...)`.
+ */
+function buildModuleAliasMap(root: Node): Map<string, string> {
+  const aliases = new Map<string, string>();
+  for (const node of walkAll(root)) {
+    if (node.type === "import_statement") {
+      for (const child of walkAll(node)) {
+        if (child.type === "aliased_import") {
+          const originalName = child.namedChildren[0]?.text;
+          const alias = child.namedChildren[1]?.text;
+          if (originalName && alias) {
+            aliases.set(alias, originalName);
+          }
+        }
+      }
+    }
+  }
+  return aliases;
+}
+
+/**
+ * Resolve a dotted function name using module aliases.
+ * Example: "sp.run" + {"sp": "subprocess"} → "subprocess.run"
+ */
+function resolveModuleAlias(fnName: string, aliases: Map<string, string>): string {
+  const dotIdx = fnName.indexOf(".");
+  if (dotIdx === -1) return fnName;
+  const prefix = fnName.slice(0, dotIdx);
+  const suffix = fnName.slice(dotIdx); // includes the dot
+  const resolved = aliases.get(prefix);
+  return resolved ? resolved + suffix : fnName;
 }
 
 function findHardcodedCredentialsPython(
