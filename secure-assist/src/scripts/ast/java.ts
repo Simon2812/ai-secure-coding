@@ -29,7 +29,7 @@ const WEAK_CIPHER_ALGOS = /^"(DES|RC2|RC4|Blowfish|TripleDES|3DES)(\/[^"]+)?"$/i
 // No trailing \b so we catch compound names: md5Hex, MD5Digest, DESEngine, etc.
 // Case-sensitive (no i flag) to avoid FP on common words like 'describe', 'destroy'.
 const WEAK_HASH_NAME = /\b(md2|md4|md5|MD2|MD4|MD5|ripemd|RIPEMD|sha[-_]?1|SHA[-_]?1)/;
-const WEAK_CIPHER_NAME = /\b(DES|TripleDES|3DES|RC2|RC4|ARC4|Blowfish)/;
+const WEAK_CIPHER_NAME = /\b(TripleDES|3DES|DES(?!C([^a-z]|$))|RC2|RC4|ARC4|Blowfish)/;
 
 export function analyzeJava(code: string, filePath: string, tree: Tree): Finding[] {
   const findings: Finding[] = [];
