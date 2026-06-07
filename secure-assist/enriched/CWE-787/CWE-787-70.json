@@ -9,18 +9,6 @@
     "name": "Juliet Test Suite"
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'buffer' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-70.c",
-      "line": 22,
-      "column": 10,
-      "evidence": "buffer"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:48.818Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:43.469Z"
 }

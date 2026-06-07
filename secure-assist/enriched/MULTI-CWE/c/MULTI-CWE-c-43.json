@@ -11,27 +11,38 @@
   "vulnerabilities": [],
   "static_findings": [
     {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "execl() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-43.c",
+      "line": 83,
+      "column": 9,
+      "evidence": "execl(\"/usr/bin/stat\", \"stat\", src, (char *)NULL)"
+    },
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "execl() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-43.c",
+      "line": 87,
+      "column": 9,
+      "evidence": "execl(\"/bin/ls\", \"ls\", \"-a\", src, (char *)NULL)"
+    },
+    {
       "cweId": "CWE-190",
       "ruleId": "ast-integer-overflow",
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-43.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-43.c",
       "line": 105,
       "column": 28,
       "evidence": "(size_t)cfg.limit * sizeof(Item)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'items' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-43.c",
-      "line": 115,
-      "column": 10,
-      "evidence": "items"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.842Z"
+  "enriched_at": "2026-06-07T12:34:45.761Z"
 }

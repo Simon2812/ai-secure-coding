@@ -15,11 +15,11 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-87.c",
-      "line": 32,
-      "column": 17,
-      "evidence": "i < 20 && position < 20"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-87.c",
+      "line": 34,
+      "column": 18,
+      "evidence": "position"
     },
     {
       "cweId": "CWE-787",
@@ -27,11 +27,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-87.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-87.c",
       "line": 34,
       "column": 18,
       "evidence": "position"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.912Z"
+  "enriched_at": "2026-06-07T12:34:43.571Z"
 }

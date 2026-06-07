@@ -36,11 +36,11 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-18.c",
-      "line": 58,
-      "column": 17,
-      "evidence": "i < count"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-18.c",
+      "line": 60,
+      "column": 15,
+      "evidence": "i"
     },
     {
       "cweId": "CWE-416",
@@ -48,11 +48,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'items' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-18.c",
-      "line": 68,
-      "column": 14,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-18.c",
+      "line": 72,
+      "column": 30,
       "evidence": "items"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.564Z"
+  "enriched_at": "2026-06-07T12:34:45.456Z"
 }

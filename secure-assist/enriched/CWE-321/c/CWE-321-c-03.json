@@ -27,7 +27,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential in macro 'BOOTSTRAP_SECRET'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-03.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-03.c",
       "line": 9,
       "column": 26,
       "evidence": "\"LocalStageSeed\"\r"
@@ -38,11 +38,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-03.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-03.c",
       "line": 44,
       "column": 9,
       "evidence": "strcpy(keySource, BOOTSTRAP_SECRET)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.855Z"
+  "enriched_at": "2026-06-07T12:34:39.213Z"
 }

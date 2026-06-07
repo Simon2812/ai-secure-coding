@@ -27,33 +27,33 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-01.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-01.py",
       "line": 27,
       "column": 28,
       "evidence": "query"
     },
     {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-01.py",
-      "line": 109,
-      "column": 31,
-      "evidence": "export_name"
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cursor.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-01.py",
+      "line": 27,
+      "column": 13,
+      "evidence": "cursor.execute(query)"
     },
     {
       "cweId": "CWE-22",
       "ruleId": "ast-path-traversal",
       "vulnerability": "Path Traversal",
       "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-01.py",
-      "line": 113,
-      "column": 15,
-      "evidence": "output_path"
+      "message": "send_file() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-01.py",
+      "line": 98,
+      "column": 22,
+      "evidence": "target"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.466Z"
+  "enriched_at": "2026-06-07T12:34:46.391Z"
 }

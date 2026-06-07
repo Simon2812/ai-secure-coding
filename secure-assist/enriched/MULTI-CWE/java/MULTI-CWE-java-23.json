@@ -47,7 +47,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-23.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-23.java",
       "line": 48,
       "column": 49,
       "evidence": "query"
@@ -58,7 +58,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-23.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-23.java",
       "line": 61,
       "column": 21,
       "evidence": "Runtime.getRuntime().exec(cmd)"
@@ -69,11 +69,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'expectedPassword'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-23.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-23.java",
       "line": 35,
       "column": 35,
       "evidence": "\"admin123\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.135Z"
+  "enriched_at": "2026-06-07T12:34:46.033Z"
 }

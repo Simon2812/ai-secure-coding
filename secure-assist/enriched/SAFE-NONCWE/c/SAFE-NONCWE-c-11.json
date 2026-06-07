@@ -12,15 +12,26 @@
   "static_findings": [
     {
       "cweId": "CWE-190",
-      "ruleId": "integer-overflow",
+      "ruleId": "ast-integer-overflow",
       "vulnerability": "Integer Overflow",
       "severity": "medium",
-      "message": "This arithmetic operation may overflow before being used for allocation, copying, or size calculation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-11.c",
+      "message": "Arithmetic on user-controlled integer may overflow.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-11.c",
       "line": 8,
-      "column": 5,
-      "evidence": "int mid = left + (right - left) / 2;"
+      "column": 15,
+      "evidence": "left + (right - left) / 2"
+    },
+    {
+      "cweId": "CWE-190",
+      "ruleId": "ast-integer-overflow",
+      "vulnerability": "Integer Overflow",
+      "severity": "medium",
+      "message": "Arithmetic on user-controlled integer may overflow.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-11.c",
+      "line": 26,
+      "column": 17,
+      "evidence": "binary_search(data, 0, size - 1, target)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.634Z"
+  "enriched_at": "2026-06-07T12:34:48.252Z"
 }

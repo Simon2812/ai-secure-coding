@@ -22,27 +22,16 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-37.java",
-      "line": 36,
-      "column": 24,
-      "evidence": "new Resolver().resolve(req, headerValue)"
-    },
-    {
       "cweId": "CWE-78",
       "ruleId": "ast-cmd-injection",
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-37.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-37.java",
       "line": 45,
       "column": 25,
       "evidence": "runtime.exec(args, env)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:47.013Z"
+  "enriched_at": "2026-06-07T12:34:42.137Z"
 }

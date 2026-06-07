@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:50.000Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-21.py",
+      "line": 41,
+      "column": 28,
+      "evidence": "statement"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:44.702Z"
 }

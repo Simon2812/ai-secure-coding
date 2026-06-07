@@ -9,6 +9,18 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.654Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Pointer write uses user-controlled offset without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-21.c",
+      "line": 43,
+      "column": 6,
+      "evidence": "result"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:48.420Z"
 }

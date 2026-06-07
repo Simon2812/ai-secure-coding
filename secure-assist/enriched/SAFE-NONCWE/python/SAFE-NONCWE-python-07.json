@@ -9,6 +9,40 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.751Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\python\\SAFE-NONCWE-python-07.py",
+      "line": 103,
+      "column": 25,
+      "evidence": "len(values)"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\python\\SAFE-NONCWE-python-07.py",
+      "line": 104,
+      "column": 53,
+      "evidence": "len(values)"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\python\\SAFE-NONCWE-python-07.py",
+      "line": 110,
+      "column": 17,
+      "evidence": "b"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:49.529Z"
 }

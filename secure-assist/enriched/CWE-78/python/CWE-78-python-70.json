@@ -9,40 +9,6 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "os.path.abspath() receives user-controlled path without validation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-70.py",
-      "line": 12,
-      "column": 40,
-      "evidence": "os.path.join(base, name)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "os.path.join() receives user-controlled path without validation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-70.py",
-      "line": 12,
-      "column": 53,
-      "evidence": "base"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-70.py",
-      "line": 18,
-      "column": 35,
-      "evidence": "path"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:48.212Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:42.942Z"
 }

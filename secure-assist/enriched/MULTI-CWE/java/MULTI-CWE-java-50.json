@@ -16,7 +16,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Paths.get() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-50.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-50.java",
       "line": 21,
       "column": 21,
       "evidence": "Paths.get(root)"
@@ -27,7 +27,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-50.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-50.java",
       "line": 45,
       "column": 16,
       "evidence": "root.resolve(selected)"
@@ -38,11 +38,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-50.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-50.java",
       "line": 50,
       "column": 27,
       "evidence": "Runtime.getRuntime().exec(new String[]{\"sh\", \"-c\", safe})"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.449Z"
+  "enriched_at": "2026-06-07T12:34:46.366Z"
 }

@@ -9,6 +9,29 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.765Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\python\\SAFE-NONCWE-python-12.py",
+      "line": 75,
+      "column": 59,
+      "evidence": "current_capacity"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\python\\SAFE-NONCWE-python-12.py",
+      "line": 101,
+      "column": 33,
+      "evidence": "total"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:49.681Z"
 }

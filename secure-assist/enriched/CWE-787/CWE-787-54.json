@@ -27,7 +27,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Increment/decrement of user-controlled integer 'chunk' may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-54.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-54.c",
       "line": 41,
       "column": 9,
       "evidence": "chunk--"
@@ -37,12 +37,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-54.c",
-      "line": 33,
-      "column": 11,
-      "evidence": "(chunk > 0)"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-54.c",
+      "line": 37,
+      "column": 23,
+      "evidence": "write_pos"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.707Z"
+  "enriched_at": "2026-06-07T12:34:43.400Z"
 }

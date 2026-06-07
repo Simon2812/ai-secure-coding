@@ -27,7 +27,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-25.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-25.java",
       "line": 59,
       "column": 31,
       "evidence": "runtime.exec(cmdArgs, envVars)"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'token'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-25.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-25.java",
       "line": 40,
       "column": 24,
       "evidence": "\"none\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:46.786Z"
+  "enriched_at": "2026-06-07T12:34:42.024Z"
 }

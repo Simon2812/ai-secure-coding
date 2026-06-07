@@ -27,11 +27,22 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\java\\CWE-78-java-42.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\java\\CWE-78-java-42.java",
       "line": 13,
       "column": 34,
       "evidence": "args[0]"
+    },
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "new ProcessBuilder(\"sh\", \"-c\", …) receives user-controlled shell command.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\java\\CWE-78-java-42.java",
+      "line": 18,
+      "column": 34,
+      "evidence": "new ProcessBuilder(\"sh\", \"-c\", scanCommand)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:47.106Z"
+  "enriched_at": "2026-06-07T12:34:42.178Z"
 }

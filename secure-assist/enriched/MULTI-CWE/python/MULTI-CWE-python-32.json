@@ -47,11 +47,22 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-32.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-32.py",
       "line": 26,
       "column": 25,
       "evidence": "query"
+    },
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "subprocess.run() receives user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-32.py",
+      "line": 68,
+      "column": 9,
+      "evidence": "command"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.248Z"
+  "enriched_at": "2026-06-07T12:34:47.638Z"
 }

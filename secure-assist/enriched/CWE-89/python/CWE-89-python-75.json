@@ -16,10 +16,21 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-75.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-75.py",
       "line": 98,
       "column": 25,
       "evidence": "stmt"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-75.py",
+      "line": 100,
+      "column": 23,
+      "evidence": "out_path"
     },
     {
       "cweId": "CWE-259",
@@ -27,11 +38,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-75.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-75.py",
       "line": 14,
       "column": 21,
       "evidence": "\"rep_pass\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.289Z"
+  "enriched_at": "2026-06-07T12:34:45.123Z"
 }

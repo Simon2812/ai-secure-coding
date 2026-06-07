@@ -27,11 +27,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-32.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-32.py",
       "line": 12,
       "column": 27,
       "evidence": "filename"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.023Z"
+  "enriched_at": "2026-06-07T12:34:42.738Z"
 }

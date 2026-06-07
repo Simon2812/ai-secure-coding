@@ -22,16 +22,16 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "memcpy() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-03.c",
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "memcpy() copies 28 bytes into a 7-byte buffer.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-03.c",
       "line": 14,
-      "column": 26,
-      "evidence": "7*sizeof(int)"
+      "column": 5,
+      "evidence": "memcpy(dest, source, 7*sizeof(int))"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.386Z"
+  "enriched_at": "2026-06-07T12:34:43.119Z"
 }

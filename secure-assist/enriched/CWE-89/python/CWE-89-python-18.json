@@ -27,7 +27,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-18.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-18.py",
       "line": 39,
       "column": 21,
       "evidence": "update_stmt"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-18.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-18.py",
       "line": 14,
       "column": 21,
       "evidence": "\"jobs_pass\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:49.991Z"
+  "enriched_at": "2026-06-07T12:34:44.686Z"
 }

@@ -16,7 +16,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-86.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-86.c",
       "line": 25,
       "column": 21,
       "evidence": "read(pfd[0], out + used, cap - 1 - used)"
@@ -27,7 +27,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "execvp() receives user-controlled argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-86.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-86.c",
       "line": 18,
       "column": 9,
       "evidence": "execvp(argv[0], argv)"
@@ -38,11 +38,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-86.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-86.c",
       "line": 29,
       "column": 9,
       "evidence": "used"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:46.348Z"
+  "enriched_at": "2026-06-07T12:34:41.766Z"
 }

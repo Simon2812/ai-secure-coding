@@ -22,16 +22,27 @@
   ],
   "static_findings": [
     {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-37.py",
+      "line": 50,
+      "column": 21,
+      "evidence": "sql_text"
+    },
+    {
       "cweId": "CWE-259",
       "ruleId": "ast-hardcoded-cred",
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-37.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-37.py",
       "line": 19,
       "column": 21,
       "evidence": "\"bill_pass\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.085Z"
+  "enriched_at": "2026-06-07T12:34:44.805Z"
 }

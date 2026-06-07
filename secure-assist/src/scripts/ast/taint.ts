@@ -38,6 +38,10 @@ export class TaintTracker {
     // Used to evaluate ternary/conditional guards like `7 * 18 + marker > 200`.
     const constMap = buildConstIntMap(root);
 
+    // Build a parallel map for string constants (e.g. options = "XYZ"; selector = options[1]).
+    // Used to suppress taint in dead match/switch branches.
+    const constStringMap = buildConstStringMap(root, constMap);
+
     // Pre-index all method/function definitions by name for O(1) lookup.
     // Used by inter-procedural return-value analysis below.
     const methodDeclMap = buildMethodDeclMap(root);
@@ -56,7 +60,7 @@ export class TaintTracker {
         // not-taken branch.
         // Example: if (7*42 - marker > 200) { selected = "safe.txt"; }
         //          else { selected = userInput; }  ← this else is never reached
-        if (isInsideDeadBranch(node, constMap)) continue;
+        if (isInsideDeadBranch(node, constMap, constStringMap)) continue;
 
         let rhsTainted: boolean;
 
@@ -74,6 +78,13 @@ export class TaintTracker {
           // Prevents constant-dict lookups like CATALOG[tainted_key] from
           // tainting the result — the value comes from the safe dict, not the key.
           rhsTainted = this.collectionObjectIsTainted(rhs);
+        } else if (isSanitizingFunctionCall(rhs)) {
+          // Top-level sanitizing function call (Python/C):
+          //   safe = secure_filename(raw)    → safe is NOT tainted
+          //   name = basename(user_path)     → name is NOT tainted
+          //   digest = hashlib.sha256(x).hexdigest() → digest is NOT tainted
+          // The function fully scrubs its input — the result can never carry traversal.
+          rhsTainted = false;
         } else if (rhs.type === "method_invocation") {
           // Java method call: use return-value analysis instead of checking
           // all argument identifiers. This prevents laundering FPs where a helper
@@ -394,6 +405,67 @@ function evaluateConstantInt(node: Node, constMap: Map<string, number>): number 
 }
 
 /**
+ * Build a map of variable names to their compile-time constant STRING values.
+ * Handles:
+ *   s = "ABC"                   → {s: "ABC"}
+ *   ch = "XYZ"[1]  (Python)     → {ch: "Y"}
+ *   ch = marker.charAt(1) (Java) → {ch: "B"}  (if marker is in the map)
+ */
+function buildConstStringMap(root: Node, intMap: Map<string, number>): Map<string, string> {
+  const map = new Map<string, string>();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const node of walkAll(root)) {
+      const lhs = getAssignmentLhs(node);
+      const rhs = getAssignmentRhs(node);
+      if (!lhs || !rhs || map.has(lhs)) continue;
+
+      let strVal: string | null = null;
+
+      // Direct string/char literal
+      strVal = getStringOrCharLiteralValue(rhs);
+
+      // Python subscript: options[1] where options is a known string constant
+      if (strVal === null && rhs.type === "subscript") {
+        const obj = rhs.childForFieldName("value");
+        const idx = rhs.childForFieldName("subscript");
+        if (obj && idx) {
+          const base = getStringOrCharLiteralValue(obj) ?? map.get(obj.text) ?? null;
+          const idxVal = evaluateConstantInt(idx, intMap);
+          if (base !== null && idxVal !== null && idxVal >= 0 && idxVal < base.length) {
+            strVal = base[idxVal];
+          }
+        }
+      }
+
+      // Java: marker.charAt(N) where marker is a known string constant
+      if (strVal === null && rhs.type === "method_invocation") {
+        const mName = rhs.childForFieldName("name")?.text;
+        if (mName === "charAt") {
+          const receiver = rhs.childForFieldName("object");
+          const argList = rhs.childForFieldName("arguments");
+          const args = argList ? argList.namedChildren : [];
+          if (receiver && args.length > 0) {
+            const base = getStringOrCharLiteralValue(receiver) ?? map.get(receiver.text) ?? null;
+            const idxVal = evaluateConstantInt(args[0], intMap);
+            if (base !== null && idxVal !== null && idxVal >= 0 && idxVal < base.length) {
+              strVal = base[idxVal];
+            }
+          }
+        }
+      }
+
+      if (strVal !== null) {
+        map.set(lhs, strVal);
+        changed = true;
+      }
+    }
+  }
+  return map;
+}
+
+/**
  * Returns true if the node is inside an if-else branch that is provably never
  * executed because the condition is a compile-time constant.
  *
@@ -407,9 +479,14 @@ function evaluateConstantInt(node: Node, constMap: Map<string, number>): number 
  *   - the current node is in the NOT-taken branch (else when true, then when false)
  * we return true (suppress this assignment).
  */
-function isInsideDeadBranch(node: Node, constMap: Map<string, number>): boolean {
+function isInsideDeadBranch(
+  node: Node,
+  constMap: Map<string, number>,
+  constStringMap?: Map<string, string>,
+): boolean {
   let cursor: Node | null = node.parent;
   while (cursor) {
+    // ── Integer constant if/else ──────────────────────────────────────────────
     if (cursor.type === "if_statement") {
       const conditionNode = cursor.childForFieldName("condition");
       if (conditionNode) {
@@ -428,9 +505,158 @@ function isInsideDeadBranch(node: Node, constMap: Map<string, number>): boolean 
         }
       }
     }
+
+    // ── Python match_statement with constant subject ──────────────────────────
+    // Pattern: options = "XYZ"; selector = options[1]
+    //   match selector:
+    //       case "X": selected = userInput   ← dead (selector is always "Y")
+    //       case "Y": selected = "safe.txt"  ← taken
+    //       case "Z" | "W": selected = userInput  ← dead
+    if (cursor.type === "match_statement" && constStringMap) {
+      const deadResult = isInsideDeadMatchCase(node, cursor, constStringMap);
+      if (deadResult) return true;
+    }
+
+    // ── Java switch_statement with constant expression ────────────────────────
+    // Pattern: String marker = "ABC"; char branch = marker.charAt(1);
+    //   switch (branch) { case 'A': ... case 'B': selected = "safe"; break; ... }
+    if (cursor.type === "switch_statement" && constStringMap) {
+      const deadResult = isInsideDeadSwitchCase(node, cursor, constStringMap, constMap);
+      if (deadResult) return true;
+    }
+
     cursor = cursor.parent;
   }
   return false;
+}
+
+/**
+ * For a Python match_statement, determine whether `node` is inside a case_clause
+ * whose pattern can never match the (constant) match subject.
+ *
+ * Tree structure (tree-sitter-python):
+ *   match_statement
+ *     namedChildren[0]: identifier  — the match subject ("selector")
+ *     namedChildren[1]: block       — contains case_clauses
+ *       case_clause
+ *         namedChildren[0]: case_pattern  — wraps the actual pattern
+ *           namedChildren[0]: string / union_pattern / (empty for wildcard _)
+ *         namedChildren[1]: block  — the case body
+ */
+function isInsideDeadMatchCase(
+  node: Node,
+  matchStmt: Node,
+  constStringMap: Map<string, string>,
+): boolean {
+  // namedChildren[0] = subject identifier (e.g. "selector")
+  const subjectNode = matchStmt.namedChildren[0];
+  if (!subjectNode) return false;
+  const subjectConst = constStringMap.get(subjectNode.text) ?? null;
+  if (subjectConst === null) return false;
+
+  // namedChildren[1] = block containing the case_clauses
+  const bodyBlock = matchStmt.namedChildren[1];
+  if (!bodyBlock) return false;
+
+  for (const caseClause of bodyBlock.namedChildren) {
+    if (caseClause.type !== "case_clause") continue;
+    if (!isDescendant(node, caseClause)) continue;
+
+    // case_clause.namedChildren[0] = case_pattern wrapper
+    const casePatternWrapper = caseClause.namedChildren[0];
+    if (!casePatternWrapper) return false;
+
+    // Wildcard: case_pattern has no named children (the "_" is unnamed)
+    if (casePatternWrapper.namedChildren.length === 0) return false; // wildcard always matches
+
+    // Actual pattern is the first named child of case_pattern
+    const innerPattern = casePatternWrapper.namedChildren[0];
+    if (!innerPattern) return false;
+
+    return !matchCasePatternMatchesConst(innerPattern, subjectConst);
+  }
+  return false;
+}
+
+/**
+ * Returns true if the given case pattern matches the constant string value.
+ * Handles:
+ *   "X"               → exact match
+ *   'X'               → exact match (char)
+ *   "Z" | "W"         → union pattern — true if any alternative matches
+ *   _                 → wildcard (always matches — never dead)
+ */
+function matchCasePatternMatchesConst(patternNode: Node, constVal: string): boolean {
+  // Wildcard / default: always matches
+  if (patternNode.type === "wildcard_pattern" || patternNode.text === "_") return true;
+
+  // Union pattern: "Z" | "W" → true if any alternative matches
+  if (patternNode.type === "union_pattern") {
+    return patternNode.namedChildren.some(alt => matchCasePatternMatchesConst(alt, constVal));
+  }
+
+  // String or character literal
+  const text = getStringOrCharLiteralValue(patternNode);
+  if (text !== null) return text === constVal;
+
+  return false; // unknown pattern → don't suppress (conservative)
+}
+
+/**
+ * For a Java switch_statement, determine whether `node` is inside a switch_block_statement_group
+ * whose case label(s) can never match the (constant) switch expression.
+ */
+function isInsideDeadSwitchCase(
+  node: Node,
+  switchStmt: Node,
+  constStringMap: Map<string, string>,
+  constMap: Map<string, number>,
+): boolean {
+  // Resolve the switch expression to a constant string/char
+  const switchExpr = switchStmt.childForFieldName("condition")
+    ?? switchStmt.namedChildren[0];
+  if (!switchExpr) return false;
+  const subjectConst = constStringMap.get(switchExpr.text) ?? null;
+  if (subjectConst === null) return false;
+
+  // Walk switch_block looking for the statement group containing `node`
+  for (const child of walkAll(switchStmt)) {
+    if (child.type !== "switch_block_statement_group") continue;
+    if (!isDescendant(node, child)) continue;
+
+    // Collect case labels for this group
+    let groupMatches = false;
+    for (const label of child.namedChildren) {
+      if (label.type !== "switch_label") continue;
+      // switch_label children: "case" keyword + expression
+      const labelExpr = label.namedChildren[0];
+      if (!labelExpr) continue;
+      const labelVal = getStringOrCharLiteralValue(labelExpr)
+        ?? (constStringMap.get(labelExpr.text) ?? null);
+      if (labelVal === subjectConst) { groupMatches = true; break; }
+    }
+    return !groupMatches;
+  }
+  return false;
+}
+
+/** Extract the string value from a string/char literal node (Python or Java). */
+function getStringOrCharLiteralValue(node: Node): string | null {
+  // Python string: type "string", text '"ABC"' or "'A'"
+  if (node.type === "string") {
+    const raw = node.text;
+    // Strip quotes (handles single, double, triple)
+    const m = raw.match(/^(?:"""([\s\S]*?)"""|'''([\s\S]*?)'''|"([^"]*)"|'([^']*)')$/);
+    if (m) return m[1] ?? m[2] ?? m[3] ?? m[4] ?? null;
+    return null;
+  }
+  // Java string/char literal: type "string_literal" or "character_literal"
+  if (node.type === "string_literal" || node.type === "character_literal") {
+    const raw = node.text;
+    const m = raw.match(/^["'](.*)["']$/);
+    return m ? m[1] : null;
+  }
+  return null;
 }
 
 function isDescendant(node: Node, ancestor: Node): boolean {
@@ -559,6 +785,22 @@ function buildMethodDeclMap(root: Node): Map<string, Node> {
 // ─── Sanitizing method detection ─────────────────────────────────────────────
 
 /**
+ * Top-level function calls (any language) that fully sanitize their input.
+ * The result of these calls can never contain path traversal sequences regardless
+ * of what the argument contains.
+ *
+ * secure_filename (werkzeug): strips directory separators and dangerous chars
+ * basename / os.path.basename: strips all directory components
+ * hexdigest / digest: cryptographic hash — output is hex/bytes, not a path
+ */
+const SANITIZING_FUNCTIONS = new Set([
+  "secure_filename",  // werkzeug.utils.secure_filename
+  "basename",         // os.path.basename / posixpath.basename
+  "hexdigest",        // hashlib digest output
+  "digest",
+]);
+
+/**
  * Java method calls that sanitize their input regardless of receiver taint.
  *
  * Path.getFileName():
@@ -581,6 +823,26 @@ const JAVA_SANITIZING_METHODS = new Set([
  *
  * Only handles Java method_invocation nodes (Python/C use different node types).
  */
+/**
+ * Returns true if the node is a Python/C function call whose function name
+ * is a known sanitizing function (SANITIZING_FUNCTIONS set).
+ *
+ * Handles both plain calls `secure_filename(x)` and attribute calls
+ * `os.path.basename(x)` by extracting the final function name component.
+ */
+function isSanitizingFunctionCall(node: Node): boolean {
+  if (node.type !== "call" && node.type !== "call_expression") return false;
+  const fn = node.childForFieldName("function");
+  if (!fn) return false;
+  // Plain identifier: basename(x), secure_filename(x)
+  if (fn.type === "identifier" && SANITIZING_FUNCTIONS.has(fn.text)) return true;
+  // Attribute call: os.path.basename(x), hashlib.sha256(x).hexdigest()
+  // Take the last component of the dotted name
+  const fnText = fn.text ?? "";
+  const lastPart = fnText.split(".").pop() ?? "";
+  return SANITIZING_FUNCTIONS.has(lastPart);
+}
+
 function isSanitizingCallChain(node: Node): boolean {
   if (node.type !== "method_invocation") return false;
   const name = node.childForFieldName("name")?.text;

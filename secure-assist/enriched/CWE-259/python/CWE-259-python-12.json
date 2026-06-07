@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'auth_token'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-12.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-12.py",
       "line": 16,
       "column": 18,
       "evidence": "\"IngestAccess#55\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.767Z"
+  "enriched_at": "2026-06-07T12:34:39.110Z"
 }

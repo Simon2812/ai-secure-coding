@@ -27,11 +27,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "subprocess.Popen() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-20.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-20.py",
       "line": 19,
       "column": 38,
       "evidence": "cmd"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:47.959Z"
+  "enriched_at": "2026-06-07T12:34:42.685Z"
 }

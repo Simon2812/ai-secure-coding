@@ -57,7 +57,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
       "line": 50,
       "column": 16,
       "evidence": "count * 4"
@@ -68,7 +68,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcat() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
       "line": 73,
       "column": 5,
       "evidence": "strcat(cmd, j->input)"
@@ -79,7 +79,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "system() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
       "line": 74,
       "column": 5,
       "evidence": "system(cmd)"
@@ -90,22 +90,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
       "line": 98,
       "column": 9,
       "evidence": "strcpy(buf, j.buffer)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'buf' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-29.c",
-      "line": 102,
-      "column": 10,
-      "evidence": "buf"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.695Z"
+  "enriched_at": "2026-06-07T12:34:45.581Z"
 }

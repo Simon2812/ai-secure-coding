@@ -26,11 +26,11 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-08.c",
-      "line": 22,
-      "column": 19,
-      "evidence": "idx < size"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-08.c",
+      "line": 30,
+      "column": 14,
+      "evidence": "idx"
     },
     {
       "cweId": "CWE-327",
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "CryptCreateHash() uses CALG_MD5, a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-08.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-08.c",
       "line": 78,
       "column": 36,
       "evidence": "CALG_MD5"
@@ -49,11 +49,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "CryptCreateHash() uses CALG_MD5, a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-08.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-08.c",
       "line": 78,
       "column": 36,
       "evidence": "CALG_MD5"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.735Z"
+  "enriched_at": "2026-06-07T12:34:40.383Z"
 }

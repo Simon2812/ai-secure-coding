@@ -9,29 +9,6 @@
     "name": "OWASP Benchmark Project"
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "new FileInputStream() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-64.java",
-      "line": 40,
-      "column": 42,
-      "evidence": "new File(location)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-64.java",
-      "line": 40,
-      "column": 51,
-      "evidence": "location"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:42.676Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:38.072Z"
 }

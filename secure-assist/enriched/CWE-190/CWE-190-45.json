@@ -16,11 +16,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-190\\CWE-190-45.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-190\\CWE-190-45.c",
       "line": 16,
       "column": 16,
       "evidence": "width * height"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:42.152Z"
+  "enriched_at": "2026-06-07T12:34:37.654Z"
 }

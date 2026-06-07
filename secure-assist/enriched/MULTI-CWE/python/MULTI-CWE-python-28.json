@@ -42,12 +42,56 @@
   ],
   "static_findings": [
     {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 86,
+      "column": 24,
+      "evidence": "f\"{name}.json\""
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 90,
+      "column": 27,
+      "evidence": "f\"{name}_{ts}.json\""
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 95,
+      "column": 15,
+      "evidence": "path"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 103,
+      "column": 15,
+      "evidence": "path"
+    },
+    {
       "cweId": "CWE-327",
       "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "ARC4.new() uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
       "line": 110,
       "column": 14,
       "evidence": "ARC4.new(key.encode(\"utf-8\"))"
@@ -57,8 +101,30 @@
       "ruleId": "ast-weak-hash",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.md5() uses a weak hashing algorithm (MD5/SHA1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "message": "hashlib.md5(encrypted).hexdigest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 112,
+      "column": 12,
+      "evidence": "hashlib.md5(encrypted).hexdigest()"
+    },
+    {
+      "cweId": "CWE-328",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Weak Hash",
+      "severity": "medium",
+      "message": "hashlib.md5(encrypted).hexdigest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 112,
+      "column": 12,
+      "evidence": "hashlib.md5(encrypted).hexdigest()"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "hashlib.md5() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
       "line": 112,
       "column": 12,
       "evidence": "hashlib.md5(encrypted)"
@@ -68,8 +134,8 @@
       "ruleId": "ast-weak-hash",
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
-      "message": "hashlib.md5() uses a weak hashing algorithm (MD5/SHA1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "message": "hashlib.md5() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
       "line": 112,
       "column": 12,
       "evidence": "hashlib.md5(encrypted)"
@@ -80,11 +146,44 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
       "line": 125,
       "column": 20,
       "evidence": "statement"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cursor.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 125,
+      "column": 5,
+      "evidence": "cursor.execute(statement)"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 136,
+      "column": 28,
+      "evidence": "name"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-28.py",
+      "line": 137,
+      "column": 15,
+      "evidence": "target"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.138Z"
+  "enriched_at": "2026-06-07T12:34:47.442Z"
 }

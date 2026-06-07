@@ -32,16 +32,71 @@
   ],
   "static_findings": [
     {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
+      "line": 24,
+      "column": 19,
+      "evidence": "path"
+    },
+    {
       "cweId": "CWE-327",
       "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "DES.new() uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
       "line": 86,
       "column": 14,
       "evidence": "DES.new(key, DES.MODE_ECB)"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
+      "line": 93,
+      "column": 42,
+      "evidence": "target_name"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
+      "line": 95,
+      "column": 15,
+      "evidence": "target"
+    },
+    {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
+      "line": 110,
+      "column": 20,
+      "evidence": "query"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "Path() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-19.py",
+      "line": 171,
+      "column": 37,
+      "evidence": "output_name"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.867Z"
+  "enriched_at": "2026-06-07T12:34:46.994Z"
 }

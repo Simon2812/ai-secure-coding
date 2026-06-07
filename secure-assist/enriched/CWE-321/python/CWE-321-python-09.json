@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'DEFAULT_KEY'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-09.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-09.py",
       "line": 12,
       "column": 19,
       "evidence": "b\"store-default-key-9922\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:44.307Z"
+  "enriched_at": "2026-06-07T12:34:39.666Z"
 }

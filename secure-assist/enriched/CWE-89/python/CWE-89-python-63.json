@@ -16,7 +16,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-89\\python\\CWE-89-python-63.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\python\\CWE-89-python-63.py",
       "line": 32,
       "column": 29,
       "evidence": "sql"
@@ -27,7 +27,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'map87['keyA-87']'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-89\\python\\CWE-89-python-63.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\python\\CWE-89-python-63.py",
       "line": 20,
       "column": 36,
       "evidence": "'a-Value'"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'map87['keyC']'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-89\\python\\CWE-89-python-63.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\python\\CWE-89-python-63.py",
       "line": 22,
       "column": 33,
       "evidence": "'another-Value'"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.219Z"
+  "enriched_at": "2026-06-07T12:34:45.003Z"
 }

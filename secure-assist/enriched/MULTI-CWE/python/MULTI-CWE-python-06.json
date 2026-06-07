@@ -20,6 +20,29 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:51.557Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "subprocess.run() receives user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-06.py",
+      "line": 47,
+      "column": 13,
+      "evidence": "command"
+    },
+    {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-06.py",
+      "line": 117,
+      "column": 31,
+      "evidence": "command"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:46.500Z"
 }

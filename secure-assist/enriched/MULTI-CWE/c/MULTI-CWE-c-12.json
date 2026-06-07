@@ -37,11 +37,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "sprintf() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-12.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-12.c",
       "line": 24,
       "column": 9,
       "evidence": "sprintf(msg->header, \"%s\", argv[1])"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.492Z"
+  "enriched_at": "2026-06-07T12:34:45.397Z"
 }

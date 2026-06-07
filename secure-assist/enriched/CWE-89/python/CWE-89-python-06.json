@@ -27,11 +27,22 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-06.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-06.py",
       "line": 16,
       "column": 24,
       "evidence": "query_text"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cur.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-06.py",
+      "line": 16,
+      "column": 12,
+      "evidence": "cur.execute(query_text)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:49.942Z"
+  "enriched_at": "2026-06-07T12:34:44.618Z"
 }

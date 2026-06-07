@@ -9,18 +9,6 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-82.c",
-      "line": 39,
-      "column": 20,
-      "evidence": "offset + i"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:48.884Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:43.532Z"
 }

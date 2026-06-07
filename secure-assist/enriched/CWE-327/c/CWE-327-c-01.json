@@ -27,11 +27,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "CryptDeriveKey() uses CALG_3DES, a weak or broken cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-327\\c\\CWE-327-c-01.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-327\\c\\CWE-327-c-01.c",
       "line": 66,
       "column": 35,
       "evidence": "CALG_3DES"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.123Z"
+  "enriched_at": "2026-06-07T12:34:39.789Z"
 }

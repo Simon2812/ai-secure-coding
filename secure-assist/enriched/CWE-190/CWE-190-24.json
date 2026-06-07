@@ -27,7 +27,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-190\\CWE-190-24.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-190\\CWE-190-24.c",
       "line": 17,
       "column": 24,
       "evidence": "pages * scale"
@@ -38,11 +38,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-190\\CWE-190-24.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-190\\CWE-190-24.c",
       "line": 18,
       "column": 24,
       "evidence": "expanded + offset"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:42.056Z"
+  "enriched_at": "2026-06-07T12:34:37.566Z"
 }

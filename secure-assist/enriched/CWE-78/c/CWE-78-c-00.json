@@ -9,18 +9,6 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-00.c",
-      "line": 14,
-      "column": 9,
-      "evidence": "strcpy(cmd, \"status\")"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:45.696Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:41.126Z"
 }

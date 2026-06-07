@@ -27,22 +27,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'cmd' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-56.c",
-      "line": 14,
-      "column": 14,
-      "evidence": "cmd"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'cmd' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-56.c",
-      "line": 23,
-      "column": 10,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-56.c",
+      "line": 19,
+      "column": 38,
       "evidence": "cmd"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:46.085Z"
+  "enriched_at": "2026-06-07T12:34:41.516Z"
 }

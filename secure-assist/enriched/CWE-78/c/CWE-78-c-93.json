@@ -16,11 +16,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "posix_spawnp() receives user-controlled argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-93.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-93.c",
       "line": 11,
       "column": 9,
       "evidence": "posix_spawnp(&pid, av[0], NULL, NULL, av, environ)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:46.432Z"
+  "enriched_at": "2026-06-07T12:34:41.824Z"
 }

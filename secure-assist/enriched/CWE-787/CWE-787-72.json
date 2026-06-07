@@ -9,40 +9,6 @@
     "name": "Juliet Test Suite"
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-72.c",
-      "line": 9,
-      "column": 33,
-      "evidence": "15 * sizeof(int)"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-72.c",
-      "line": 22,
-      "column": 16,
-      "evidence": "index"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'buffer' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-72.c",
-      "line": 34,
-      "column": 10,
-      "evidence": "buffer"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:48.831Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:43.476Z"
 }

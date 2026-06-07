@@ -27,11 +27,44 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
+      "line": 62,
+      "column": 28,
+      "evidence": "statement"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cursor.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
+      "line": 62,
+      "column": 13,
+      "evidence": "cursor.execute(statement)"
+    },
+    {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
       "line": 72,
       "column": 17,
       "evidence": "\"SELECT id, requester, subject, priority, status \"\r\n                \"FROM tickets WHERE status = ? \"\r\n                \"O"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cursor.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
+      "line": 71,
+      "column": 13,
+      "evidence": "cursor.execute(\r\n                \"SELECT id, requester, subject, priority, status \"\r\n                \"FROM tickets WHERE"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.598Z"
+  "enriched_at": "2026-06-07T12:34:46.557Z"
 }

@@ -57,7 +57,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"SHA-1\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
       "line": 34,
       "column": 27,
       "evidence": "MessageDigest.getInstance(\"SHA-1\")"
@@ -68,7 +68,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "getInstance(\"SHA-1\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
       "line": 34,
       "column": 27,
       "evidence": "MessageDigest.getInstance(\"SHA-1\")"
@@ -79,7 +79,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'keyBytes'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
       "line": 40,
       "column": 27,
       "evidence": "\"4F9A1C3E7B2D8A6C5E4F1A2B3C4D5E6F\".getBytes(StandardCharsets.UTF_8)"
@@ -90,11 +90,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to SecretKeySpec.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-27.java",
       "line": 43,
       "column": 35,
       "evidence": "keyBytes"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.172Z"
+  "enriched_at": "2026-06-07T12:34:46.072Z"
 }

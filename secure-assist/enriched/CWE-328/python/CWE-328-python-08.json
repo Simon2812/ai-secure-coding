@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\python\\CWE-328-python-08.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\python\\CWE-328-python-08.py",
       "line": 41,
       "column": 16,
       "evidence": "hashlib.new('sha1')"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\python\\CWE-328-python-08.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\python\\CWE-328-python-08.py",
       "line": 41,
       "column": 16,
       "evidence": "hashlib.new('sha1')"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:39.090Z"
+  "enriched_at": "2026-06-07T12:34:40.762Z"
 }

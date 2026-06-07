@@ -11,49 +11,27 @@
   "vulnerabilities": [],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-44.c",
-      "line": 35,
-      "column": 20,
-      "evidence": "(int *)malloc((size_t)limit * sizeof(int))"
-    },
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-44.c",
-      "line": 35,
-      "column": 34,
-      "evidence": "(size_t)limit * sizeof(int)"
-    },
-    {
       "cweId": "CWE-787",
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-44.c",
-      "line": 38,
-      "column": 25,
-      "evidence": "i < limit"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-44.c",
+      "line": 40,
+      "column": 21,
+      "evidence": "i"
     },
     {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
       "severity": "high",
-      "message": "Pointer 'buf' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-44.c",
-      "line": 45,
-      "column": 18,
-      "evidence": "buf"
+      "message": "execl() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-44.c",
+      "line": 51,
+      "column": 9,
+      "evidence": "execl(\"/bin/ls\", \"ls\", \"-1\", path, (char *)NULL)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.849Z"
+  "enriched_at": "2026-06-07T12:34:45.774Z"
 }

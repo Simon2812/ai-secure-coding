@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hashlib.md5(serialized).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
       "line": 13,
       "column": 14,
       "evidence": "hashlib.md5(serialized).hexdigest()"
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hashlib.md5(serialized).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
       "line": 13,
       "column": 14,
       "evidence": "hashlib.md5(serialized).hexdigest()"
@@ -49,7 +49,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hashlib.md5() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
       "line": 13,
       "column": 14,
       "evidence": "hashlib.md5(serialized)"
@@ -60,11 +60,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hashlib.md5() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
       "line": 13,
       "column": 14,
       "evidence": "hashlib.md5(serialized)"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.573Z"
+  "enriched_at": "2026-06-07T12:34:40.209Z"
 }

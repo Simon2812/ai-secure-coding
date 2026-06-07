@@ -36,8 +36,30 @@
       "ruleId": "ast-weak-hash",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.sha1() uses a weak hashing algorithm (MD5/SHA1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "message": "hashlib.sha1(raw).hexdigest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 74,
+      "column": 11,
+      "evidence": "hashlib.sha1(raw).hexdigest()"
+    },
+    {
+      "cweId": "CWE-328",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Weak Hash",
+      "severity": "medium",
+      "message": "hashlib.sha1(raw).hexdigest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 74,
+      "column": 11,
+      "evidence": "hashlib.sha1(raw).hexdigest()"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "hashlib.sha1() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
       "line": 74,
       "column": 11,
       "evidence": "hashlib.sha1(raw)"
@@ -47,8 +69,8 @@
       "ruleId": "ast-weak-hash",
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
-      "message": "hashlib.sha1() uses a weak hashing algorithm (MD5/SHA1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "message": "hashlib.sha1() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
       "line": 74,
       "column": 11,
       "evidence": "hashlib.sha1(raw)"
@@ -58,8 +80,30 @@
       "ruleId": "ast-weak-hash",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.sha1() uses a weak hashing algorithm (MD5/SHA1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "message": "hashlib.sha1(raw).hexdigest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 85,
+      "column": 16,
+      "evidence": "hashlib.sha1(raw).hexdigest()"
+    },
+    {
+      "cweId": "CWE-328",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Weak Hash",
+      "severity": "medium",
+      "message": "hashlib.sha1(raw).hexdigest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 85,
+      "column": 16,
+      "evidence": "hashlib.sha1(raw).hexdigest()"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "hashlib.sha1() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
       "line": 85,
       "column": 16,
       "evidence": "hashlib.sha1(raw)"
@@ -69,11 +113,66 @@
       "ruleId": "ast-weak-hash",
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
-      "message": "hashlib.sha1() uses a weak hashing algorithm (MD5/SHA1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "message": "hashlib.sha1() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
       "line": 85,
       "column": 16,
       "evidence": "hashlib.sha1(raw)"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "hmac.compare_digest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 86,
+      "column": 12,
+      "evidence": "hmac.compare_digest(sig, expected)"
+    },
+    {
+      "cweId": "CWE-328",
+      "ruleId": "ast-weak-hash",
+      "vulnerability": "Use of Weak Hash",
+      "severity": "medium",
+      "message": "hmac.compare_digest() uses a weak hashing algorithm.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 86,
+      "column": 12,
+      "evidence": "hmac.compare_digest(sig, expected)"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "pathlib path join with user-controlled input may allow path traversal.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 96,
+      "column": 27,
+      "evidence": "name"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 100,
+      "column": 15,
+      "evidence": "path"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "line": 108,
+      "column": 19,
+      "evidence": "path"
     },
     {
       "cweId": "CWE-321",
@@ -81,11 +180,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'secret'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-20.py",
       "line": 161,
       "column": 14,
       "evidence": "b\"session-signing-key\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.886Z"
+  "enriched_at": "2026-06-07T12:34:47.023Z"
 }

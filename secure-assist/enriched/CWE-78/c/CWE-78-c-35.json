@@ -27,11 +27,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "popen() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-35.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-35.c",
       "line": 9,
       "column": 16,
       "evidence": "popen(cmd, \"r\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.971Z"
+  "enriched_at": "2026-06-07T12:34:41.387Z"
 }

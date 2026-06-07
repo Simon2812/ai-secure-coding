@@ -27,7 +27,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-02.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-02.py",
       "line": 36,
       "column": 47,
       "evidence": "arg"
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'data_map['keyA']'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-02.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-02.py",
       "line": 19,
       "column": 36,
       "evidence": "'a-Value'"
@@ -49,11 +49,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'data_map['keyC']'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-02.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-02.py",
       "line": 21,
       "column": 36,
       "evidence": "'another-Value'"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:47.840Z"
+  "enriched_at": "2026-06-07T12:34:42.558Z"
 }

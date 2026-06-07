@@ -20,6 +20,40 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:43.210Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "os.path.join() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-41.py",
+      "line": 8,
+      "column": 46,
+      "evidence": "archive_name"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "zipfile.ZipFile() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-41.py",
+      "line": 10,
+      "column": 26,
+      "evidence": "archive_path"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-41.py",
+      "line": 12,
+      "column": 19,
+      "evidence": "target"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:38.566Z"
 }

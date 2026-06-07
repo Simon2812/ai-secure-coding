@@ -42,27 +42,27 @@
   ],
   "static_findings": [
     {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "strncat() with strlen() as size uses source length, not destination capacity.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-21.c",
+      "line": 61,
+      "column": 5,
+      "evidence": "strncat(buf, suffix, strlen(suffix))"
+    },
+    {
       "cweId": "CWE-78",
       "ruleId": "ast-cmd-injection",
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "system() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-21.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-21.c",
       "line": 69,
       "column": 5,
       "evidence": "system(command)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'buffer' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-21.c",
-      "line": 93,
-      "column": 10,
-      "evidence": "buffer"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.601Z"
+  "enriched_at": "2026-06-07T12:34:45.484Z"
 }

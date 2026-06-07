@@ -15,11 +15,22 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-42.c",
-      "line": 39,
-      "column": 11,
-      "evidence": "(count < max && len > 0)"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-42.c",
+      "line": 41,
+      "column": 13,
+      "evidence": "count"
+    },
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "execl() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-42.c",
+      "line": 62,
+      "column": 5,
+      "evidence": "execl(\"/bin/ls\", \"ls\", \"-l\", dir, (char *)NULL)"
     },
     {
       "cweId": "CWE-190",
@@ -27,22 +38,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-42.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-42.c",
       "line": 79,
       "column": 28,
       "evidence": "(size_t)opt.top_n * sizeof(int)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'values' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-42.c",
-      "line": 89,
-      "column": 10,
-      "evidence": "values"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.829Z"
+  "enriched_at": "2026-06-07T12:34:45.745Z"
 }

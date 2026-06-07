@@ -9,6 +9,40 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.659Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-190",
+      "ruleId": "ast-integer-overflow",
+      "vulnerability": "Integer Overflow",
+      "severity": "medium",
+      "message": "Arithmetic on user-controlled integer may overflow.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-24.c",
+      "line": 66,
+      "column": 22,
+      "evidence": "catalog[idx].price * order->lines[i].quantity"
+    },
+    {
+      "cweId": "CWE-190",
+      "ruleId": "ast-integer-overflow",
+      "vulnerability": "Integer Overflow",
+      "severity": "medium",
+      "message": "Arithmetic on user-controlled integer may overflow.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-24.c",
+      "line": 89,
+      "column": 22,
+      "evidence": "subtotal + tax"
+    },
+    {
+      "cweId": "CWE-190",
+      "ruleId": "ast-integer-overflow",
+      "vulnerability": "Integer Overflow",
+      "severity": "medium",
+      "message": "Arithmetic on user-controlled integer may overflow.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-24.c",
+      "line": 106,
+      "column": 33,
+      "evidence": "catalog[idx].price * order->lines[i].quantity"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:48.501Z"
 }

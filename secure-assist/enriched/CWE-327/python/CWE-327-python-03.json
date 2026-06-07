@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest()"
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest()"
@@ -49,7 +49,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5)"
@@ -60,11 +60,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5)"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.581Z"
+  "enriched_at": "2026-06-07T12:34:40.217Z"
 }

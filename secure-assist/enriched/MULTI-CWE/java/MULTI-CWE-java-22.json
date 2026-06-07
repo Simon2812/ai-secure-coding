@@ -47,7 +47,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"MD5\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
       "line": 37,
       "column": 32,
       "evidence": "MessageDigest.getInstance(\"MD5\")"
@@ -58,7 +58,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "getInstance(\"MD5\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
       "line": 37,
       "column": 32,
       "evidence": "MessageDigest.getInstance(\"MD5\")"
@@ -69,7 +69,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'keyBytes'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
       "line": 44,
       "column": 27,
       "evidence": "\"globalKey123456\".getBytes(StandardCharsets.UTF_8)"
@@ -80,7 +80,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to SecretKeySpec.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
       "line": 46,
       "column": 47,
       "evidence": "keyBytes"
@@ -91,11 +91,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to SecretKeySpec.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-22.java",
       "line": 56,
       "column": 47,
       "evidence": "\"hmacKey\".getBytes()"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.127Z"
+  "enriched_at": "2026-06-07T12:34:46.021Z"
 }

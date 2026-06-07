@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:47.203Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "new ProcessBuilder(\"sh\", \"-c\", …) receives user-controlled shell command.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\java\\CWE-78-java-54.java",
+      "line": 20,
+      "column": 29,
+      "evidence": "new ProcessBuilder(\"sh\", \"-c\", cmd)"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:42.213Z"
 }

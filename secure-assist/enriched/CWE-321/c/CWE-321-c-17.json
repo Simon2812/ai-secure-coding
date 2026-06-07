@@ -9,18 +9,6 @@
     "name": "Juliet Test Suite"
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-17.c",
-      "line": 63,
-      "column": 9,
-      "evidence": "strcpy(inputBuffer, \"unused\")"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:44.010Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:39.388Z"
 }

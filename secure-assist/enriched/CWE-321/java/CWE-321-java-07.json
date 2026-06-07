@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential value stored under key \"crypto\".",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\java\\CWE-321-java-07.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\java\\CWE-321-java-07.java",
       "line": 13,
       "column": 30,
       "evidence": "\"b7e3c9f1a2d44e8f\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:44.171Z"
+  "enriched_at": "2026-06-07T12:34:39.541Z"
 }

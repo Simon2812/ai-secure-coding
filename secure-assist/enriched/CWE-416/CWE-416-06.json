@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:45.436Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-416",
+      "ruleId": "ast-use-after-free",
+      "vulnerability": "Use After Free",
+      "severity": "high",
+      "message": "Pointer 'entries' is used after being freed.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-416\\CWE-416-06.cpp",
+      "line": 18,
+      "column": 21,
+      "evidence": "entries"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:40.880Z"
 }

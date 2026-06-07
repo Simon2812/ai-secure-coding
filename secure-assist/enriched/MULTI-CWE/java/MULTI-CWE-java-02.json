@@ -27,7 +27,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-02.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-02.java",
       "line": 15,
       "column": 30,
       "evidence": "BASE_DIR + normalized"
@@ -38,11 +38,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new FileInputStream() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-02.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-02.java",
       "line": 21,
       "column": 56,
       "evidence": "file"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.968Z"
+  "enriched_at": "2026-06-07T12:34:45.878Z"
 }

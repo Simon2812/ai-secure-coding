@@ -47,7 +47,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
       "line": 40,
       "column": 27,
       "evidence": "workspace + \"/\" + name"
@@ -58,7 +58,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Files.readAllBytes() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
       "line": 46,
       "column": 27,
       "evidence": "Files.readAllBytes(f.toPath())"
@@ -69,7 +69,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
       "line": 52,
       "column": 21,
       "evidence": "Runtime.getRuntime().exec(cmd)"
@@ -80,11 +80,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"DES\") uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
       "line": 70,
       "column": 38,
       "evidence": "javax.crypto.Cipher.getInstance(\"DES\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.153Z"
+  "enriched_at": "2026-06-07T12:34:46.056Z"
 }

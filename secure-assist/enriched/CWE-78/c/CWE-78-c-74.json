@@ -9,6 +9,18 @@
     "name": "Juliet Test Suite"
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:46.236Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Array write with constant negative index (-1) — always out of bounds.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-74.c",
+      "line": 21,
+      "column": 17,
+      "evidence": "buf[n - 1] = L'\\0'"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:41.659Z"
 }

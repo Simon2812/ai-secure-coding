@@ -27,7 +27,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-29.cpp",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-29.cpp",
       "line": 38,
       "column": 20,
       "evidence": "count * sizeof(int)"
@@ -38,7 +38,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-29.cpp",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-29.cpp",
       "line": 31,
       "column": 17,
       "evidence": "received"
@@ -48,12 +48,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-29.cpp",
-      "line": 41,
-      "column": 24,
-      "evidence": "i < (size_t)count"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-29.cpp",
+      "line": 43,
+      "column": 17,
+      "evidence": "i"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.496Z"
+  "enriched_at": "2026-06-07T12:34:43.227Z"
 }

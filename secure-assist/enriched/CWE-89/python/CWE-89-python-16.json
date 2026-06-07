@@ -27,10 +27,21 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
       "line": 50,
       "column": 29,
       "evidence": "statement"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cur.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
+      "line": 50,
+      "column": 17,
+      "evidence": "cur.execute(statement, (since,))"
     },
     {
       "cweId": "CWE-259",
@@ -38,11 +49,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
       "line": 15,
       "column": 21,
       "evidence": "\"risk_pass\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:49.981Z"
+  "enriched_at": "2026-06-07T12:34:44.673Z"
 }

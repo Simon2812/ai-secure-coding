@@ -15,11 +15,11 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-18.c",
-      "line": 22,
-      "column": 17,
-      "evidence": "i < length"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-18.c",
+      "line": 30,
+      "column": 16,
+      "evidence": "i"
     },
     {
       "cweId": "CWE-787",
@@ -27,7 +27,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Pointer write uses user-controlled offset without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-18.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-18.c",
       "line": 42,
       "column": 10,
       "evidence": "cut"
@@ -38,11 +38,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Pointer write uses user-controlled offset without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-18.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-18.c",
       "line": 48,
       "column": 10,
       "evidence": "cut"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.832Z"
+  "enriched_at": "2026-06-07T12:34:40.484Z"
 }

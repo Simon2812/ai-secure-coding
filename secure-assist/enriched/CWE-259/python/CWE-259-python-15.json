@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'internal_key'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-15.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-15.py",
       "line": 10,
       "column": 28,
       "evidence": "\"ExportGate!91\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.781Z"
+  "enriched_at": "2026-06-07T12:34:39.127Z"
 }

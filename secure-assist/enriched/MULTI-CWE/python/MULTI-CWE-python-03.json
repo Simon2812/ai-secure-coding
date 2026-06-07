@@ -27,7 +27,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-03.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-03.py",
       "line": 44,
       "column": 33,
       "evidence": "file_name"
@@ -38,11 +38,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-03.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-03.py",
       "line": 52,
       "column": 13,
       "evidence": "command"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.498Z"
+  "enriched_at": "2026-06-07T12:34:46.424Z"
 }

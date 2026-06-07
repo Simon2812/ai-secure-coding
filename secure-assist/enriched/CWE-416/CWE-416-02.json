@@ -22,27 +22,16 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-416\\CWE-416-02.c",
-      "line": 9,
-      "column": 29,
-      "evidence": "100 * sizeof(int)"
-    },
-    {
       "cweId": "CWE-416",
       "ruleId": "ast-use-after-free",
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'numbers' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-416\\CWE-416-02.c",
-      "line": 20,
-      "column": 10,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-416\\CWE-416-02.c",
+      "line": 22,
+      "column": 20,
       "evidence": "numbers"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.416Z"
+  "enriched_at": "2026-06-07T12:34:40.864Z"
 }

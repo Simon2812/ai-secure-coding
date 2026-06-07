@@ -9,6 +9,29 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.303Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "cursor.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-36.py",
+      "line": 90,
+      "column": 5,
+      "evidence": "cursor.execute(\r\n        statement,\r\n        {\r\n            \"service\": filters[\"service\"],\r\n            \"level\": filters"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-36.py",
+      "line": 175,
+      "column": 15,
+      "evidence": "path"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:47.732Z"
 }

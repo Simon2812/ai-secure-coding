@@ -9,18 +9,6 @@
     "name": "OWASP Benchmark Project"
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-77.java",
-      "line": 77,
-      "column": 28,
-      "evidence": "runtime.exec(command + resultValue)"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:47.475Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:42.332Z"
 }

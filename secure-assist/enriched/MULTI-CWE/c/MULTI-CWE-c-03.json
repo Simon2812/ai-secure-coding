@@ -26,23 +26,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-03.c",
-      "line": 56,
-      "column": 17,
-      "evidence": "i < item_count"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'items' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-03.c",
-      "line": 90,
-      "column": 10,
-      "evidence": "items"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-03.c",
+      "line": 58,
+      "column": 15,
+      "evidence": "i"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.436Z"
+  "enriched_at": "2026-06-07T12:34:45.314Z"
 }

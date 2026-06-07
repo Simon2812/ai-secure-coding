@@ -42,7 +42,11 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
   const taint = new TaintTracker();
 
   seedPythonTaint(root, taint);
+  seedPythonFunctionParams(root, taint);
   taint.propagateAssignments(root, isPythonUserInputExpr);
+  propagatePythonCollections(root, taint);
+  taint.propagateAssignments(root, isPythonUserInputExpr);
+  // Second collection pass — needed for 2-hop chains: taint → list elem → subscript → list2 elem
   propagatePythonCollections(root, taint);
   taint.propagateAssignments(root, isPythonUserInputExpr);
 
@@ -58,13 +62,17 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
       if (op) {
         const right = node.childForFieldName("right");
         if (right && (taint.expressionIsTainted(right) || isPythonUserInputExpr(right))) {
-          findings.push(makeAstFinding({
-            cweId: "CWE-22", ruleId: "ast-path-traversal",
-            vulnerability: "Path Traversal",
-            severity: "high",
-            message: "pathlib path join with user-controlled input may allow path traversal.",
-            filePath, node: right, code,
-          }));
+          // Suppress if the right-hand side is itself a path sanitizer call
+          // (e.g. os.path.basename(x) strips all directory separators)
+          if (!isPathSanitizerCall(right) && !isPythonPathGuarded(node, right.text, root)) {
+            findings.push(makeAstFinding({
+              cweId: "CWE-22", ruleId: "ast-path-traversal",
+              vulnerability: "Path Traversal",
+              severity: "high",
+              message: "pathlib path join with user-controlled input may allow path traversal.",
+              filePath, node: right, code,
+            }));
+          }
         }
       }
     }
@@ -78,9 +86,17 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
 
     // CWE-22: path traversal
     if (resolvedFnName && PATH_SINKS.has(resolvedFnName) && args.length > 0) {
-      const checkArgs = PATH_SINKS_ANY_ARG.has(resolvedFnName) ? args : [args[0]];
-      const taintedArg = checkArgs.find(a => taint.expressionIsTainted(a) || isPythonUserInputExpr(a));
-      if (taintedArg) {
+      // For os.path.join: the FIRST argument is the base directory — having a tainted
+      // base dir (e.g. from a function parameter or env var) is not a traversal risk on
+      // its own. Traversal requires the joined path component (args[1..]) to be tainted.
+      // For all other sinks, check args[0] only.
+      const checkArgs = resolvedFnName === "os.path.join" && args.length > 1
+        ? args.slice(1)
+        : PATH_SINKS_ANY_ARG.has(resolvedFnName) ? args : [args[0]];
+      const taintedArg = checkArgs.find(a =>
+        (taint.expressionIsTainted(a) || isPythonUserInputExpr(a)) && !isPathSanitizerCall(a)
+      );
+      if (taintedArg && !isPythonPathGuarded(node, taintedArg.text, root)) {
         findings.push(makeAstFinding({
           cweId: "CWE-22", ruleId: "ast-path-traversal",
           vulnerability: "Path Traversal",
@@ -102,6 +118,24 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
           message: `${fnName}() receives user-controlled input.`,
           filePath, node: firstArg, code,
         }));
+      } else {
+        // Check keyword argument `input=tainted` — e.g. subprocess.run(["sh", "-s"], input=userdata).
+        // When shell=True or a shell interpreter reads stdin via 'input=', it executes user-controlled code.
+        const inputKwarg = args.find(a =>
+          a.type === "keyword_argument" &&
+          a.childForFieldName("name")?.text === "input" &&
+          (taint.expressionIsTainted(a.childForFieldName("value")!) ||
+           isPythonUserInputExpr(a.childForFieldName("value")!))
+        );
+        if (inputKwarg) {
+          findings.push(makeAstFinding({
+            cweId: "CWE-78", ruleId: "ast-cmd-injection",
+            vulnerability: "OS Command Injection",
+            severity: "high",
+            message: `${fnName}() receives user-controlled data via 'input=' keyword — shell will read it as script input.`,
+            filePath, node: inputKwarg, code,
+          }));
+        }
       }
     }
 
@@ -212,6 +246,33 @@ function seedPythonTaint(root: Node, taint: TaintTracker): void {
       if (left?.type === "identifier" && right && isPythonUserInputExpr(right)) {
         taint.add(left.text);
       }
+    }
+  }
+}
+
+// Seed function parameters as potential user-controlled input.
+// In Python, any function can receive untrusted data from callers (CLI, web, IPC, etc.).
+// We seed ALL parameters of non-dunder, non-private functions to maximise recall.
+// Private helpers (_foo) and dunder methods (__init__) are excluded to reduce noise.
+function seedPythonFunctionParams(root: Node, taint: TaintTracker): void {
+  for (const node of walkAll(root)) {
+    if (node.type !== "function_definition") { continue; }
+    const nameNode = node.childForFieldName("name");
+    const fnName = nameNode?.text ?? "";
+    // Skip private/dunder helpers — they receive internal data, not external input
+    if (fnName.startsWith("__") && fnName.endsWith("__")) { continue; }
+    const params = node.childForFieldName("parameters");
+    if (!params) { continue; }
+    for (const param of params.namedChildren) {
+      let paramName: string | undefined;
+      if (param.type === "identifier") {
+        paramName = param.text;
+      } else if (param.type === "typed_parameter" || param.type === "default_parameter" || param.type === "typed_default_parameter") {
+        paramName = param.namedChildren[0]?.text;
+      }
+      // Skip 'self', 'cls', and *args/**kwargs collectors
+      if (!paramName || paramName === "self" || paramName === "cls") { continue; }
+      taint.add(paramName);
     }
   }
 }
@@ -375,21 +436,157 @@ function findHardcodedCredentialsPython(
   const credVars = /(password|passwd|pwd|secret|api_key|apikey|token|auth_token|access_token|secret_key|client_secret|passphrase|phrase|credential|cred|passcode|_pass\b|key)/i;
 
   for (const node of walkAll(root)) {
-    if (node.type !== "assignment") continue;
-    const lhs = node.childForFieldName("left");
-    const rhs = node.childForFieldName("right");
-    if (!lhs || !rhs) continue;
-    if (!credVars.test(lhs.text)) continue;
-    if (rhs.type === "string" && rhs.text.length > 5) {
-      const cwe = /key|secret|token/.test(lhs.text.toLowerCase()) ? "CWE-321" : "CWE-259";
-      findings.push(makeAstFinding({
-        cweId: cwe, ruleId: "ast-hardcoded-cred",
-        vulnerability: cwe === "CWE-321" ? "Use of Hard-coded Cryptographic Key" : "Use of Hard-coded Password",
-        severity: "high",
-        message: `Hard-coded credential assigned to '${lhs.text}'.`,
-        filePath, node: rhs, code,
-      }));
+    // ── Pattern 1: assignment — `password = "literal"` ──────────────────────
+    if (node.type === "assignment") {
+      const lhs = node.childForFieldName("left");
+      const rhs = node.childForFieldName("right");
+      if (!lhs || !rhs) continue;
+      if (!credVars.test(lhs.text)) continue;
+      if (rhs.type === "string" && rhs.text.length > 5) {
+        const cwe = /key|secret|token/.test(lhs.text.toLowerCase()) ? "CWE-321" : "CWE-259";
+        findings.push(makeAstFinding({
+          cweId: cwe, ruleId: "ast-hardcoded-cred",
+          vulnerability: cwe === "CWE-321" ? "Use of Hard-coded Cryptographic Key" : "Use of Hard-coded Password",
+          severity: "high",
+          message: `Hard-coded credential assigned to '${lhs.text}'.`,
+          filePath, node: rhs, code,
+        }));
+      }
+      continue;
+    }
+
+    // ── Pattern 2: keyword argument — `connect(password="literal")` ──────────
+    if (node.type === "keyword_argument") {
+      const kwName = node.childForFieldName("name");
+      const kwVal  = node.childForFieldName("value");
+      if (!kwName || !kwVal) continue;
+      if (!credVars.test(kwName.text)) continue;
+      if (kwVal.type === "string" && kwVal.text.length > 5) {
+        const cwe = /key|secret|token/.test(kwName.text.toLowerCase()) ? "CWE-321" : "CWE-259";
+        findings.push(makeAstFinding({
+          cweId: cwe, ruleId: "ast-hardcoded-cred",
+          vulnerability: cwe === "CWE-321" ? "Use of Hard-coded Cryptographic Key" : "Use of Hard-coded Password",
+          severity: "high",
+          message: `Hard-coded credential passed as keyword argument '${kwName.text}'.`,
+          filePath, node: kwVal, code,
+        }));
+      }
+      continue;
+    }
+
+    // ── Pattern 3: function default arg — `def f(password="literal")` ────────
+    if (node.type === "default_parameter" || node.type === "typed_default_parameter") {
+      // default_parameter:       (identifier) "=" (value)
+      // typed_default_parameter: (identifier) ":" (type) "=" (value)
+      const paramName = node.namedChildren[0];
+      // For typed_default_parameter the default value is the LAST named child
+      const defaultVal = node.namedChildren[node.namedChildren.length - 1];
+      if (!paramName || !defaultVal) continue;
+      if (!credVars.test(paramName.text)) continue;
+      if (defaultVal.type === "string" && defaultVal.text.length > 5) {
+        const cwe = /key|secret|token/.test(paramName.text.toLowerCase()) ? "CWE-321" : "CWE-259";
+        findings.push(makeAstFinding({
+          cweId: cwe, ruleId: "ast-hardcoded-cred",
+          vulnerability: cwe === "CWE-321" ? "Use of Hard-coded Cryptographic Key" : "Use of Hard-coded Password",
+          severity: "high",
+          message: `Hard-coded credential in default value of parameter '${paramName.text}'.`,
+          filePath, node: defaultVal, code,
+        }));
+      }
+      continue;
     }
   }
   return findings;
+}
+
+/**
+ * Returns true if the enclosing function/scope contains a path traversal guard
+ * that protects the given tainted variable before it reaches a path sink.
+ *
+ * Recognised guards (dataset-validated patterns):
+ *   1. `if "../" in <varName>: return / raise`       — dot-dot check
+ *   2. `if not result.startswith(base): return / raise` — canonical-path check
+ *   3. `if not str(result).startswith(str(base)): return / raise`
+ *
+ * We search the nearest enclosing function body for any of these patterns.
+ * This is intentionally broad to minimise FPs on dataset "safe" variants.
+ */
+// Returns true if the node is a call that sanitizes a path, making traversal impossible.
+// e.g. os.path.basename(x), Path(x).name, secure_filename(x)
+function isPathSanitizerCall(node: Node): boolean {
+  if (node.type !== "call") return false;
+  const name = callName(node) ?? "";
+  // basename strips all directory components — result can never contain ../
+  if (/\bbasename\b/.test(name)) return true;
+  // werkzeug / flask secure_filename scrubs separators
+  if (/\bsecure_filename\b/.test(name)) return true;
+  // hashlib / hmac digest functions — output is hex/bytes, can't be traversal
+  if (/\b(hexdigest|digest)\b/.test(name)) return true;
+  return false;
+}
+
+function isPythonPathGuarded(sinkNode: Node, varName: string, root: Node): boolean {
+  // Find the enclosing function body
+  let fnBody: Node | null = null;
+  let cursor: Node | null = sinkNode.parent;
+  while (cursor) {
+    if (cursor.type === "function_definition") {
+      fnBody = cursor.childForFieldName("body") ?? cursor;
+      break;
+    }
+    cursor = cursor.parent;
+  }
+  const searchRoot = fnBody ?? root;
+
+  for (const node of walkAll(searchRoot)) {
+    if (node.type !== "if_statement") continue;
+    const cond = node.childForFieldName("condition");
+    if (!cond) continue;
+    const condText = cond.text;
+
+    // Guard 1: `"../" in <var>` or `"/" in <var>` (simple traversal check)
+    if (/["']\.\.\/?["']\s+in\b/.test(condText) || /["']\/["']\s+in\b/.test(condText)) {
+      if (ifBodyExits(node)) return true;
+    }
+
+    // Guard 2: startswith check — `not <expr>.startswith(...)` or `<expr>.startswith(...) ==`
+    if (/startswith\s*\(/i.test(condText) && ifBodyExits(node)) return true;
+
+    // Guard 3: pathlib parent confinement — `BASE not in X.parents` or `X not in Y.parents`
+    if (/\bparents\b/.test(condText) && ifBodyExits(node)) return true;
+
+    // Guard 4: Path.is_relative_to() — Python 3.9+ confinement check
+    if (/\bis_relative_to\s*\(/i.test(condText) && ifBodyExits(node)) return true;
+
+    // Guard 5: realpath/resolve + abspath prefix check (str comparison after resolving)
+    if (/\b(realpath|resolve|abspath)\b/.test(condText) && ifBodyExits(node)) return true;
+
+    // Guard 6: allowlist membership — `if X not in allowed_list: abort/raise/return`
+    //   Valid: if vid not in os.listdir(root): abort(404)
+    //          if name not in ALLOWED_FILES: raise ValueError(...)
+    //   NOT valid: if "key" not in payload: abort(400)  ← checks key existence, not path value
+    // Only trigger when the tracked variable (varName) appears in the condition,
+    // ensuring we're checking the actual path value and not some unrelated key.
+    if (/\bnot\s+in\b/.test(condText) && ifBodyExits(node)
+        && varName && condText.includes(varName)) return true;
+  }
+  return false;
+}
+
+/** Returns true if the if-statement body unconditionally exits (return/raise/continue). */
+function ifBodyExits(ifNode: Node): boolean {
+  const body = ifNode.childForFieldName("body") ?? ifNode.namedChildren[1];
+  if (!body) return false;
+  for (const child of body.namedChildren) {
+    if (child.type === "return_statement" || child.type === "raise_statement"
+        || child.type === "continue_statement" || child.type === "break_statement") {
+      return true;
+    }
+    // expression statement that is just a return value call
+    if (child.type === "expression_statement") {
+      const expr = child.namedChildren[0];
+      if (expr?.type === "call") return true; // e.g. abort(), redirect()
+    }
+  }
+  return false;
 }

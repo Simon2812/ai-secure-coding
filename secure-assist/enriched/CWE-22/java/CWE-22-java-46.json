@@ -27,7 +27,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new FileReader() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-46.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-46.java",
       "line": 20,
       "column": 72,
       "evidence": "manifestPath.toString()"
@@ -38,11 +38,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Path.of() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-46.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-46.java",
       "line": 40,
       "column": 16,
       "evidence": "Path.of(file)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:42.550Z"
+  "enriched_at": "2026-06-07T12:34:37.970Z"
 }

@@ -20,29 +20,6 @@
       ]
     }
   ],
-  "static_findings": [
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-14.c",
-      "line": 25,
-      "column": 13,
-      "evidence": "strcpy(material, \"Alpha\")"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-14.c",
-      "line": 28,
-      "column": 13,
-      "evidence": "strcpy(material, \"BetaValue\")"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:43.971Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:39.347Z"
 }

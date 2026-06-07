@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T18:00:38.589Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-05.py",
+      "line": 12,
+      "column": 15,
+      "evidence": "path"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:40.224Z"
 }

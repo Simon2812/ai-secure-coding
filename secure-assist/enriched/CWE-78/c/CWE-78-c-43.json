@@ -26,19 +26,8 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-43.c",
-      "line": 25,
-      "column": 5,
-      "evidence": "strcpy(tmp, \"date \")"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
       "message": "strcat() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-43.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-43.c",
       "line": 26,
       "column": 5,
       "evidence": "strcat(tmp, av[1])"
@@ -49,11 +38,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "system() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-43.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-43.c",
       "line": 31,
       "column": 10,
       "evidence": "system(tmp)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:46.011Z"
+  "enriched_at": "2026-06-07T12:34:41.434Z"
 }

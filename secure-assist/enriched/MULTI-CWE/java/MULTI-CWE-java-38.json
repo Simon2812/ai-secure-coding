@@ -16,7 +16,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Path.of() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
       "line": 15,
       "column": 27,
       "evidence": "Path.of(rosterRoot)"
@@ -27,7 +27,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Files.readString() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
       "line": 37,
       "column": 49,
       "evidence": "Files.readString(source)"
@@ -38,7 +38,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
       "line": 51,
       "column": 16,
       "evidence": "rosterRoot.resolve(selected)"
@@ -49,11 +49,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Files.readString() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-38.java",
       "line": 56,
       "column": 37,
       "evidence": "Files.readString(file)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.309Z"
+  "enriched_at": "2026-06-07T12:34:46.214Z"
 }

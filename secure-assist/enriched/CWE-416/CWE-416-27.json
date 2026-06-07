@@ -27,22 +27,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'n' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-27.c",
-      "line": 32,
-      "column": 14,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-27.c",
+      "line": 35,
+      "column": 29,
       "evidence": "n"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'head' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-27.c",
-      "line": 55,
-      "column": 10,
-      "evidence": "head"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.554Z"
+  "enriched_at": "2026-06-07T12:34:40.986Z"
 }

@@ -26,12 +26,34 @@
       "ruleId": "ast-path-traversal",
       "vulnerability": "Path Traversal",
       "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-59.py",
+      "line": 6,
+      "column": 15,
+      "evidence": "index_file"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
       "message": "os.path.join() receives user-controlled path without validation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-59.py",
-      "line": 23,
-      "column": 31,
-      "evidence": "store"
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-59.py",
+      "line": 15,
+      "column": 35,
+      "evidence": "rel"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\python\\CWE-22-python-59.py",
+      "line": 17,
+      "column": 15,
+      "evidence": "path"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.293Z"
+  "enriched_at": "2026-06-07T12:34:38.647Z"
 }

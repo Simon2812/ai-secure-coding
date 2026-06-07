@@ -16,7 +16,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
       "line": 22,
       "column": 20,
       "evidence": "(int *)malloc((size_t)count * sizeof(int))"
@@ -27,7 +27,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
       "line": 22,
       "column": 34,
       "evidence": "(size_t)count * sizeof(int)"
@@ -37,23 +37,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
-      "line": 29,
-      "column": 24,
-      "evidence": "i < (size_t)count"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'numbers' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
-      "line": 36,
-      "column": 10,
-      "evidence": "numbers"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-79.c",
+      "line": 31,
+      "column": 17,
+      "evidence": "i"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.864Z"
+  "enriched_at": "2026-06-07T12:34:43.509Z"
 }

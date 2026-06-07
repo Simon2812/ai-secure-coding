@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to SecretKeySpec.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-327\\java\\CWE-327-java-01.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-327\\java\\CWE-327-java-01.java",
       "line": 18,
       "column": 52,
       "evidence": "raw"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.436Z"
+  "enriched_at": "2026-06-07T12:34:40.083Z"
 }

@@ -31,11 +31,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'secret'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-02.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-02.py",
       "line": 12,
       "column": 18,
       "evidence": "\"daily-report-pass\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.734Z"
+  "enriched_at": "2026-06-07T12:34:39.074Z"
 }

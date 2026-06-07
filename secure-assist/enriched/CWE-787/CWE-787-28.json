@@ -27,22 +27,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-28.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-28.c",
       "line": 19,
       "column": 31,
       "evidence": "amount * sizeof(int)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'workspace' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-28.c",
-      "line": 28,
-      "column": 10,
-      "evidence": "workspace"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.486Z"
+  "enriched_at": "2026-06-07T12:34:43.220Z"
 }

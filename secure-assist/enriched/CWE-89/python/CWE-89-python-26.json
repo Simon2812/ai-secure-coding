@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:50.032Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "conn.fetch() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-26.py",
+      "line": 37,
+      "column": 26,
+      "evidence": "conn.fetch(sql, limit)"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:44.742Z"
 }

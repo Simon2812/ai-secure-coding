@@ -20,6 +20,40 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:50.058Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "text() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-33.py",
+      "line": 25,
+      "column": 20,
+      "evidence": "text(\r\n                \"SELECT id, actor, action, created_at \"\r\n                \"FROM audit_log \"\r\n                \"WHER"
+    },
+    {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-33.py",
+      "line": 32,
+      "column": 36,
+      "evidence": "stmt"
+    },
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "session.execute() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-33.py",
+      "line": 32,
+      "column": 20,
+      "evidence": "session.execute(stmt, {\"lim\": limit})"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:44.772Z"
 }

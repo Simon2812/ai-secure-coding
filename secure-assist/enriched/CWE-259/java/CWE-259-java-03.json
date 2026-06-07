@@ -27,7 +27,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'tokenValue'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-03.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-03.java",
       "line": 7,
       "column": 29,
       "evidence": "\"OfficePass!9\""
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to KerberosKey.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-03.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-03.java",
       "line": 13,
       "column": 21,
       "evidence": "userPrincipal"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.647Z"
+  "enriched_at": "2026-06-07T12:34:39.002Z"
 }

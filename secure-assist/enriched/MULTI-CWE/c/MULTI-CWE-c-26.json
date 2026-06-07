@@ -47,7 +47,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "system() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-26.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-26.c",
       "line": 76,
       "column": 5,
       "evidence": "system(command)"
@@ -58,11 +58,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "execlp() receives user-controlled argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-26.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-26.c",
       "line": 81,
       "column": 5,
       "evidence": "execlp(command_name, command_name, target, (char *)NULL)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.663Z"
+  "enriched_at": "2026-06-07T12:34:45.542Z"
 }

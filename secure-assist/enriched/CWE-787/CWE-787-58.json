@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:48.748Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "memcpy() destination pointer uses user-controlled offset without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-58.c",
+      "line": 32,
+      "column": 12,
+      "evidence": "a->region + offset"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:43.427Z"
 }

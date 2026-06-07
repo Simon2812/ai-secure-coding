@@ -22,16 +22,27 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "memmove() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-25.c",
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "memmove() destination pointer is set before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-25.c",
       "line": 20,
-      "column": 23,
-      "evidence": "100 * sizeof(wchar_t)"
+      "column": 5,
+      "evidence": "memmove(ptr, src, 100 * sizeof(wchar_t))"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Write via 'ptr' which points before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-25.c",
+      "line": 22,
+      "column": 5,
+      "evidence": "ptr[99] = L'\\0'"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.470Z"
+  "enriched_at": "2026-06-07T12:34:43.203Z"
 }

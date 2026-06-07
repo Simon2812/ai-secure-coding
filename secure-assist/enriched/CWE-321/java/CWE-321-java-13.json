@@ -27,7 +27,7 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'material'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\java\\CWE-321-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\java\\CWE-321-java-13.java",
       "line": 8,
       "column": 27,
       "evidence": "\"c1a9e7d45b2f8a63\""
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to SecretKeySpec.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\java\\CWE-321-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\java\\CWE-321-java-13.java",
       "line": 10,
       "column": 47,
       "evidence": "material.getBytes(\"UTF-8\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:44.202Z"
+  "enriched_at": "2026-06-07T12:34:39.570Z"
 }

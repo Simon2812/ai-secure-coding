@@ -27,21 +27,10 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
       "line": 19,
       "column": 34,
       "evidence": "strlen(name) + 1"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'slot' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
-      "line": 22,
-      "column": 14,
-      "evidence": "slot"
     },
     {
       "cweId": "CWE-787",
@@ -49,7 +38,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
       "line": 26,
       "column": 5,
       "evidence": "strcpy(slot->label, name)"
@@ -60,11 +49,22 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'slot' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
-      "line": 30,
-      "column": 14,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
+      "line": 26,
+      "column": 12,
+      "evidence": "slot"
+    },
+    {
+      "cweId": "CWE-416",
+      "ruleId": "ast-use-after-free",
+      "vulnerability": "Use After Free",
+      "severity": "high",
+      "message": "Pointer 'slot' is used after being freed.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-16.c",
+      "line": 33,
+      "column": 12,
       "evidence": "slot"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.493Z"
+  "enriched_at": "2026-06-07T12:34:40.926Z"
 }

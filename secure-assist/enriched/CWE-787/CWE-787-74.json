@@ -9,29 +9,6 @@
     "name": "Juliet Test Suite"
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-74.c",
-      "line": 7,
-      "column": 33,
-      "evidence": "100 * sizeof(char)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'data' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-74.c",
-      "line": 22,
-      "column": 10,
-      "evidence": "data"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:48.840Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T12:34:43.484Z"
 }

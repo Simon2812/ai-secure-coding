@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hmac.new(key, prepared, digestmod=hashlib.md4).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(key, prepared, digestmod=hashlib.md4).hexdigest()"
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hmac.new(key, prepared, digestmod=hashlib.md4).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(key, prepared, digestmod=hashlib.md4).hexdigest()"
@@ -49,7 +49,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(key, prepared, digestmod=hashlib.md4)"
@@ -60,11 +60,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-13.py",
       "line": 12,
       "column": 17,
       "evidence": "hmac.new(key, prepared, digestmod=hashlib.md4)"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.617Z"
+  "enriched_at": "2026-06-07T12:34:40.252Z"
 }

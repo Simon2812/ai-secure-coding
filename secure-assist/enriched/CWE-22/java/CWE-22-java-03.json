@@ -27,11 +27,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-03.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-03.java",
       "line": 34,
       "column": 60,
       "evidence": "name"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:42.226Z"
+  "enriched_at": "2026-06-07T12:34:37.706Z"
 }

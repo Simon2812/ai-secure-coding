@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:47.882Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "sp_module.run() receives user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-08.py",
+      "line": 38,
+      "column": 33,
+      "evidence": "shell_command"
+    }
+  ],
+  "enriched_at": "2026-06-07T12:34:42.614Z"
 }

@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'passphrase'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-02.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-02.py",
       "line": 12,
       "column": 18,
       "evidence": "\"backup-passphrase-2024\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:44.273Z"
+  "enriched_at": "2026-06-07T12:34:39.631Z"
 }

@@ -37,7 +37,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-12.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-12.java",
       "line": 21,
       "column": 27,
       "evidence": "Runtime.getRuntime().exec(command)"
@@ -48,11 +48,11 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-12.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-12.java",
       "line": 48,
       "column": 49,
       "evidence": "query"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.055Z"
+  "enriched_at": "2026-06-07T12:34:45.952Z"
 }

@@ -16,22 +16,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Files.readAllLines() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-98.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-98.java",
       "line": 18,
       "column": 30,
       "evidence": "Files.readAllLines(resourceFile)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-98.java",
-      "line": 26,
-      "column": 25,
-      "evidence": "base.resolve(key)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:42.937Z"
+  "enriched_at": "2026-06-07T12:34:38.278Z"
 }

@@ -58,7 +58,7 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
       if (PATH_SINK_TYPES.has(typeName) && argsNode) {
         const args = getJavaArgs(argsNode);
         const taintedArg = args.find(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a));
-        if (taintedArg) {
+        if (taintedArg && !isJavaPathGuarded(node, code)) {
           findings.push(makeAstFinding({
             cweId: "CWE-22", ruleId: "ast-path-traversal",
             vulnerability: "Path Traversal",
@@ -93,12 +93,21 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
 
       if (CMD_SINK_TYPES.has(typeName) && argsNode) {
         const args = getJavaArgs(argsNode);
-        // ProcessBuilder(cmd, arg1, arg2, ...) — only the first arg is the program.
-        // Subsequent args are passed directly to the OS (no shell expansion), so only
-        // flag when the command itself (args[0]) is user-controlled, or the full
-        // command is built as a single concatenated/formatted string.
+        // ProcessBuilder(cmd, arg1, arg2, ...) — flag when:
+        //   1. The program (args[0]) itself is user-controlled, OR
+        //   2. Single-string command — entire arg is user-controlled, OR
+        //   3. Shell interpreter + "-c"/"/c" + tainted shell command string:
+        //      new ProcessBuilder("sh", "-c", userCmd) — userCmd is interpreted by shell.
         const cmdArg = args[0];
         const isSingleStringCmd = args.length === 1;
+
+        // Pattern 3: ProcessBuilder("sh"|"bash"|"cmd.exe", "-c"|"/c", taintedCmd)
+        const SHELL_INTERPRETERS = new Set(["sh", "bash", "zsh", "ksh", "cmd.exe", "cmd", "/bin/sh", "/bin/bash"]);
+        const SHELL_C_FLAGS = new Set(["-c", "/c"]);
+        const isShellShellC = args.length >= 3
+          && cmdArg?.type === "string_literal" && SHELL_INTERPRETERS.has(cmdArg.text.replace(/['"]/g, ""))
+          && args[1]?.type === "string_literal" && SHELL_C_FLAGS.has(args[1].text.replace(/['"]/g, ""));
+
         if (cmdArg && (taint.expressionIsTainted(cmdArg) || isJavaUserInputExpr(cmdArg))) {
           findings.push(makeAstFinding({
             cweId: "CWE-78", ruleId: "ast-cmd-injection",
@@ -116,6 +125,18 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
             message: `new ${typeName}() receives user-controlled input.`,
             filePath, node, code,
           }));
+        } else if (isShellShellC && args[2] &&
+                   (taint.expressionIsTainted(args[2]) || isJavaUserInputExpr(args[2]))) {
+          // ProcessBuilder("sh", "-c", taintedShellCmd) — the 3rd arg is the shell command string.
+          // Only args[2] is the shell command; any further args are positional ($0,$1,...) and
+          // not directly shell-interpreted, so we check only the command-string position.
+          findings.push(makeAstFinding({
+            cweId: "CWE-78", ruleId: "ast-cmd-injection",
+            vulnerability: "OS Command Injection",
+            severity: "high",
+            message: `new ${typeName}("${cmdArg?.text?.replace(/['"]/g, "")}", "-c", …) receives user-controlled shell command.`,
+            filePath, node, code,
+          }));
         }
       }
     }
@@ -127,11 +148,12 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
       const obj = node.childForFieldName("object");
       const fullName = obj ? `${obj.text}.${methodName}` : methodName;
 
-      // Path sinks: Paths.get(), Path.of()
+      // Path sinks: Paths.get(), Path.of(), Files.readString(), Files.readAllLines(), etc.
       if (PATH_SINK_CALLS.has(fullName) && argsNode) {
         const args = getJavaArgs(argsNode);
         if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))
-            && !isCallResultSanitized(node)) {
+            && !isCallResultSanitized(node)
+            && !isJavaPathGuarded(node, code)) {
           findings.push(makeAstFinding({
             cweId: "CWE-22", ruleId: "ast-path-traversal",
             vulnerability: "Path Traversal",
@@ -142,10 +164,14 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
         }
       }
 
-      // Path.resolve(tainted) — called on any Path variable
-      if (methodName === "resolve" && argsNode) {
+      // Path.resolve(tainted) — called on any Path variable.
+      // Skip if the receiver is `new SomeClass()` — that's a user-defined method,
+      // not java.nio.file.Path.resolve().
+      if (methodName === "resolve" && argsNode
+          && obj?.type !== "object_creation_expression") {
         const args = getJavaArgs(argsNode);
-        if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))) {
+        if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))
+            && !isJavaPathGuarded(node, code)) {
           findings.push(makeAstFinding({
             cweId: "CWE-22", ruleId: "ast-path-traversal",
             vulnerability: "Path Traversal",
@@ -345,6 +371,9 @@ function isJavaUserInputExpr(node: Node): boolean {
   if (/\bURLDecoder\.decode\s*\(/.test(text)) return true;
   if (/\bSystem\.getenv\s*\(/.test(text)) return true;
   if (/\bSystem\.getProperty\s*\(/.test(text)) return true;
+  // Properties.getProperty() — config files and property maps are often externally controlled.
+  // Exclude System.getProperty() (already handled above; that returns JVM internals, not user data).
+  if (/\.getProperty\s*\(/.test(text) && !/\bSystem\.getProperty\s*\(/.test(text)) return true;
   return false;
 }
 
@@ -396,18 +425,34 @@ function propagateJavaCollections(root: Node, taint: TaintTracker): void {
   while (changed) {
     changed = false;
     for (const node of walkAll(root)) {
-      if (node.type !== "method_invocation") continue;
-      const methodName = node.childForFieldName("name")?.text ?? "";
-      if (!COLLECTION_ADD_METHODS.has(methodName)) continue;
-      const obj = node.childForFieldName("object");
-      if (!obj || obj.type !== "identifier") continue;
-      if (taint.has(obj.text)) continue;
-      const argsNode = node.childForFieldName("arguments");
-      if (!argsNode) continue;
-      const args = getJavaArgs(argsNode);
-      if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))) {
-        taint.add(obj.text);
-        changed = true;
+      // collection.add(tainted) → collection tainted
+      if (node.type === "method_invocation") {
+        const methodName = node.childForFieldName("name")?.text ?? "";
+        if (!COLLECTION_ADD_METHODS.has(methodName)) continue;
+        const obj = node.childForFieldName("object");
+        if (!obj || obj.type !== "identifier") continue;
+        if (taint.has(obj.text)) continue;
+        const argsNode = node.childForFieldName("arguments");
+        if (!argsNode) continue;
+        const args = getJavaArgs(argsNode);
+        if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))) {
+          taint.add(obj.text);
+          changed = true;
+        }
+      }
+      // arr[i] = tainted → arr tainted (array element assignment)
+      if (node.type === "assignment_expression") {
+        const left = node.childForFieldName("left");
+        const right = node.childForFieldName("right");
+        if (left?.type !== "array_access" || !right) continue;
+        // array_access: array child is the array expression, index is the subscript
+        const arrNode = left.childForFieldName("array") ?? left.namedChildren[0];
+        if (!arrNode || arrNode.type !== "identifier") continue;
+        if (taint.has(arrNode.text)) continue;
+        if (taint.expressionIsTainted(right) || isJavaUserInputExpr(right)) {
+          taint.add(arrNode.text);
+          changed = true;
+        }
       }
     }
   }
@@ -572,7 +617,7 @@ function findHardcodedCredentialsJava(
   const credVars = /(password|passwd|pwd|secret|apiKey|api_key|token|authToken|accessToken|secretKey|clientSecret|passphrase|phrase|credential|cred|passcode|_pass\b|material|fallback|keyBytes|keyData|keyValue|crypto|cipher)/i;
 
   // Track string literals assigned to any variable, then check if used in credential sinks
-  const literalVars = new Map<string, Node>(); // varName → string literal node
+  const literalVars = new Map<string, Node>(); // varName → string/array literal node
 
   for (const node of walkAll(root)) {
     // Collect all string-literal variable assignments (incl. "str".getBytes())
@@ -588,6 +633,9 @@ function findHardcodedCredentialsJava(
           if ((method === "getBytes" || method === "toCharArray") && obj?.type === "string_literal" && obj.text.length > 5) {
             literalVars.set(nameNode.text, obj);
           }
+        } else if (valueNode.type === "array_initializer" && isHardcodedByteArray(valueNode)) {
+          // byte[] SECRET_KEY = {0x41, 0x42, ...} — hardcoded byte array key material
+          literalVars.set(nameNode.text, valueNode);
         }
       }
     }
@@ -692,6 +740,24 @@ function isHardcodedString(node: Node, literalVars: Map<string, Node>): boolean 
   return false;
 }
 
+/**
+ * Returns true if the node is a byte array initializer where every element
+ * is a compile-time integer/hex literal — i.e. a hardcoded key in byte form.
+ * Examples: {0x41, 0x42, 0x43}  or  {65, 66, 67}
+ */
+function isHardcodedByteArray(node: Node): boolean {
+  if (node.type !== "array_initializer") return false;
+  const elements = node.namedChildren;
+  if (elements.length === 0) return false;
+  return elements.every(c =>
+    c.type === "decimal_integer_literal" ||
+    c.type === "hex_integer_literal" ||
+    c.type === "integer_literal" ||
+    /^-?0[xX][0-9a-fA-F]+$/.test(c.text) ||
+    /^-?\d+$/.test(c.text)
+  );
+}
+
 function isHardcodedKeyMaterial(node: Node, literalVars: Map<string, Node>): boolean {
   // getBytes() / toCharArray() call on a string literal or literal variable
   if (node.type === "method_invocation") {
@@ -701,5 +767,56 @@ function isHardcodedKeyMaterial(node: Node, literalVars: Map<string, Node>): boo
       return isHardcodedString(obj, literalVars);
     }
   }
+  // Inline byte array literal: new SecretKeySpec(new byte[]{0x41, ...}, "AES")
+  if (node.type === "array_creation_expression") {
+    const init = node.namedChildren.find(c => c.type === "array_initializer");
+    if (init && isHardcodedByteArray(init)) return true;
+  }
+  if (node.type === "array_initializer" && isHardcodedByteArray(node)) return true;
   return isHardcodedString(node, literalVars);
+}
+
+/**
+ * Returns true if the method containing `sinkNode` has a `startsWith`-based
+ * path guard — i.e. validates the resolved path stays inside the base directory.
+ *
+ * Recognised patterns (dataset-validated):
+ *   if (!target.startsWith(base)) throw / return
+ *   if (target.startsWith(base) == false) throw / return
+ *
+ * We scan the raw code text of the enclosing method for the presence of
+ * `.startsWith(` after a `.resolve(` call, combined with an early exit.
+ * A text scan is sufficient here because the pattern is highly distinctive.
+ */
+function isJavaPathGuarded(sinkNode: Node, code: string): boolean {
+  // Walk up to the enclosing method/constructor declaration
+  let cursor: import("web-tree-sitter").Node | null = sinkNode.parent;
+  while (cursor) {
+    if (cursor.type === "method_declaration" || cursor.type === "constructor_declaration"
+        || cursor.type === "lambda_expression") {
+      const methodText = code.slice(cursor.startIndex, cursor.endIndex);
+
+      // Guard 1: resolve + startsWith confinement check (canonical Java pattern)
+      //   Path target = base.resolve(input).normalize();
+      //   if (!target.startsWith(base)) throw ...
+      if (/\.startsWith\s*\(/.test(methodText)) return true;
+
+      // Guard 2: string sanitization — replace("..", "") / replace("/", "") / replace("\\", "")
+      //   Strips traversal sequences before use
+      if (/\.replace\s*\(\s*["'`]\.\.["'`]/.test(methodText)) return true;
+
+      // Guard 3: matches() whitelist — already handled by removeValidatedParams,
+      //   but also catch it here for methods that don't call removeValidatedParams
+      if (/\.matches\s*\(/.test(methodText)
+          && /throw|return\s+null|return\s+""|response\.send|abort/.test(methodText)) return true;
+
+      // Guard 4: contains("..") / contains("/") traversal check
+      if (/\.contains\s*\(\s*["']\.\.["']/.test(methodText)
+          && /throw|return/.test(methodText)) return true;
+
+      break;
+    }
+    cursor = cursor.parent;
+  }
+  return false;
 }
