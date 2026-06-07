@@ -33,5 +33,5 @@
       "evidence": "\"update audit_events set processed=1 where actor='\" + identifier + \"'\""
     }
   ],
-  "enriched_at": "2026-06-07T12:34:43.853Z"
+  "enriched_at": "2026-06-07T14:05:43.108Z"
 }

@@ -43,17 +43,6 @@
       "evidence": "query"
     },
     {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "cursor.execute() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-14.py",
-      "line": 25,
-      "column": 13,
-      "evidence": "cursor.execute(query)"
-    },
-    {
       "cweId": "CWE-22",
       "ruleId": "ast-path-traversal",
       "vulnerability": "Path Traversal",
@@ -87,5 +76,5 @@
       "evidence": "command"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:46.749Z"
+  "enriched_at": "2026-06-07T14:05:46.005Z"
 }

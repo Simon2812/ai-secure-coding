@@ -22,17 +22,6 @@
       "evidence": "\"SELECT record_id, payload, size_hint \"\r\n            \"FROM stream_records \"\r\n            \"WHERE stream_name = ? AND stat"
     },
     {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "cursor.execute() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-48.py",
-      "line": 31,
-      "column": 9,
-      "evidence": "cursor.execute(\r\n            \"SELECT record_id, payload, size_hint \"\r\n            \"FROM stream_records \"\r\n            \"W"
-    },
-    {
       "cweId": "CWE-22",
       "ruleId": "ast-path-traversal",
       "vulnerability": "Path Traversal",
@@ -44,5 +33,5 @@
       "evidence": "target"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:48.061Z"
+  "enriched_at": "2026-06-07T14:05:47.230Z"
 }

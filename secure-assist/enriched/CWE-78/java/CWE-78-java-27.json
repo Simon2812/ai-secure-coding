@@ -33,5 +33,5 @@
       "evidence": "rt.exec(cmd, env, new java.io.File(System.getProperty(\"user.dir\")))"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:42.041Z"
+  "enriched_at": "2026-06-07T14:05:41.310Z"
 }

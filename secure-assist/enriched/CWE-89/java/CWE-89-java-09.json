@@ -33,5 +33,5 @@
       "evidence": "\"update accounts set status='closed' where id='\" + accountId + \"'\""
     }
   ],
-  "enriched_at": "2026-06-07T12:34:43.753Z"
+  "enriched_at": "2026-06-07T14:05:43.017Z"
 }

@@ -44,17 +44,6 @@
       "evidence": "lookup_query"
     },
     {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "cursor.execute() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-24.py",
-      "line": 41,
-      "column": 9,
-      "evidence": "cursor.execute(lookup_query)"
-    },
-    {
       "cweId": "CWE-259",
       "ruleId": "ast-hardcoded-cred",
       "vulnerability": "Use of Hard-coded Password",
@@ -66,5 +55,5 @@
       "evidence": "\"support_pass\""
     }
   ],
-  "enriched_at": "2026-06-07T12:34:44.724Z"
+  "enriched_at": "2026-06-07T14:05:43.947Z"
 }

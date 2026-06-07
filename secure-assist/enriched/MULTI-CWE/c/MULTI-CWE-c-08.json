@@ -44,5 +44,5 @@
       "evidence": "execl(\"/bin/ls\", \"ls\", path, (char *)NULL)"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:45.354Z"
+  "enriched_at": "2026-06-07T14:05:44.519Z"
 }

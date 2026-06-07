@@ -33,5 +33,5 @@
       "evidence": "new ProcessBuilder(\"sh\", \"-c\", commandLine)"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:42.224Z"
+  "enriched_at": "2026-06-07T14:05:41.502Z"
 }

@@ -120,17 +120,6 @@
       "evidence": "command"
     },
     {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "cursor.execute() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-31.py",
-      "line": 155,
-      "column": 13,
-      "evidence": "cursor.execute(\r\n                \"SELECT probe_id, status FROM probe_runs WHERE probe_id = ? ORDER BY id DESC LIMIT 1\",\r"
-    },
-    {
       "cweId": "CWE-22",
       "ruleId": "ast-path-traversal",
       "vulnerability": "Path Traversal",
@@ -175,5 +164,5 @@
       "evidence": "copy_path"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:47.624Z"
+  "enriched_at": "2026-06-07T14:05:46.766Z"
 }

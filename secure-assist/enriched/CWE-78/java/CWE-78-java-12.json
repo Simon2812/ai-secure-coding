@@ -33,5 +33,5 @@
       "evidence": "Runtime.getRuntime().exec(commandPrefix + argument)"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:41.938Z"
+  "enriched_at": "2026-06-07T14:05:41.213Z"
 }

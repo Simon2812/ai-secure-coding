@@ -31,18 +31,7 @@
       "line": 33,
       "column": 35,
       "evidence": "q"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "db.execute() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-38.py",
-      "line": 33,
-      "column": 24,
-      "evidence": "db.execute(q)"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:44.813Z"
+  "enriched_at": "2026-06-07T14:05:44.032Z"
 }

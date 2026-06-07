@@ -33,5 +33,5 @@
       "evidence": "execlp(\"sh\", \"sh\", \"-c\", cmd, (char *)NULL)"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:41.475Z"
+  "enriched_at": "2026-06-07T14:05:40.716Z"
 }

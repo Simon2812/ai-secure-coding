@@ -147,7 +147,10 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
         const innerArgs = callArgs(queryArg);
         if (innerArgs.length > 0) queryArg = innerArgs[0];
       }
-      if (hasUnsafeSqlConstruction(queryArg, taint, valueMap)) {
+      // Use a function-scoped value map to avoid resolving `query` to an assignment
+      // from a different function (global map causes cross-function FPs).
+      const localValueMap = buildLocalValueMap(node, root);
+      if (hasUnsafeSqlConstruction(queryArg, taint, localValueMap)) {
         findings.push(makeAstFinding({
           cweId: "CWE-89", ruleId: "ast-sqli",
           vulnerability: "SQL Injection",
@@ -358,11 +361,16 @@ function callArgs(node: Node): Node[] {
 }
 
 function hasUnsafeSqlConstruction(node: Node, taint: TaintTracker, valueMap?: Map<string, Node>): boolean {
-  // Tainted or resolvable identifier
+  // Tainted or resolvable identifier.
+  // IMPORTANT: check local-scope assignment FIRST (via valueMap) before falling back
+  // to the global taint set. This prevents cross-function taint pollution where
+  // `query` tainted in function A incorrectly flags the same-named variable in
+  // function B that assigns it a safe literal.
   if (node.type === "identifier") {
-    if (taint.expressionIsTainted(node)) return true;
     const resolved = valueMap?.get(node.text);
     if (resolved && resolved !== node) return hasUnsafeSqlConstruction(resolved, taint, valueMap);
+    // No local assignment — fall back to global taint
+    if (taint.expressionIsTainted(node)) return true;
     return false;
   }
 
@@ -383,6 +391,32 @@ function hasUnsafeSqlConstruction(node: Node, taint: TaintTracker, valueMap?: Ma
 function buildPythonValueMap(root: Node): Map<string, Node> {
   const map = new Map<string, Node>();
   for (const node of walkAll(root)) {
+    if (node.type === "assignment") {
+      const lhs = node.childForFieldName("left");
+      const rhs = node.childForFieldName("right");
+      if (lhs?.type === "identifier" && rhs) map.set(lhs.text, rhs);
+    }
+  }
+  return map;
+}
+
+/**
+ * Build a value map scoped to the enclosing function of `contextNode`.
+ * Prevents cross-function variable resolution — e.g. a `query` variable in one
+ * function polluting the resolution of `query` in an unrelated function.
+ */
+function buildLocalValueMap(contextNode: Node, root: Node): Map<string, Node> {
+  let searchRoot: Node = root;
+  let cursor: Node | null = contextNode.parent;
+  while (cursor) {
+    if (cursor.type === "function_definition") {
+      searchRoot = cursor.childForFieldName("body") ?? cursor;
+      break;
+    }
+    cursor = cursor.parent;
+  }
+  const map = new Map<string, Node>();
+  for (const node of walkAll(searchRoot)) {
     if (node.type === "assignment") {
       const lhs = node.childForFieldName("left");
       const rhs = node.childForFieldName("right");

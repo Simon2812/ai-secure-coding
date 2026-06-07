@@ -44,5 +44,5 @@
       "evidence": "catalog[idx].price * order->lines[i].quantity"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:48.501Z"
+  "enriched_at": "2026-06-07T14:05:47.572Z"
 }

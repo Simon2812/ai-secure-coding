@@ -31,18 +31,7 @@
       "line": 47,
       "column": 13,
       "evidence": "command"
-    },
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-06.py",
-      "line": 117,
-      "column": 31,
-      "evidence": "command"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:46.500Z"
+  "enriched_at": "2026-06-07T14:05:45.758Z"
 }

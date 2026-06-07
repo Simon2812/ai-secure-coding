@@ -22,17 +22,6 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "text() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-39.py",
-      "line": 22,
-      "column": 16,
-      "evidence": "text(\r\n            \"SELECT id, actor, action, created_at \"\r\n            \"FROM audit_events \"\r\n            \"WHERE actor ="
-    },
-    {
       "cweId": "CWE-89",
       "ruleId": "ast-sqli",
       "vulnerability": "SQL Injection",
@@ -42,18 +31,7 @@
       "line": 31,
       "column": 38,
       "evidence": "stmt"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "conn.execute() uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-39.py",
-      "line": 31,
-      "column": 25,
-      "evidence": "conn.execute(stmt, {\"lim\": limit})"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:44.819Z"
+  "enriched_at": "2026-06-07T14:05:44.038Z"
 }

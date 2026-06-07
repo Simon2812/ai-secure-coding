@@ -28,17 +28,6 @@
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
       "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-57.py",
-      "line": 68,
-      "column": 25,
-      "evidence": "cmd"
-    },
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-57.py",
       "line": 70,
       "column": 25,
       "evidence": "\"SELECT COUNT(*) FROM \" + table"
@@ -55,5 +44,5 @@
       "evidence": "\"wh_pass\""
     }
   ],
-  "enriched_at": "2026-06-07T12:34:44.956Z"
+  "enriched_at": "2026-06-07T14:05:44.158Z"
 }

@@ -33,5 +33,5 @@
       "evidence": "Runtime.getRuntime().exec(scanCmd)"
     }
   ],
-  "enriched_at": "2026-06-07T12:34:42.200Z"
+  "enriched_at": "2026-06-07T14:05:41.478Z"
 }
