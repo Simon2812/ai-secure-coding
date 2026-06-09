@@ -227,6 +227,64 @@ class Evaluator:
             (precision + recall)
         )
 
+    def _normalize_for_match(self, text):
+        """
+        Normalize whitespace for matching
+        while preserving token content.
+        """
+    
+        return " ".join(text.split())
+
+    
+    def _find_normalized_span(self, code, origin):
+        """
+        Find origin in code while ignoring
+        whitespace differences.
+    
+        Returns:
+            (start, end) in original code, or None.
+        """
+    
+        normalized_origin = self._normalize_for_match(origin)
+    
+        if not normalized_origin:
+            return None
+    
+        candidates = []
+    
+        in_token = False
+        token_start = None
+        normalized_parts = []
+        span_map = []
+    
+        for index, char in enumerate(code):
+            if char.isspace():
+                if in_token:
+                    in_token = False
+                continue
+    
+            if not in_token:
+                if normalized_parts:
+                    normalized_parts.append(" ")
+                    span_map.append((index, index))
+                in_token = True
+    
+            normalized_parts.append(char)
+            span_map.append((index, index + 1))
+    
+        normalized_code = "".join(normalized_parts)
+        match_start = normalized_code.find(normalized_origin)
+    
+        if match_start == -1:
+            return None
+    
+        match_end = match_start + len(normalized_origin)
+    
+        original_start = span_map[match_start][0]
+        original_end = span_map[match_end - 1][1]
+    
+        return original_start, original_end
+    
     def _apply_fixes(
         self,
         code,
@@ -277,6 +335,20 @@ class Evaluator:
                         origin,
                         replacement,
                         1,
+                    )
+                    continue
+                
+                span = self._find_normalized_span(
+                    patched_code,
+                    origin,
+                )
+                
+                if span is not None:
+                    start, end = span
+                    patched_code = (
+                        patched_code[:start] +
+                        replacement +
+                        patched_code[end:]
                     )
 
         return patched_code
