@@ -43,7 +43,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 🎯 Objectives
+## Objectives
 
 - Build a static analyzer + LLM layer
 - Train models on real datasets
