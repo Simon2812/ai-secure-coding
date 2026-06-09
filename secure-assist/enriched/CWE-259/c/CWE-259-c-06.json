@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential in macro 'PASSWORD'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\c\\CWE-259-c-06.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\c\\CWE-259-c-06.c",
       "line": 5,
       "column": 18,
       "evidence": "L\"rootAccess!\"\r"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.552Z"
+  "enriched_at": "2026-06-07T14:05:38.434Z"
 }

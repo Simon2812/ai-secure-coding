@@ -9,29 +9,6 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-96.java",
-      "line": 25,
-      "column": 29,
-      "evidence": "baseDirectory.resolve(relative)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Files.readAllLines() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-96.java",
-      "line": 31,
-      "column": 30,
-      "evidence": "Files.readAllLines(templateFile)"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:42.923Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T14:05:37.834Z"
 }

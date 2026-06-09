@@ -27,7 +27,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential in macro 'STATIC_TOKEN'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-01.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-01.c",
       "line": 9,
       "column": 22,
       "evidence": "\"Hardcoded\"\r"
@@ -38,11 +38,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-01.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-01.c",
       "line": 39,
       "column": 5,
       "evidence": "strcpy(material, STATIC_TOKEN)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.837Z"
+  "enriched_at": "2026-06-07T14:05:38.683Z"
 }

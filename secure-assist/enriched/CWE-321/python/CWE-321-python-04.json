@@ -31,11 +31,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'self.secret_key'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-04.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-04.py",
       "line": 6,
       "column": 27,
       "evidence": "b\"Z3Vlc3QtbW9kZS1rZXktZm9yLW5vdGVzLTAx\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:44.279Z"
+  "enriched_at": "2026-06-07T14:05:39.051Z"
 }

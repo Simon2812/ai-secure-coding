@@ -27,7 +27,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "prepareStatement() called with user-controlled SQL query.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
       "line": 43,
       "column": 65,
       "evidence": "sql"
@@ -38,7 +38,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "prepareStatement() called with user-controlled SQL query.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
       "line": 60,
       "column": 65,
       "evidence": "sql"
@@ -49,7 +49,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "prepareStatement() called with user-controlled SQL query.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
       "line": 83,
       "column": 65,
       "evidence": "sql"
@@ -60,7 +60,7 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "prepareStatement() called with user-controlled SQL query.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
       "line": 107,
       "column": 65,
       "evidence": "sql"
@@ -71,11 +71,11 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-56.java",
       "line": 135,
       "column": 54,
       "evidence": "sql"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:49.435Z"
+  "enriched_at": "2026-06-07T14:05:43.346Z"
 }

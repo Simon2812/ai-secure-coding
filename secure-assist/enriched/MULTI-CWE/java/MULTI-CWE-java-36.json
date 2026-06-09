@@ -16,22 +16,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Paths.get() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-36.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-36.java",
       "line": 19,
       "column": 28,
       "evidence": "Paths.get(storageRoot)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-36.java",
-      "line": 24,
-      "column": 23,
-      "evidence": "storageRoot.resolve(attachmentName == null ? \"default.bin\" : attachmentName)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.284Z"
+  "enriched_at": "2026-06-07T14:05:45.454Z"
 }

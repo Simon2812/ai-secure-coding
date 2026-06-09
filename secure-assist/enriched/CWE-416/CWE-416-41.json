@@ -16,21 +16,10 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
       "line": 17,
       "column": 33,
       "evidence": "p->length + 1"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'p' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
-      "line": 20,
-      "column": 14,
-      "evidence": "p"
     },
     {
       "cweId": "CWE-787",
@@ -38,7 +27,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
       "line": 24,
       "column": 5,
       "evidence": "strcpy(p->content, text)"
@@ -48,12 +37,12 @@
       "ruleId": "ast-use-after-free",
       "vulnerability": "Use After Free",
       "severity": "high",
-      "message": "Pointer 'pkt' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
-      "line": 52,
-      "column": 10,
-      "evidence": "pkt"
+      "message": "Pointer 'p' is used after being freed.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-41.c",
+      "line": 24,
+      "column": 12,
+      "evidence": "p"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.634Z"
+  "enriched_at": "2026-06-07T14:05:40.289Z"
 }

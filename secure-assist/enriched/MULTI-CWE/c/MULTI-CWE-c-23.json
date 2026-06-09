@@ -47,7 +47,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "sscanf() with %s format specifier may write past buffer bounds.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-23.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-23.c",
       "line": 40,
       "column": 9,
       "evidence": "sscanf(argv[2], \"%s\", cfg->label)"
@@ -58,22 +58,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'entry' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-23.c",
-      "line": 76,
-      "column": 14,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-23.c",
+      "line": 108,
+      "column": 12,
       "evidence": "entry"
-    },
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "popen() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-23.c",
-      "line": 83,
-      "column": 20,
-      "evidence": "popen(command_line, \"r\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.631Z"
+  "enriched_at": "2026-06-07T14:05:44.686Z"
 }

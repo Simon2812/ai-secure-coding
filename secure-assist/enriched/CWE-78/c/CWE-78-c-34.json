@@ -27,7 +27,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "sprintf() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-34.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-34.c",
       "line": 13,
       "column": 5,
       "evidence": "sprintf(command, \"cat %s\", argv[1])"
@@ -38,11 +38,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "system() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-34.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-34.c",
       "line": 15,
       "column": 15,
       "evidence": "system(command)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.966Z"
+  "enriched_at": "2026-06-07T14:05:40.620Z"
 }

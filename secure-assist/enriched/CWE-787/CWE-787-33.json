@@ -26,12 +26,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-33.c",
-      "line": 25,
-      "column": 17,
-      "evidence": "i < total"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-33.c",
+      "line": 32,
+      "column": 16,
+      "evidence": "i"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.549Z"
+  "enriched_at": "2026-06-07T14:05:42.563Z"
 }

@@ -16,11 +16,33 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-89.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-89.c",
       "line": 69,
       "column": 20,
       "evidence": "sizeof(p->frame) - head_len"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "memcpy() destination pointer uses user-controlled offset without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-89.c",
+      "line": 72,
+      "column": 12,
+      "evidence": "p->frame + cursor"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "memcpy() destination pointer uses user-controlled offset without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-89.c",
+      "line": 75,
+      "column": 12,
+      "evidence": "p->frame + cursor"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.927Z"
+  "enriched_at": "2026-06-07T14:05:42.875Z"
 }

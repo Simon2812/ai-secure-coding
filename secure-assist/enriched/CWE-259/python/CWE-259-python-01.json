@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'expected_secret'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-01.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-01.py",
       "line": 15,
       "column": 23,
       "evidence": "\"console-9241\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.730Z"
+  "enriched_at": "2026-06-07T14:05:38.572Z"
 }

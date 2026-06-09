@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
       "line": 8,
       "column": 12,
       "evidence": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest()"
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
       "line": 8,
       "column": 12,
       "evidence": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest()"
@@ -49,7 +49,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
       "line": 8,
       "column": 12,
       "evidence": "hmac.new(key, data, digestmod=hashlib.sha1)"
@@ -60,11 +60,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
       "line": 8,
       "column": 12,
       "evidence": "hmac.new(key, data, digestmod=hashlib.sha1)"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.608Z"
+  "enriched_at": "2026-06-07T14:05:39.537Z"
 }

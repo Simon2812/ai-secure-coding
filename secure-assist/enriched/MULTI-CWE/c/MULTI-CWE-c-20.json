@@ -37,11 +37,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcat() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-20.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-20.c",
       "line": 33,
       "column": 9,
       "evidence": "strcat(cfg->tag, argv[2])"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.590Z"
+  "enriched_at": "2026-06-07T14:05:44.650Z"
 }

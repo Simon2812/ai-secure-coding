@@ -11,16 +11,38 @@
   "vulnerabilities": [],
   "static_findings": [
     {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-38.py",
+      "line": 18,
+      "column": 23,
+      "evidence": "self.source"
+    },
+    {
       "cweId": "CWE-89",
       "ruleId": "ast-sqli",
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-38.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-38.py",
       "line": 66,
       "column": 28,
       "evidence": "statement"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-38.py",
+      "line": 111,
+      "column": 19,
+      "evidence": "self.output"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.361Z"
+  "enriched_at": "2026-06-07T14:05:46.949Z"
 }

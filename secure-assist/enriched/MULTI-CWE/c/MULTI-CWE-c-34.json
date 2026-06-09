@@ -24,29 +24,6 @@
       ]
     }
   ],
-  "static_findings": [
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-34.c",
-      "line": 40,
-      "column": 9,
-      "evidence": "strcpy(tmp, \"ok\")"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'tmp' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-34.c",
-      "line": 42,
-      "column": 14,
-      "evidence": "tmp"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:50.737Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T14:05:44.842Z"
 }

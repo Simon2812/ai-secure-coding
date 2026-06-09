@@ -27,11 +27,11 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "prepareStatement() called with user-controlled SQL query.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-20.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-20.java",
       "line": 45,
       "column": 17,
       "evidence": "\"update audit_events set processed=1 where actor='\" + identifier + \"'\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:49.173Z"
+  "enriched_at": "2026-06-07T14:05:43.108Z"
 }

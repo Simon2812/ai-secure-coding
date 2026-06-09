@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'smtp_pass'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-04.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-04.py",
       "line": 7,
       "column": 17,
       "evidence": "\"alert-5500\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.741Z"
+  "enriched_at": "2026-06-07T14:05:38.585Z"
 }

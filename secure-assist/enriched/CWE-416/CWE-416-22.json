@@ -22,25 +22,14 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-22.c",
-      "line": 14,
-      "column": 15,
-      "evidence": "idx"
-    },
-    {
       "cweId": "CWE-416",
       "ruleId": "ast-use-after-free",
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'n' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-22.c",
-      "line": 23,
-      "column": 14,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-22.c",
+      "line": 27,
+      "column": 26,
       "evidence": "n"
     },
     {
@@ -49,22 +38,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'entry' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-22.c",
-      "line": 44,
-      "column": 14,
-      "evidence": "entry"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-22.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-22.c",
       "line": 48,
-      "column": 5,
-      "evidence": "strcpy(entry->data, \"cached_value\")"
+      "column": 12,
+      "evidence": "entry"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.526Z"
+  "enriched_at": "2026-06-07T14:05:40.192Z"
 }

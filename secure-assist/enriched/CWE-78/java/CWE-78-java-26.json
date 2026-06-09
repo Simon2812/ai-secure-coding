@@ -27,11 +27,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "new ProcessBuilder() receives user-controlled command.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-26.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-26.java",
       "line": 49,
       "column": 34,
       "evidence": "new ProcessBuilder(cmd)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:46.795Z"
+  "enriched_at": "2026-06-07T14:05:41.300Z"
 }

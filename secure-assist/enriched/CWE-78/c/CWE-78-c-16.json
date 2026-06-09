@@ -27,7 +27,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-16.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-16.c",
       "line": 73,
       "column": 14,
       "evidence": "dataLen + recvResult / sizeof(wchar_t)"
@@ -38,11 +38,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "SYSTEM() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-16.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-16.c",
       "line": 90,
       "column": 9,
       "evidence": "SYSTEM(data)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.815Z"
+  "enriched_at": "2026-06-07T14:05:40.448Z"
 }

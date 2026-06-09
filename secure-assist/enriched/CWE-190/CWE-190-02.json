@@ -27,11 +27,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on 'input' (assigned a boundary constant) may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-190\\CWE-190-02.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-02.c",
       "line": 8,
       "column": 20,
       "evidence": "input * input"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:41.888Z"
+  "enriched_at": "2026-06-07T14:05:37.136Z"
 }

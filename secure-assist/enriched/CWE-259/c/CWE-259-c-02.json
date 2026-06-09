@@ -27,7 +27,7 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential in macro 'PASSWORD'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\c\\CWE-259-c-02.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\c\\CWE-259-c-02.c",
       "line": 5,
       "column": 18,
       "evidence": "\"svc-user-pass\"\r"
@@ -38,11 +38,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\c\\CWE-259-c-02.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\c\\CWE-259-c-02.c",
       "line": 14,
       "column": 9,
       "evidence": "strcpy(credential, PASSWORD)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.538Z"
+  "enriched_at": "2026-06-07T14:05:38.422Z"
 }

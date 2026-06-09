@@ -26,12 +26,23 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-08.c",
-      "line": 21,
-      "column": 25,
-      "evidence": "i < n"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-08.c",
+      "line": 23,
+      "column": 21,
+      "evidence": "strlen(buf)"
+    },
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "execl() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-08.c",
+      "line": 33,
+      "column": 9,
+      "evidence": "execl(\"/bin/ls\", \"ls\", path, (char *)NULL)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.465Z"
+  "enriched_at": "2026-06-07T14:05:44.519Z"
 }

@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'master_token'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-11.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-11.py",
       "line": 15,
       "column": 24,
       "evidence": "\"ServiceAuth2023!\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.764Z"
+  "enriched_at": "2026-06-07T14:05:38.609Z"
 }

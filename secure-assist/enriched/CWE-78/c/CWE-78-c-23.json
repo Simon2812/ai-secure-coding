@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential in macro 'ENV_KEY'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-23.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-23.c",
       "line": 6,
       "column": 17,
       "evidence": "L\"ADD\"\r"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.852Z"
+  "enriched_at": "2026-06-07T14:05:40.482Z"
 }

@@ -27,7 +27,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Increment/decrement of user-controlled integer 'target' may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-32.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-32.c",
       "line": 36,
       "column": 34,
       "evidence": "target++"
@@ -38,11 +38,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-32.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-32.c",
       "line": 34,
       "column": 11,
       "evidence": "target"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.535Z"
+  "enriched_at": "2026-06-07T14:05:42.557Z"
 }

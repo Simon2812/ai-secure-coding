@@ -47,7 +47,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Paths.get() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
       "line": 15,
       "column": 24,
       "evidence": "Paths.get(baseDir)"
@@ -58,7 +58,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Files.readAllLines() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
       "line": 51,
       "column": 30,
       "evidence": "Files.readAllLines(config, StandardCharsets.UTF_8)"
@@ -69,7 +69,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
       "line": 67,
       "column": 21,
       "evidence": "Runtime.getRuntime().exec(cmd)"
@@ -80,11 +80,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'storedPassword'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-28.java",
       "line": 22,
       "column": 33,
       "evidence": "\"admin123\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.190Z"
+  "enriched_at": "2026-06-07T14:05:45.341Z"
 }

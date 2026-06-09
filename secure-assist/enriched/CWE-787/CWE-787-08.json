@@ -20,18 +20,6 @@
       ]
     }
   ],
-  "static_findings": [
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "memcpy() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-08.c",
-      "line": 24,
-      "column": 29,
-      "evidence": "250 * sizeof(pair)"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:48.403Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T14:05:42.436Z"
 }

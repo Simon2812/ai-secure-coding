@@ -27,11 +27,22 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-02.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-02.py",
       "line": 45,
       "column": 24,
       "evidence": "user_path"
+    },
+    {
+      "cweId": "CWE-22",
+      "ruleId": "ast-path-traversal",
+      "vulnerability": "Path Traversal",
+      "severity": "high",
+      "message": "open() receives user-controlled path without validation.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-02.py",
+      "line": 59,
+      "column": 15,
+      "evidence": "target"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.481Z"
+  "enriched_at": "2026-06-07T14:05:45.672Z"
 }

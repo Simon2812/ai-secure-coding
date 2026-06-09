@@ -27,11 +27,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Increment/decrement of user-controlled integer 'state' may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-190\\CWE-190-07.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-07.c",
       "line": 9,
       "column": 5,
       "evidence": "state++"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:41.935Z"
+  "enriched_at": "2026-06-07T14:05:37.155Z"
 }

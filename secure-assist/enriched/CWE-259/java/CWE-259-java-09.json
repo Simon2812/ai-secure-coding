@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to PasswordAuthentication.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\java\\CWE-259-java-09.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\java\\CWE-259-java-09.java",
       "line": 7,
       "column": 17,
       "evidence": "\"directUser\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.667Z"
+  "enriched_at": "2026-06-07T14:05:38.524Z"
 }

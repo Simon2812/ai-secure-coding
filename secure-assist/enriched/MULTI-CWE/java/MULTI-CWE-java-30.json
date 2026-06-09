@@ -57,21 +57,10 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Paths.get() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
       "line": 42,
       "column": 21,
       "evidence": "Paths.get(jobsRoot, jobName)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Files.readAllLines() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
-      "line": 48,
-      "column": 30,
-      "evidence": "Files.readAllLines(path)"
     },
     {
       "cweId": "CWE-78",
@@ -79,7 +68,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
       "line": 61,
       "column": 27,
       "evidence": "Runtime.getRuntime().exec(command)"
@@ -90,7 +79,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"SHA-1\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
       "line": 79,
       "column": 32,
       "evidence": "MessageDigest.getInstance(\"SHA-1\")"
@@ -101,7 +90,7 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "getInstance(\"SHA-1\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
       "line": 79,
       "column": 32,
       "evidence": "MessageDigest.getInstance(\"SHA-1\")"
@@ -112,11 +101,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'storedPassword'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-30.java",
       "line": 32,
       "column": 33,
       "evidence": "\"opsPass!\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.226Z"
+  "enriched_at": "2026-06-07T14:05:45.374Z"
 }

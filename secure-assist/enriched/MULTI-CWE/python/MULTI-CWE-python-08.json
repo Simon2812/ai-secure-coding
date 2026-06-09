@@ -27,11 +27,22 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
+      "line": 62,
+      "column": 28,
+      "evidence": "statement"
+    },
+    {
+      "cweId": "CWE-89",
+      "ruleId": "ast-sqli",
+      "vulnerability": "SQL Injection",
+      "severity": "high",
+      "message": "SQL query is constructed with user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-08.py",
       "line": 72,
       "column": 17,
       "evidence": "\"SELECT id, requester, subject, priority, status \"\r\n                \"FROM tickets WHERE status = ? \"\r\n                \"O"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.598Z"
+  "enriched_at": "2026-06-07T14:05:45.828Z"
 }

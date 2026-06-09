@@ -16,7 +16,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
       "line": 36,
       "column": 13,
       "evidence": "region * segment_size"
@@ -27,7 +27,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
       "line": 37,
       "column": 11,
       "evidence": "start + segment_size"
@@ -38,7 +38,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Increment/decrement of user-controlled integer 'i' may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
       "line": 39,
       "column": 30,
       "evidence": "i++"
@@ -49,7 +49,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
       "line": 41,
       "column": 30,
       "evidence": "(unsigned char)(i + 30)"
@@ -60,7 +60,7 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Increment/decrement of user-controlled integer 'i' may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
       "line": 49,
       "column": 25,
       "evidence": "i++"
@@ -70,11 +70,11 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
-      "line": 39,
-      "column": 21,
-      "evidence": "i < end"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "line": 41,
+      "column": 25,
+      "evidence": "i"
     },
     {
       "cweId": "CWE-787",
@@ -82,11 +82,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-99.c",
       "line": 41,
       "column": 25,
       "evidence": "i"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.990Z"
+  "enriched_at": "2026-06-07T14:05:42.932Z"
 }

@@ -1,4 +1,4 @@
-# 🚀 AI Secure Coding Advisor
+# AI Secure Coding Advisor
 
 <p align="center">
   <b>AI-powered vulnerability detection & automated secure code fixing</b>
@@ -13,7 +13,7 @@
 
 ---
 
-## 📌 Overview
+## Overview
 
 The **AI Secure Coding Advisor** is an intelligent system that:
 
@@ -31,7 +31,7 @@ The system provides context-aware security insights and targets vulnerabilities 
 
 ---
 
-## 🧠 Problem
+## Problem
 
 Modern development suffers from:
 
@@ -43,7 +43,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 🎯 Objectives
+## Objectives
 
 - Build a static analyzer + LLM layer
 - Train models on real datasets
@@ -52,15 +52,15 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
-### 🔹 System Architecture (Entity Diagram)
+###  System Architecture (Entity Diagram)
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/5d1587c8-9246-4a78-93ee-bfe695e8a1c5" width="850"/>
 </p>
 
-### 🧩 Components
+### Components
 
 #### Data Sources
 - NIST datasets
@@ -81,7 +81,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 🖥️ Application Screenshots
+## Application Screenshots
 
 ### Settings Screen
 <p align="center">
@@ -110,15 +110,15 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 🔄 Typical User Flow
+## Typical User Flow
 
-### 🧪 Run Analysis
+### Run Analysis
 - Open CLI or IDE plugin
 - Select code/project
 - Start analysis
 - Receive vulnerability report
 
-### 🛠 Apply Fix
+### Apply Fix
 - Select vulnerability
 - View details (type, CWE, severity)
 - Review suggested fix
@@ -126,7 +126,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 👤 User Stories
+## User Stories
 
 - Developer receives real-time warnings
 - Student understands why code is insecure
@@ -136,7 +136,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## ⚙️ Technologies
+## Technologies
 
 - **Backend:** Python (Flask)
 - **Static Analysis:** AST + rule-based analysis
@@ -146,7 +146,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 🚀 Future Work
+## Future Work
 
 - Full IDE integration
 - Better LLM fine-tuning
@@ -155,7 +155,7 @@ This makes real threats difficult to identify and fix efficiently.
 
 ---
 
-## 👨‍💻 Authors
+## Authors
 
 - Simon Pakhtusov
 - Denis Rozhansky
@@ -164,7 +164,7 @@ Computer Science Students (Bar-Ilan University)
 
 ---
 
-## ⭐ Why This Project
+## Why This Project
 
 Unlike traditional tools, this system:
 

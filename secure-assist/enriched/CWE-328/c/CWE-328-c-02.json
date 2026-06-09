@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "CryptCreateHash() uses CALG_MD5, a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-02.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-02.c",
       "line": 68,
       "column": 31,
       "evidence": "CALG_MD5"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "CryptCreateHash() uses CALG_MD5, a weak hashing algorithm.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-02.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-328\\c\\CWE-328-c-02.c",
       "line": 68,
       "column": 31,
       "evidence": "CALG_MD5"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.674Z"
+  "enriched_at": "2026-06-07T14:05:39.614Z"
 }

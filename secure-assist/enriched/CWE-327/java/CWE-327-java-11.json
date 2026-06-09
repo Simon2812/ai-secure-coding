@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"RC4\") uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\java\\CWE-327-java-11.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\java\\CWE-327-java-11.java",
       "line": 10,
       "column": 29,
       "evidence": "Cipher.getInstance(\"RC4\")"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"RC4\") uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\java\\CWE-327-java-11.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\java\\CWE-327-java-11.java",
       "line": 12,
       "column": 38,
       "evidence": "KeyGenerator.getInstance(\"RC4\")"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.524Z"
+  "enriched_at": "2026-06-07T14:05:39.472Z"
 }

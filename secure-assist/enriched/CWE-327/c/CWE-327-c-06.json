@@ -27,11 +27,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "CryptDeriveKey() uses CALG_RC5, a weak or broken cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-327\\c\\CWE-327-c-06.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-327\\c\\CWE-327-c-06.c",
       "line": 64,
       "column": 33,
       "evidence": "CALG_RC5"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.209Z"
+  "enriched_at": "2026-06-07T14:05:39.210Z"
 }

@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded password passed to getConnection().",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-01.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-01.java",
       "line": 18,
       "column": 72,
       "evidence": "authValue"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.638Z"
+  "enriched_at": "2026-06-07T14:05:38.500Z"
 }

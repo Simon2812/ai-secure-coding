@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:48.051Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "subprocess.run() receives user-controlled data via 'input=' keyword — shell will read it as script input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-41.py",
+      "line": 15,
+      "column": 36,
+      "evidence": "input=text"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:42.068Z"
 }

@@ -27,22 +27,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'buf' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-20.c",
-      "line": 16,
-      "column": 10,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-416\\CWE-416-20.c",
+      "line": 19,
+      "column": 33,
       "evidence": "buf"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-416\\CWE-416-20.c",
-      "line": 35,
-      "column": 5,
-      "evidence": "strcpy(input, \"example\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.514Z"
+  "enriched_at": "2026-06-07T14:05:40.183Z"
 }

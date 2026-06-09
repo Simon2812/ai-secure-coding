@@ -37,7 +37,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
       "line": 20,
       "column": 30,
       "evidence": "rootDirectory + f"
@@ -48,7 +48,7 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Files.readAllBytes() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
       "line": 26,
       "column": 23,
       "evidence": "Files.readAllBytes(file.toPath())"
@@ -59,7 +59,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"DES\") uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
       "line": 35,
       "column": 25,
       "evidence": "Cipher.getInstance(\"DES\")"
@@ -70,7 +70,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'keyBytes'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
       "line": 32,
       "column": 27,
       "evidence": "\"weakKey12345678\".getBytes(StandardCharsets.UTF_8)"
@@ -81,11 +81,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to SecretKeySpec.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-13.java",
       "line": 33,
       "column": 47,
       "evidence": "keyBytes"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.062Z"
+  "enriched_at": "2026-06-07T14:05:45.177Z"
 }

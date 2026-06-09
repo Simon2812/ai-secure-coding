@@ -27,11 +27,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-21.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-21.py",
       "line": 15,
       "column": 36,
       "evidence": "args"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:47.964Z"
+  "enriched_at": "2026-06-07T14:05:41.980Z"
 }

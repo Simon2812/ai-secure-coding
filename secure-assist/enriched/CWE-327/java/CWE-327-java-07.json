@@ -31,7 +31,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "KeyGenerator.getInstance(\"DES\").generateKey() uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-327\\java\\CWE-327-java-07.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-327\\java\\CWE-327-java-07.java",
       "line": 48,
       "column": 29,
       "evidence": "KeyGenerator.getInstance(\"DES\").generateKey()"
@@ -42,11 +42,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"DES\") uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-327\\java\\CWE-327-java-07.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-327\\java\\CWE-327-java-07.java",
       "line": 48,
       "column": 29,
       "evidence": "KeyGenerator.getInstance(\"DES\")"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.485Z"
+  "enriched_at": "2026-06-07T14:05:39.442Z"
 }

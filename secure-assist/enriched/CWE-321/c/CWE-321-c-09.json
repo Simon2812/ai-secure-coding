@@ -31,7 +31,7 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential in macro 'STATIC_KEY'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-09.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-09.c",
       "line": 1,
       "column": 20,
       "evidence": "\"BackupSeedValue42\"\r"
@@ -42,11 +42,33 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-09.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-09.c",
       "line": 91,
       "column": 9,
       "evidence": "strcpy(material, STATIC_KEY)"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Array write with constant negative index (-1) — always out of bounds.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-09.c",
+      "line": 54,
+      "column": 9,
+      "evidence": "buf[len - 1] = '\\0'"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Array write with constant negative index (-1) — always out of bounds.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\c\\CWE-321-c-09.c",
+      "line": 85,
+      "column": 17,
+      "evidence": "material[len - 1] = '\\0'"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.923Z"
+  "enriched_at": "2026-06-07T14:05:38.763Z"
 }

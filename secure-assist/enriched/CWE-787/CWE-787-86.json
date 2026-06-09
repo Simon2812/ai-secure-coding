@@ -16,11 +16,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-86.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-86.c",
       "line": 33,
       "column": 32,
       "evidence": "sizeof(int) * p->capacity"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.906Z"
+  "enriched_at": "2026-06-07T14:05:42.853Z"
 }

@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:46.033Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "execlp() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\c\\CWE-78-c-47.c",
+      "line": 20,
+      "column": 9,
+      "evidence": "execlp(\"sh\", \"sh\", \"-c\", buf, (char *)NULL)"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:40.706Z"
 }

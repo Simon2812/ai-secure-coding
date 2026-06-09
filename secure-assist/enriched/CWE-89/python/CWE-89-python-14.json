@@ -27,11 +27,22 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-14.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-14.py",
       "line": 35,
       "column": 29,
       "evidence": "base"
+    },
+    {
+      "cweId": "CWE-259",
+      "ruleId": "ast-hardcoded-cred",
+      "vulnerability": "Use of Hard-coded Password",
+      "severity": "high",
+      "message": "Hard-coded credential passed as keyword argument 'password'.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-14.py",
+      "line": 16,
+      "column": 22,
+      "evidence": "\"analytics_pass\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:49.970Z"
+  "enriched_at": "2026-06-07T14:05:43.883Z"
 }

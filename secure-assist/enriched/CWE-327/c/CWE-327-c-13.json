@@ -31,7 +31,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "CryptDeriveKey() uses CALG_DES, a weak or broken cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\c\\CWE-327-c-13.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\c\\CWE-327-c-13.c",
       "line": 46,
       "column": 35,
       "evidence": "CALG_DES"
@@ -42,11 +42,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "CryptDeriveKey() uses CALG_RC4, a weak or broken cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-327\\c\\CWE-327-c-13.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\c\\CWE-327-c-13.c",
       "line": 58,
       "column": 35,
       "evidence": "CALG_RC4"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.297Z"
+  "enriched_at": "2026-06-07T14:05:39.282Z"
 }

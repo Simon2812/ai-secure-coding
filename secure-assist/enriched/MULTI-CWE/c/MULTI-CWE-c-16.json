@@ -37,11 +37,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "system() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-16.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-16.c",
       "line": 56,
       "column": 5,
       "evidence": "system(command)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.542Z"
+  "enriched_at": "2026-06-07T14:05:44.610Z"
 }

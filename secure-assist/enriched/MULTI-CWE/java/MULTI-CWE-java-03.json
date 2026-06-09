@@ -27,7 +27,7 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-03.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-03.java",
       "line": 16,
       "column": 27,
       "evidence": "Runtime.getRuntime().exec(command)"
@@ -38,7 +38,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"MD5\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-03.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-03.java",
       "line": 55,
       "column": 32,
       "evidence": "MessageDigest.getInstance(\"MD5\")"
@@ -49,11 +49,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "getInstance(\"MD5\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-03.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-03.java",
       "line": 55,
       "column": 32,
       "evidence": "MessageDigest.getInstance(\"MD5\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.977Z"
+  "enriched_at": "2026-06-07T14:05:45.088Z"
 }

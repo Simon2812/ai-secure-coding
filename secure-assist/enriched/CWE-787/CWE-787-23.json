@@ -20,6 +20,40 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:48.461Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Loop writes via 'pointer' which points before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-23.c",
+      "line": 18,
+      "column": 5,
+      "evidence": "for (size_t i = 0; i < 100; i++)\r\n    {\r\n        pointer[i] = src[i];\r\n    }"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Write via 'pointer' which points before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-23.c",
+      "line": 20,
+      "column": 9,
+      "evidence": "pointer[i] = src[i]"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Write via 'pointer' which points before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-23.c",
+      "line": 23,
+      "column": 5,
+      "evidence": "pointer[99] = '\\0'"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:42.501Z"
 }

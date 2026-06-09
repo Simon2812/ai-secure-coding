@@ -22,48 +22,15 @@
   ],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
-      "line": 12,
-      "column": 28,
-      "evidence": "4 * sizeof(int)"
-    },
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "memset() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
-      "line": 18,
-      "column": 23,
-      "evidence": "4 * sizeof(int)"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'series' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
-      "line": 22,
-      "column": 14,
-      "evidence": "series"
-    },
-    {
       "cweId": "CWE-787",
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
-      "line": 28,
-      "column": 17,
-      "evidence": "i < limit"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
+      "line": 35,
+      "column": 16,
+      "evidence": "i"
     },
     {
       "cweId": "CWE-416",
@@ -71,11 +38,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'series' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
-      "line": 43,
-      "column": 10,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-39.c",
+      "line": 35,
+      "column": 9,
       "evidence": "series"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.599Z"
+  "enriched_at": "2026-06-07T14:05:42.596Z"
 }

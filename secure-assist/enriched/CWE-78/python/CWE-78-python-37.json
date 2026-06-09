@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:48.038Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "asyncio.create_subprocess_shell() receives user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-37.py",
+      "line": 14,
+      "column": 25,
+      "evidence": "cmd"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:42.051Z"
 }

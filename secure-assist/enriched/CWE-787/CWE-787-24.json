@@ -20,6 +20,29 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:48.465Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "strncpy() destination pointer is set before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-24.c",
+      "line": 21,
+      "column": 5,
+      "evidence": "strncpy(ptr, src, 9)"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Write via 'ptr' which points before its buffer (pointer underflow).",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-24.c",
+      "line": 22,
+      "column": 5,
+      "evidence": "ptr[9] = '\\0'"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:42.506Z"
 }

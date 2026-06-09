@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded key material passed to KerberosKey.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-04.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-259\\java\\CWE-259-java-04.java",
       "line": 19,
       "column": 21,
       "evidence": "principal"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.651Z"
+  "enriched_at": "2026-06-07T14:05:38.511Z"
 }

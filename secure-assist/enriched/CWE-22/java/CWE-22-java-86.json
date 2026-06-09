@@ -9,40 +9,6 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path.of() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-86.java",
-      "line": 11,
-      "column": 27,
-      "evidence": "Path.of(artifactName)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-86.java",
-      "line": 13,
-      "column": 29,
-      "evidence": "ROOT.resolve(safeName)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Files.readString() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-22\\java\\CWE-22-java-86.java",
-      "line": 19,
-      "column": 16,
-      "evidence": "Files.readString(artifactFile)"
-    }
-  ],
-  "enriched_at": "2026-05-27T15:52:42.870Z"
+  "static_findings": [],
+  "enriched_at": "2026-06-07T14:05:37.795Z"
 }

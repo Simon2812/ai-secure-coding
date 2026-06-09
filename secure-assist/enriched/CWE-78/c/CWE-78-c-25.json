@@ -27,11 +27,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "POPEN() receives a non-literal command argument.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-25.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\c\\CWE-78-c-25.c",
       "line": 34,
       "column": 16,
       "evidence": "POPEN(data, L\"w\")"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.859Z"
+  "enriched_at": "2026-06-07T14:05:40.489Z"
 }

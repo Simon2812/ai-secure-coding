@@ -16,11 +16,11 @@
       "vulnerability": "Use of Hard-coded Cryptographic Key",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'result_token'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-65.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-65.py",
       "line": 23,
       "column": 32,
       "evidence": "'safe!'"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.183Z"
+  "enriched_at": "2026-06-07T14:05:42.222Z"
 }

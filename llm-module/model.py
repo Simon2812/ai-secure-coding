@@ -48,7 +48,7 @@ class SecureCodingModel:
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
             "prompt_version": "v1",
             "max_length": 2048,
-            "epochs": 7,
+            "epochs": 3,
             "learning_rate": 1e-4,
             "lora_rank": 8,
         }
@@ -191,7 +191,7 @@ class SecureCodingModel:
         print("Checkpoint saved.")
 
 
-    def build_input(self, code, line_offset, static_findings):
+    def build_input(self, code, static_findings):
         """
         Build unified prompt used for:
         - training
@@ -214,56 +214,10 @@ class SecureCodingModel:
         # Inject dynamic content.
         prompt = template \
             .replace("{code}", code) \
-            .replace("{line_offset}", str(line_offset)) \
             .replace(
                 "{static_findings}",
                 json.dumps(static_findings, indent=2)
             )
-
-        return prompt.strip()
-
-
-    def build_regeneration_input(
-        self,
-        code,
-        line_offset,
-        static_findings,
-        cwe,
-        rejected_fixes,
-    ):
-        """
-        Build prompt for
-        fix regeneration.
-        """
-
-        prompt_path = (
-            Path(__file__).parent
-            / "prompts"
-            / "regenerate_fix.txt"
-        )
-
-        if not prompt_path.exists():
-            raise FileNotFoundError(
-                f"Prompt not found: {prompt_path}"
-            )
-
-        with open(prompt_path, "r", encoding="utf-8") as file:
-            template = file.read()
-
-        prompt = (
-            template
-            .replace("{code}", code)
-            .replace("{line_offset}", str(line_offset))
-            .replace(
-                "{static_findings}",
-                json.dumps(static_findings, indent=2),
-            )
-            .replace("{cwe}", cwe)
-            .replace(
-                "{rejected_fixes}",
-                json.dumps(rejected_fixes, indent=2),
-            )
-        )
 
         return prompt.strip()
 
@@ -324,7 +278,7 @@ class SecureCodingModel:
         return self.extract_json(text)
 
 
-    def predict(self, code, line_offset, static_findings):
+    def predict(self, code, static_findings):
         """
         Generate structured vulnerability prediction.
         """
@@ -334,44 +288,10 @@ class SecureCodingModel:
 
         input_text = self.build_input(
             code,
-            line_offset,
             static_findings,
         )
 
         return self._generate_json(input_text)
-
-
-    def regenerate_fix(
-        self,
-        code,
-        line_offset,
-        static_findings,
-        cwe,
-        rejected_fixes,
-    ):
-        """
-        Generate alternative fixes
-        for one vulnerability.
-        """
-
-        if self.model is None:
-            raise RuntimeError("Model must be loaded.")
-
-        input_text = self.build_regeneration_input(
-            code,
-            line_offset,
-            static_findings,
-            cwe,
-            rejected_fixes,
-        )
-
-        return self._generate_json(
-            input_text,
-            generation_overrides={
-                "temperature": 0.2,
-                "do_sample": True,
-            },
-        )
 
 
     def load_dataset(self, metadata_root):
@@ -397,7 +317,6 @@ class SecureCodingModel:
 
             sample = {
                 "code": code,
-                "line_offset": 0,  # Can be used for line number adjustments if needed.
                 "target": metadata["vulnerabilities"],
                 "split": metadata["split"],
                 "language": metadata["language"],
@@ -459,7 +378,6 @@ class SecureCodingModel:
             for sample in train_data:
                 prompt = self.build_input(
                     sample["code"],
-                    sample["line_offset"],
                     sample["static_findings"],
                 )
 
@@ -575,7 +493,6 @@ class SecureCodingModel:
                     try:
                         pred = self.predict(
                             sample["code"],
-                            sample["line_offset"],
                             sample["static_findings"],
                         )
                     except Exception as e:
@@ -669,7 +586,6 @@ class SecureCodingModel:
                 try:
                     pred = self.predict(
                         sample["code"],
-                        sample["line_offset"],
                         sample["static_findings"],
                     )
                 except Exception as e:

@@ -16,11 +16,11 @@
       "vulnerability": "SQL Injection",
       "severity": "high",
       "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-88.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-88.py",
       "line": 17,
       "column": 17,
       "evidence": "query"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.361Z"
+  "enriched_at": "2026-06-07T14:05:44.382Z"
 }

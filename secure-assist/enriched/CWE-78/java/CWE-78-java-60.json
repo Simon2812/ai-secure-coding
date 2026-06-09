@@ -20,6 +20,18 @@
       ]
     }
   ],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:47.252Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
+      "severity": "high",
+      "message": "Runtime.exec() receives user-controlled input.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\java\\CWE-78-java-60.java",
+      "line": 19,
+      "column": 27,
+      "evidence": "Runtime.getRuntime().exec(taskCommand)"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:41.507Z"
 }

@@ -9,6 +9,18 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.761Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-321",
+      "ruleId": "ast-hardcoded-cred",
+      "vulnerability": "Use of Hard-coded Cryptographic Key",
+      "severity": "high",
+      "message": "Hard-coded credential assigned to 'key'.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\python\\SAFE-NONCWE-python-10.py",
+      "line": 182,
+      "column": 19,
+      "evidence": "f\"{year}-W{week:02d}\""
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:48.615Z"
 }

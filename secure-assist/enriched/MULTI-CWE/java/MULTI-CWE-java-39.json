@@ -16,11 +16,11 @@
       "vulnerability": "Path Traversal",
       "severity": "high",
       "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-39.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-39.java",
       "line": 46,
       "column": 16,
       "evidence": "base.resolve(selected)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:51.319Z"
+  "enriched_at": "2026-06-07T14:05:45.498Z"
 }

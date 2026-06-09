@@ -11,60 +11,27 @@
   "vulnerabilities": [],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
-      "line": 50,
-      "column": 22,
-      "evidence": "(int *)malloc((size_t)limit * sizeof(int))"
-    },
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
-      "line": 55,
-      "column": 28,
-      "evidence": "(i + 1) * (limit - i)"
-    },
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
-      "line": 50,
-      "column": 36,
-      "evidence": "(size_t)limit * sizeof(int)"
-    },
-    {
       "cweId": "CWE-787",
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
-      "line": 53,
-      "column": 25,
-      "evidence": "i < limit"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
+      "line": 55,
+      "column": 23,
+      "evidence": "i"
     },
     {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
+      "cweId": "CWE-78",
+      "ruleId": "ast-cmd-injection",
+      "vulnerability": "OS Command Injection",
       "severity": "high",
-      "message": "Pointer 'table' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
-      "line": 63,
-      "column": 18,
-      "evidence": "table"
+      "message": "execl() receives user-controlled argument.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-49.c",
+      "line": 69,
+      "column": 9,
+      "evidence": "execl(\"/bin/echo\", \"echo\", name, (char *)NULL)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.916Z"
+  "enriched_at": "2026-06-07T14:05:45.044Z"
 }

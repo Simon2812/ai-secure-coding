@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential assigned to 'self.unlock_phrase'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-05.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-05.py",
       "line": 8,
       "column": 30,
       "evidence": "\"archive-open-993\""
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.745Z"
+  "enriched_at": "2026-06-07T14:05:38.589Z"
 }

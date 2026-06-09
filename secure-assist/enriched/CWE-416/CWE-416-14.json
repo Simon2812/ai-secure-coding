@@ -27,10 +27,21 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
       "line": 17,
       "column": 18,
       "evidence": "strcpy(text, src)"
+    },
+    {
+      "cweId": "CWE-416",
+      "ruleId": "ast-use-after-free",
+      "vulnerability": "Use After Free",
+      "severity": "high",
+      "message": "Pointer 'text' is used after being freed.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
+      "line": 33,
+      "column": 9,
+      "evidence": "text"
     },
     {
       "cweId": "CWE-787",
@@ -38,7 +49,7 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
       "line": 34,
       "column": 14,
       "evidence": "strcpy(text, other.text)"
@@ -49,11 +60,11 @@
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
       "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-416\\CWE-416-14.cpp",
       "line": 44,
       "column": 14,
       "evidence": "strcpy(text, other.text)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:45.477Z"
+  "enriched_at": "2026-06-07T14:05:40.155Z"
 }

@@ -26,12 +26,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Array write uses user-controlled index without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-787\\CWE-787-21.c",
+      "message": "Array write with constant negative index (-1) — always out of bounds.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-787\\CWE-787-21.c",
       "line": 26,
-      "column": 13,
-      "evidence": "pos"
+      "column": 9,
+      "evidence": "arr[pos] = 1"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.452Z"
+  "enriched_at": "2026-06-07T14:05:42.493Z"
 }

@@ -12,15 +12,37 @@
   "static_findings": [
     {
       "cweId": "CWE-190",
-      "ruleId": "integer-overflow",
+      "ruleId": "ast-integer-overflow",
       "vulnerability": "Integer Overflow",
       "severity": "medium",
-      "message": "This arithmetic operation may overflow before being used for allocation, copying, or size calculation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-19.c",
-      "line": 53,
-      "column": 5,
-      "evidence": "int total_days = e->days_present + e->days_late;"
+      "message": "Increment/decrement of user-controlled integer 'count' may overflow.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-19.c",
+      "line": 44,
+      "column": 18,
+      "evidence": "count++"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-19.c",
+      "line": 44,
+      "column": 18,
+      "evidence": "count++"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Array write uses user-controlled index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-19.c",
+      "line": 44,
+      "column": 18,
+      "evidence": "count++"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.650Z"
+  "enriched_at": "2026-06-07T14:05:47.486Z"
 }

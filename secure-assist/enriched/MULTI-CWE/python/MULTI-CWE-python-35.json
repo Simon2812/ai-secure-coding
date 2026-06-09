@@ -41,11 +41,11 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "DES.new() uses a broken or weak cipher.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-35.py",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-35.py",
       "line": 31,
       "column": 18,
       "evidence": "DES.new(key, DES.MODE_ECB)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.282Z"
+  "enriched_at": "2026-06-07T14:05:46.829Z"
 }

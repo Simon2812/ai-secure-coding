@@ -27,9 +27,9 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'block' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-04.c",
-      "line": 24,
-      "column": 14,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-04.c",
+      "line": 28,
+      "column": 13,
       "evidence": "block"
     },
     {
@@ -38,11 +38,11 @@
       "vulnerability": "Use After Free",
       "severity": "high",
       "message": "Pointer 'block' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-04.c",
-      "line": 46,
-      "column": 10,
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-04.c",
+      "line": 49,
+      "column": 42,
       "evidence": "block"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.442Z"
+  "enriched_at": "2026-06-07T14:05:44.485Z"
 }

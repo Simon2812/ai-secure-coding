@@ -64,30 +64,30 @@ async function main() {
   const lpad = (s: string, n: number) => s.padEnd(n);
 
   console.log("\n" + lpad("CWE", 15) +
-    pad("Regex TP", 9) + pad("FN", 5) + pad("FP", 5) + pad("Det%", 7) + "  |" +
-    pad("AST TP", 8) + pad("FN", 5) + pad("FP", 5) + pad("Det%", 7));
-  console.log("-".repeat(70));
+    pad("AST TP", 8) + pad("FN", 5) + pad("FP", 5) + pad("TN", 5) +
+    pad("Det%", 7) + pad("FP%", 7));
+  console.log("-".repeat(57));
 
   const allCwes = new Set([...Object.keys(regexStats), ...Object.keys(astStats)]);
   for (const cwe of [...allCwes].sort()) {
-    const r = regexStats[cwe] ?? { tp: 0, fn: 0, fp: 0, tn: 0 };
-    const a = astStats[cwe]   ?? { tp: 0, fn: 0, fp: 0, tn: 0 };
-    const rv = r.tp + r.fn, av = a.tp + a.fn;
+    const a = astStats[cwe] ?? { tp: 0, fn: 0, fp: 0, tn: 0 };
+    const av = a.tp + a.fn;
+    const as_ = a.fp + a.tn;
     console.log(
       lpad(cwe, 15) +
-      pad(r.tp, 9) + pad(r.fn, 5) + pad(r.fp, 5) + pad(pct(r.tp, rv), 7) + "  |" +
-      pad(a.tp, 8) + pad(a.fn, 5) + pad(a.fp, 5) + pad(pct(a.tp, av), 7)
+      pad(a.tp, 8) + pad(a.fn, 5) + pad(a.fp, 5) + pad(a.tn, 5) +
+      pad(pct(a.tp, av), 7) + pad(pct(a.fp, as_), 7)
     );
   }
 
   const r = totals(regexStats), a = totals(astStats);
   const rv = r.tp + r.fn, av = a.tp + a.fn;
   const rs = r.fp + r.tn, as_ = a.fp + a.tn;
-  console.log("-".repeat(70));
+  console.log("-".repeat(57));
   console.log(
     lpad("TOTAL", 15) +
-    pad(r.tp, 9) + pad(r.fn, 5) + pad(r.fp, 5) + pad(pct(r.tp, rv), 7) + "  |" +
-    pad(a.tp, 8) + pad(a.fn, 5) + pad(a.fp, 5) + pad(pct(a.tp, av), 7)
+    pad(a.tp, 8) + pad(a.fn, 5) + pad(a.fp, 5) + pad(a.tn, 5) +
+    pad(pct(a.tp, av), 7) + pad(pct(a.fp, as_), 7)
   );
   console.log(`\nRegex → Detection: ${pct(r.tp, rv)}  FP rate: ${pct(r.fp, rs)}`);
   console.log(`AST   → Detection: ${pct(a.tp, av)}  FP rate: ${pct(a.fp, as_)}`);

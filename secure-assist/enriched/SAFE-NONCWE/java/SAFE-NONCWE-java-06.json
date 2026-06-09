@@ -9,6 +9,18 @@
     "name": null
   },
   "vulnerabilities": [],
-  "static_findings": [],
-  "enriched_at": "2026-05-27T15:52:52.680Z"
+  "static_findings": [
+    {
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
+      "severity": "medium",
+      "message": "out.append(\"CALL CENTER DESK BOARD\").append() uses a broken or weak cipher.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\java\\SAFE-NONCWE-java-06.java",
+      "line": 101,
+      "column": 9,
+      "evidence": "out.append(\"CALL CENTER DESK BOARD\").append('\\n')"
+    }
+  ],
+  "enriched_at": "2026-06-07T14:05:47.774Z"
 }

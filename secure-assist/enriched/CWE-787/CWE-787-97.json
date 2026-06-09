@@ -15,12 +15,12 @@
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-787\\CWE-787-97.c",
-      "line": 38,
-      "column": 11,
-      "evidence": "(written < count && written < (int)(sizeof(c->bucket) / sizeof(c->bucket[0])))"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-787\\CWE-787-97.c",
+      "line": 41,
+      "column": 19,
+      "evidence": "written"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:48.979Z"
+  "enriched_at": "2026-06-07T14:05:42.921Z"
 }

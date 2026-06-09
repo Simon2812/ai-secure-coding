@@ -16,11 +16,11 @@
       "vulnerability": "OS Command Injection",
       "severity": "high",
       "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-85.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-85.java",
       "line": 57,
       "column": 25,
       "evidence": "runtime.exec(cmd + value)"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:47.660Z"
+  "enriched_at": "2026-06-07T14:05:41.702Z"
 }

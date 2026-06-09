@@ -1,12 +1,14 @@
 import * as vscode from "vscode";
-import { analyzeCode } from "./analyzer/analyze";
+import { analyzeCode, initAstAnalyzer } from "./analyzer/analyze";
 import { Finding } from "./analyzer/types";
 import { createDiagnosticCollection, updateDiagnostics } from "./diagnostics";
 
 let isTracking = false;
 const fileStore = new Map<string, string>();
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+  await initAstAnalyzer();
+
   const output = vscode.window.createOutputChannel("Secure Assist");
   const diagnostics = createDiagnosticCollection();
   const startCmd = vscode.commands.registerCommand("secure-assist.startTracking", () => {

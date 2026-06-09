@@ -27,7 +27,7 @@
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
       "message": "getInstance(\"MD5\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-328\\java\\CWE-328-java-15.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-328\\java\\CWE-328-java-15.java",
       "line": 16,
       "column": 16,
       "evidence": "MessageDigest.getInstance(\"MD5\")"
@@ -38,11 +38,11 @@
       "vulnerability": "Use of Weak Hash",
       "severity": "medium",
       "message": "getInstance(\"MD5\") uses a weak hash algorithm (MD5/SHA-1).",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\CWE-328\\java\\CWE-328-java-15.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-328\\java\\CWE-328-java-15.java",
       "line": 16,
       "column": 16,
       "evidence": "MessageDigest.getInstance(\"MD5\")"
     }
   ],
-  "enriched_at": "2026-05-27T18:00:38.968Z"
+  "enriched_at": "2026-06-07T14:05:39.887Z"
 }

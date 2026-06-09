@@ -11,49 +11,16 @@
   "vulnerabilities": [],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-47.c",
-      "line": 47,
-      "column": 21,
-      "evidence": "(int *)malloc((size_t)limit * sizeof(int))"
-    },
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-47.c",
-      "line": 47,
-      "column": 35,
-      "evidence": "(size_t)limit * sizeof(int)"
-    },
-    {
       "cweId": "CWE-787",
       "ruleId": "ast-oob-write",
       "vulnerability": "Out-of-bounds Write",
       "severity": "high",
-      "message": "Loop with user-controlled bound writes to array without bounds check.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-47.c",
-      "line": 50,
-      "column": 25,
-      "evidence": "i < limit"
-    },
-    {
-      "cweId": "CWE-416",
-      "ruleId": "ast-use-after-free",
-      "vulnerability": "Use After Free",
-      "severity": "high",
-      "message": "Pointer 'data' is used after being freed.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-47.c",
-      "line": 60,
-      "column": 18,
-      "evidence": "data"
+      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-47.c",
+      "line": 52,
+      "column": 22,
+      "evidence": "i"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:50.886Z"
+  "enriched_at": "2026-06-07T14:05:45.014Z"
 }

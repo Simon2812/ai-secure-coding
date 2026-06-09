@@ -27,11 +27,11 @@
       "vulnerability": "Use of Hard-coded Password",
       "severity": "high",
       "message": "Hard-coded credential in macro 'FALLBACK_PHRASE'.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-04.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-04.c",
       "line": 10,
       "column": 25,
       "evidence": "L\"StageWideSecret\"\r"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:43.865Z"
+  "enriched_at": "2026-06-07T14:05:38.713Z"
 }

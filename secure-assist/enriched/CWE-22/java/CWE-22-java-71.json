@@ -15,23 +15,12 @@
       "ruleId": "ast-path-traversal",
       "vulnerability": "Path Traversal",
       "severity": "high",
-      "message": "Path.resolve() receives user-controlled input.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-71.java",
-      "line": 15,
-      "column": 31,
-      "evidence": "new Resolver().resolve(inputValue)"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
       "message": "new File() receives user-controlled path.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-71.java",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-22\\java\\CWE-22-java-71.java",
       "line": 17,
       "column": 62,
       "evidence": "selectedName"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:42.742Z"
+  "enriched_at": "2026-06-07T14:05:37.702Z"
 }

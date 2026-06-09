@@ -27,11 +27,11 @@
       "vulnerability": "Integer Overflow",
       "severity": "medium",
       "message": "Increment/decrement of user-controlled integer 'x' may overflow.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\normalized\\CWE-190\\CWE-190-12.c",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-12.c",
       "line": 11,
       "column": 5,
       "evidence": "x++"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:41.982Z"
+  "enriched_at": "2026-06-07T14:05:37.180Z"
 }

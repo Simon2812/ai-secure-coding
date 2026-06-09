@@ -11,16 +11,27 @@
   "vulnerabilities": [],
   "static_findings": [
     {
-      "cweId": "CWE-190",
-      "ruleId": "integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "This arithmetic operation may overflow before being used for allocation, copying, or size calculation.",
-      "file": "C:\\Users\\drozh\\asc-main-dataset\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-18.c",
-      "line": 37,
-      "column": 5,
-      "evidence": "int adjusted = base + t->delay_minutes;"
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Pointer write uses user-controlled offset without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-18.c",
+      "line": 20,
+      "column": 6,
+      "evidence": "h"
+    },
+    {
+      "cweId": "CWE-787",
+      "ruleId": "ast-oob-write",
+      "vulnerability": "Out-of-bounds Write",
+      "severity": "high",
+      "message": "Pointer write uses user-controlled offset without bounds check.",
+      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\SAFE-NONCWE\\c\\SAFE-NONCWE-c-18.c",
+      "line": 21,
+      "column": 6,
+      "evidence": "m"
     }
   ],
-  "enriched_at": "2026-05-27T15:52:52.647Z"
+  "enriched_at": "2026-06-07T14:05:47.467Z"
 }
