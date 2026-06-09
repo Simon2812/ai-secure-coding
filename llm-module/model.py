@@ -46,11 +46,11 @@ class SecureCodingModel:
         # Experiment configuration (tunable between runs).
         self.training_config = {
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-            "prompt_version": "v2",
+            "prompt_version": "v1",
             "max_length": 2048,
-            "epochs": 3,
-            "learning_rate": 2e-4,
-            "lora_rank": 16,
+            "epochs": 7,
+            "learning_rate": 1e-4,
+            "lora_rank": 8,
         }
 
         # Shared QLoRA quantization config.
