@@ -229,17 +229,59 @@ class Evaluator:
 
     def _normalize_for_match(self, text):
         """
-        Normalize whitespace for matching
-        while preserving token content.
+        Normalize text for matching while preserving token content.
+    
+        Handles:
+        - real whitespace/newlines
+        - literal escape sequences like \\n, \\t, \\r
+        - escaped quotes like \\\" and \\'
+        - doubled backslashes
         """
     
-        return " ".join(text.split())
-
+        if not isinstance(text, str):
+            return ""
+    
+        result = []
+        previous_was_space = False
+        i = 0
+    
+        while i < len(text):
+            char = text[i]
+    
+            if char == "\\" and i + 1 < len(text):
+                next_char = text[i + 1]
+    
+                if next_char in {"n", "r", "t"}:
+                    if not previous_was_space:
+                        result.append(" ")
+                        previous_was_space = True
+                    i += 2
+                    continue
+    
+                if next_char in {'"', "'", "\\"}:
+                    result.append(next_char)
+                    previous_was_space = False
+                    i += 2
+                    continue
+    
+            if char.isspace():
+                if not previous_was_space:
+                    result.append(" ")
+                    previous_was_space = True
+                i += 1
+                continue
+    
+            result.append(char)
+            previous_was_space = False
+            i += 1
+    
+        return "".join(result).strip()
+    
     
     def _find_normalized_span(self, code, origin):
         """
-        Find origin in code while ignoring
-        whitespace differences.
+        Find origin in code while ignoring whitespace and common
+        escape-sequence differences.
     
         Returns:
             (start, end) in original code, or None.
@@ -250,38 +292,64 @@ class Evaluator:
         if not normalized_origin:
             return None
     
-        candidates = []
-    
-        in_token = False
-        token_start = None
         normalized_parts = []
         span_map = []
+        previous_was_space = False
+        i = 0
     
-        for index, char in enumerate(code):
+        while i < len(code):
+            char = code[i]
+    
+            if char == "\\" and i + 1 < len(code):
+                next_char = code[i + 1]
+    
+                if next_char in {"n", "r", "t"}:
+                    if not previous_was_space:
+                        normalized_parts.append(" ")
+                        span_map.append((i, i + 2))
+                        previous_was_space = True
+                    i += 2
+                    continue
+    
+                if next_char in {'"', "'", "\\"}:
+                    normalized_parts.append(next_char)
+                    span_map.append((i, i + 2))
+                    previous_was_space = False
+                    i += 2
+                    continue
+    
             if char.isspace():
-                if in_token:
-                    in_token = False
+                if not previous_was_space:
+                    normalized_parts.append(" ")
+                    span_map.append((i, i + 1))
+                    previous_was_space = True
+                i += 1
                 continue
     
-            if not in_token:
-                if normalized_parts:
-                    normalized_parts.append(" ")
-                    span_map.append((index, index))
-                in_token = True
-    
             normalized_parts.append(char)
-            span_map.append((index, index + 1))
+            span_map.append((i, i + 1))
+            previous_was_space = False
+            i += 1
     
-        normalized_code = "".join(normalized_parts)
+        normalized_code = "".join(normalized_parts).strip()
+    
+        leading_trim = 0
+        while (
+            leading_trim < len(normalized_parts)
+            and normalized_parts[leading_trim] == " "
+        ):
+            leading_trim += 1
+    
         match_start = normalized_code.find(normalized_origin)
     
         if match_start == -1:
             return None
     
-        match_end = match_start + len(normalized_origin)
+        mapped_start = match_start + leading_trim
+        mapped_end = mapped_start + len(normalized_origin)
     
-        original_start = span_map[match_start][0]
-        original_end = span_map[match_end - 1][1]
+        original_start = span_map[mapped_start][0]
+        original_end = span_map[mapped_end - 1][1]
     
         return original_start, original_end
     
