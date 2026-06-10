@@ -564,7 +564,7 @@ class SecureCodingModel:
                     )
 
                     val_final_score += scores["final_score"]
-                    val_cwe_score += scores["cwe_score"]]
+                    val_cwe_score += scores["cwe_score"]
                     val_fix_score += scores["fix_score"]
 
                     # Per-CWE stats
