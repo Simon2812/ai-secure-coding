@@ -1,6 +1,14 @@
 from pathlib import Path
 from collections import defaultdict
-from utils import metric_dict, print_group_stats
+from utils import (
+    metric_dict,
+    precision_recall,
+    print_group_stats,
+    print_pr_stats,
+    pr_dict,
+    update_per_cwe_pr_counts,
+    update_pr_counts,
+)
 
 import json
 import random
@@ -294,6 +302,31 @@ class SecureCodingModel:
         return self._generate_json(input_text)
 
 
+    def _extract_predicted_cwes(self, prediction):
+        """
+        Extract predicted CWE IDs
+        from a model response.
+        """
+
+        if not isinstance(prediction, dict):
+            return set()
+
+        vulnerabilities = prediction.get(
+            "vulnerabilities",
+            [],
+        )
+
+        if not isinstance(vulnerabilities, list):
+            return set()
+
+        return {
+            vulnerability.get("cwe")
+            for vulnerability in vulnerabilities
+            if isinstance(vulnerability, dict)
+            and isinstance(vulnerability.get("cwe"), str)
+        }
+
+
     def load_dataset(self, metadata_root):
         """
         Load metadata files, resolve source code,
@@ -486,6 +519,9 @@ class SecureCodingModel:
 
             per_cwe = defaultdict(metric_dict)
             per_language = defaultdict(metric_dict)
+            overall_pr = pr_dict()
+            per_cwe_pr = defaultdict(pr_dict)
+            per_language_pr = defaultdict(pr_dict)
 
             with torch.no_grad():
                 for sample in val_data:
@@ -506,9 +542,29 @@ class SecureCodingModel:
                         }
                         
                     scores = evaluator.evaluate(sample, pred)
+                    gt_cwes = set(sample["cwes"])
+                    pred_cwes = self._extract_predicted_cwes(pred)
+
+                    update_pr_counts(
+                        overall_pr,
+                        gt_cwes,
+                        pred_cwes,
+                    )
+
+                    update_per_cwe_pr_counts(
+                        per_cwe_pr,
+                        gt_cwes,
+                        pred_cwes,
+                    )
+
+                    update_pr_counts(
+                        per_language_pr[sample["language"]],
+                        gt_cwes,
+                        pred_cwes,
+                    )
 
                     val_final_score += scores["final_score"]
-                    val_cwe_score += scores["cwe_score"]
+                    val_cwe_score += scores["cwe_score"]]
                     val_fix_score += scores["fix_score"]
 
                     # Per-CWE stats
@@ -536,8 +592,25 @@ class SecureCodingModel:
                 f"Fix: {val_fix_score:.4f}"
             )
 
+            val_precision, val_recall = precision_recall(overall_pr)
+
+            print(
+                f"Validation precision/recall | "
+                f"Precision: {val_precision:.4f} | "
+                f"Recall: {val_recall:.4f} | "
+                f"TP: {overall_pr['tp']} | "
+                f"FP: {overall_pr['fp']} | "
+                f"FN: {overall_pr['fn']}"
+            )
+
             print_group_stats("Per-CWE validation:", per_cwe)
             print_group_stats("Per-language validation:", per_language)
+            print_pr_stats("Per-CWE validation precision/recall:", per_cwe_pr)
+            print_pr_stats(
+                "Per-language validation precision/recall:",
+                per_language_pr,
+            )
+
 
             # Save best checkpoint based on final score
             if val_final_score > best_score:
@@ -593,6 +666,26 @@ class SecureCodingModel:
                     pred = {"vulnerabilities": []}
 
                 scores = evaluator.evaluate(sample, pred)
+                gt_cwes = set(sample["cwes"])
+                pred_cwes = self._extract_predicted_cwes(pred)
+
+                update_pr_counts(
+                    overall_pr,
+                    gt_cwes,
+                    pred_cwes,
+                )
+
+                update_per_cwe_pr_counts(
+                    per_cwe_pr,
+                    gt_cwes,
+                    pred_cwes,
+                )
+
+                update_pr_counts(
+                    per_language_pr[sample["language"]],
+                    gt_cwes,
+                    pred_cwes,
+                )
 
                 test_final_score += scores["final_score"]
                 test_cwe_score += scores["cwe_score"]
@@ -623,11 +716,29 @@ class SecureCodingModel:
             f"Fix: {test_fix_score:.4f}"
         )
 
+        test_precision, test_recall = precision_recall(overall_pr)
+
+        print(
+            f"Test precision/recall | "
+            f"Precision: {test_precision:.4f} | "
+            f"Recall: {test_recall:.4f} | "
+            f"TP: {overall_pr['tp']} | "
+            f"FP: {overall_pr['fp']} | "
+            f"FN: {overall_pr['fn']}"
+        )
+
         print_group_stats("Per-CWE test:", per_cwe)
         print_group_stats("Per-language test:", per_language)
+        print_pr_stats("Per-CWE test precision/recall:", per_cwe_pr)
+        print_pr_stats(
+            "Per-language test precision/recall:",
+            per_language_pr,
+        )
 
         return {
             "final_score": test_final_score,
             "cwe_score": test_cwe_score,
             "fix_score": test_fix_score,
+            "precision": test_precision,
+            "recall": test_recall,
         }
