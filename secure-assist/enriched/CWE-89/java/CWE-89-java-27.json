@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-java-27",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-89/java/CWE-89-java-27.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "String sql = \"SELECT * from USERS where USERNAME=? and PASSWORD='\" + extractedValue + \"'\";\ntry {\njava.sql.Connection connection = org.defenselab.testbed.helpers.DatabaseHelper.getSqlConnection();\njava.sql.PreparedStatement statement = connection.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY, java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);\nstatement.setString(1, \"foo\");",
-          "replacement": "String sql = \"SELECT * from USERS where USERNAME=? and PASSWORD=?\";\ntry {\njava.sql.Connection connection = org.defenselab.testbed.helpers.DatabaseHelper.getSqlConnection();\njava.sql.PreparedStatement statement = connection.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY, java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);\nstatement.setString(1, \"foo\");\nstatement.setString(2, extractedValue);"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "prepareStatement() called with user-controlled SQL query.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-27.java",
-      "line": 63,
-      "column": 29,
-      "evidence": "sql"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.161Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-java-27",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-89/java/CWE-89-java-27.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "String sql = \"SELECT * from USERS where USERNAME=? and PASSWORD=\u0027\" + extractedValue + \"\u0027\";\n\n        try {\n            java.sql.Connection connection =\n                    org.defenselab.testbed.helpers.DatabaseHelper.getSqlConnection();\n            java.sql.PreparedStatement statement =\n                    connection.prepareStatement(\n                            sql,\n                            java.sql.ResultSet.TYPE_FORWARD_ONLY,\n                            java.sql.ResultSet.CONCUR_READ_ONLY,\n                            java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);\n            statement.setString(1, \"foo\");",
+                                                  "replacement":  "String sql = \"SELECT * from USERS where USERNAME=? and PASSWORD=?\";\n\n        try {\n            java.sql.Connection connection =\n                    org.defenselab.testbed.helpers.DatabaseHelper.getSqlConnection();\n            java.sql.PreparedStatement statement =\n                    connection.prepareStatement(\n                            sql,\n                            java.sql.ResultSet.TYPE_FORWARD_ONLY,\n                            java.sql.ResultSet.CONCUR_READ_ONLY,\n                            java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);\n            statement.setString(1, \"foo\");\n            statement.setString(2, extractedValue);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "prepareStatement() called with user-controlled SQL query.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-27.java",
+                                "line":  63,
+                                "column":  29,
+                                "evidence":  "sql"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.161Z"
 }

@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-java-02",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-02.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "Process proc = Runtime.getRuntime().exec(base + entry);\n        proc.waitFor();",
-          "replacement": "java.util.List<String> cmd = new java.util.ArrayList<>(java.util.Arrays.asList(base.trim().split(\"\\\\s+\")));\ncmd.add(entry);\nProcess proc = new ProcessBuilder(cmd).start();\nproc.waitFor();"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "ProcessBuilder.command() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-02.java",
-      "line": 52,
-      "column": 9,
-      "evidence": "builder.command(args)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.152Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-02",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-02.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "args.add(\"echo \" + text);\n\n        ProcessBuilder builder = new ProcessBuilder();\n        builder.command(args);",
+                                                  "replacement":  "args.add(\"echo\");\n        args.add(text);\n\n        ProcessBuilder builder = new ProcessBuilder();\n        builder.command(args);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "ProcessBuilder.command() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-02.java",
+                                "line":  52,
+                                "column":  9,
+                                "evidence":  "builder.command(args)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.152Z"
 }

@@ -446,7 +446,6 @@ class SecureCodingModel:
                     prompt,
                     return_tensors="pt",
                     truncation=True,
-                    truncation_side="left",
                     max_length=prompt_max_length,
                     add_special_tokens=True,
                 )
@@ -652,6 +651,10 @@ class SecureCodingModel:
 
         per_cwe = defaultdict(metric_dict)
         per_language = defaultdict(metric_dict)
+
+        overall_pr = pr_dict()
+        per_cwe_pr = defaultdict(pr_dict)
+        per_language_pr = defaultdict(pr_dict)
 
         with torch.no_grad():
             for sample in test_data:

@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-18",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-18.py",
-  "split": "test",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "cmd = f\"ps aux | grep {needle}\"\nproc = subprocess.run(cmd, shell=True, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "ps_out = subprocess.run([\"ps\", \"aux\"], shell=False, capture_output=True, encoding=\"utf-8\")\nif ps_out.returncode != 0:\n    proc = ps_out\nelse:\n    filtered = \"\\n\".join([line for line in ps_out.stdout.splitlines() if needle in line])\n    proc = subprocess.CompletedProcess(args=[\"ps\", \"aux\"], returncode=0, stdout=filtered, stderr=\"\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-18.py",
-      "line": 15,
-      "column": 36,
-      "evidence": "cmd"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.968Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-18",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-18.py",
+    "split":  "test",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "cmd = f\"ps aux | grep {needle}\"\n                p = subprocess.run(cmd, shell=True, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "ps_out = subprocess.run([\"ps\", \"aux\"], shell=False, capture_output=True, encoding=\"utf-8\")\n                if ps_out.returncode != 0:\n                        p = ps_out\n                else:\n                        filtered = \"\\n\".join([line for line in ps_out.stdout.splitlines() if needle in line])\n                        p = subprocess.CompletedProcess(args=[\"ps\", \"aux\"], returncode=0, stdout=filtered, stderr=\"\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "subprocess.run() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-18.py",
+                                "line":  15,
+                                "column":  36,
+                                "evidence":  "cmd"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.968Z"
 }

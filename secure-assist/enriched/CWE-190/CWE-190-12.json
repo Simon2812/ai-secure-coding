@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-190-12",
-  "language": "c",
-  "path": "/dataset/normalized/CWE-190/CWE-190-12.c",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-190",
-      "fixes": [
-        {
-          "origin": "count++;",
-          "replacement": "if (count < INT_MAX) {\n    count++;\n}"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Increment/decrement of user-controlled integer 'x' may overflow.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-12.c",
-      "line": 11,
-      "column": 5,
-      "evidence": "x++"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:37.180Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-190-12",
+    "language":  "c",
+    "path":  "/dataset/normalized/CWE-190/CWE-190-12.c",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-190",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "x++",
+                                                  "replacement":  "if (x \u003c INT_MAX) {\n    x++;\n}"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-190",
+                                "ruleId":  "ast-integer-overflow",
+                                "vulnerability":  "Integer Overflow",
+                                "severity":  "medium",
+                                "message":  "Increment/decrement of user-controlled integer \u0027x\u0027 may overflow.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-12.c",
+                                "line":  11,
+                                "column":  5,
+                                "evidence":  "x++"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:37.180Z"
 }

@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-15",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-15.py",
-  "split": "test",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "query_text = (\n    \"SELECT id, subject, status, created_at \"\n    \"FROM tickets \"\n    \"WHERE subject LIKE '%\" + keyword + \"%' \"\n)\n\nif status:\n    query_text += \"AND status = '\" + status + \"' \"\n\ncur.execute(query_text)",
-          "replacement": "query_text = (\n    \"SELECT id, subject, status, created_at \"\n    \"FROM tickets \"\n    \"WHERE subject LIKE ? \"\n)\n\nparams = [f\"%{keyword}%\"]\n\nif status:\n    query_text += \"AND status = ? \"\n    params.append(status)\n\nquery_text += \"ORDER BY created_at DESC LIMIT 50\"\n\ncur.execute(query_text, tuple(params))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-15.py",
-      "line": 33,
-      "column": 21,
-      "evidence": "query_text"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.888Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-15",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-15.py",
+    "split":  "test",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "query_text = (\n            \"SELECT id, subject, status, created_at \"\n            \"FROM tickets \"\n            \"WHERE subject LIKE \u0027%\" + keyword + \"%\u0027 \"\n        )\n\n        if status:\n            query_text += \"AND status = \u0027\" + status + \"\u0027 \"\n\n        query_text += \"ORDER BY created_at DESC LIMIT 50\"\n\n        cur.execute(query_text)",
+                                                  "replacement":  "query_text = (\n            \"SELECT id, subject, status, created_at \"\n            \"FROM tickets \"\n            \"WHERE subject LIKE ? \"\n        )\n\n        params = [f\"%{keyword}%\"]\n\n        if status:\n            query_text += \"AND status = ? \"\n            params.append(status)\n\n        query_text += \"ORDER BY created_at DESC LIMIT 50\"\n\n        cur.execute(query_text, tuple(params))"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-15.py",
+                                "line":  33,
+                                "column":  21,
+                                "evidence":  "query_text"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.888Z"
 }

@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-190-11",
-  "language": "c",
-  "path": "/dataset/normalized/CWE-190/CWE-190-11.c",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-190",
-      "fixes": [
-        {
-          "origin": "int squared = value * value;",
-          "replacement": "int squared = 0;\nif (value != 0 && (value > 0 ? value <= INT_MAX / value : value >= INT_MIN / value)) {\n    squared = value * value;\n}"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-11.c",
-      "line": 15,
-      "column": 19,
-      "evidence": "num * num"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:37.178Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-190-11",
+    "language":  "c",
+    "path":  "/dataset/normalized/CWE-190/CWE-190-11.c",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-190",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "int squared = num * num;",
+                                                  "replacement":  "int squared = 0;\nif (num != 0 \u0026\u0026 (num \u003e 0 ? num \u003c= INT_MAX / num : num \u003e= INT_MIN / num)) {\n    squared = num * num;\n}"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-190",
+                                "ruleId":  "ast-integer-overflow",
+                                "vulnerability":  "Integer Overflow",
+                                "severity":  "medium",
+                                "message":  "Arithmetic on user-controlled integer may overflow.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-190\\CWE-190-11.c",
+                                "line":  15,
+                                "column":  19,
+                                "evidence":  "num * num"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:37.178Z"
 }

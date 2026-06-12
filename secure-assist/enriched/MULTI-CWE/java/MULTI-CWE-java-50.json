@@ -8,7 +8,18 @@
     "type": "synthetic",
     "name": null
   },
-  "vulnerabilities": [],
+  "vulnerabilities": [
+    {
+      "id": "v1",
+      "cwe": "CWE-78",
+      "fixes": [
+        {
+          "origin": "        String safe = cmd != null && cmd.matches(\"[a-zA-Z0-9_ -]+\") ? cmd : \"echo\";\n        Process process = Runtime.getRuntime().exec(new String[]{\"sh\", \"-c\", safe});",
+          "replacement": "        String safe = switch (cmd == null ? \"\" : cmd) {\n            case \"date\" -> \"date\";\n            case \"whoami\" -> \"whoami\";\n            case \"uptime\" -> \"uptime\";\n            default -> \"echo\";\n        };\n        Process process = Runtime.getRuntime().exec(new String[]{safe});"
+        }
+      ]
+    }
+  ],
   "static_findings": [
     {
       "cweId": "CWE-22",

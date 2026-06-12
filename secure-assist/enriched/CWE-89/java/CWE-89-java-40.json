@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-java-40",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-89/java/CWE-89-java-40.java",
-  "split": "test",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "String sql = \"{call \" + bar + \"}\";\ntry {\njava.sql.Connection connection = org.sentinelgrid.helpers.DatabaseHelper.getSqlConnection();\njava.sql.CallableStatement statement = connection.prepareCall(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY, java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);",
-          "replacement": "String sql = \"{call ?}\";\ntry {\njava.sql.Connection connection = org.sentinelgrid.helpers.DatabaseHelper.getSqlConnection();\njava.sql.CallableStatement statement = connection.prepareCall(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY, java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);\nstatement.setString(1, bar);"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "prepareCall() called with user-controlled SQL query.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-40.java",
-      "line": 56,
-      "column": 29,
-      "evidence": "sql"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.291Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-java-40",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-89/java/CWE-89-java-40.java",
+    "split":  "test",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "String sql = \"{call \" + bar + \"}\";\n\n        try {\n            java.sql.Connection connection =\n                    org.sentinelgrid.helpers.DatabaseHelper.getSqlConnection();\n            java.sql.CallableStatement statement =\n                    connection.prepareCall(\n                            sql,\n                            java.sql.ResultSet.TYPE_FORWARD_ONLY,\n                            java.sql.ResultSet.CONCUR_READ_ONLY,\n                            java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);",
+                                                  "replacement":  "String sql = \"{call ?}\";\n\n        try {\n            java.sql.Connection connection =\n                    org.sentinelgrid.helpers.DatabaseHelper.getSqlConnection();\n            java.sql.CallableStatement statement =\n                    connection.prepareCall(\n                            sql,\n                            java.sql.ResultSet.TYPE_FORWARD_ONLY,\n                            java.sql.ResultSet.CONCUR_READ_ONLY,\n                            java.sql.ResultSet.CLOSE_CURSORS_AT_COMMIT);\n            statement.setString(1, bar);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "prepareCall() called with user-controlled SQL query.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-40.java",
+                                "line":  56,
+                                "column":  29,
+                                "evidence":  "sql"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.291Z"
 }

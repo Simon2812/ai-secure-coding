@@ -1,26 +1,37 @@
-{
-  "schema_version": "1.0",
-  "id": "CWE-78-java-75",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-75.java",
-  "split": "train",
-  "source": {
-    "type": "normalized",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-75.java",
-      "line": 61,
-      "column": 26,
-      "evidence": "Runtime.getRuntime().exec(fullCommand)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.580Z"
+﻿{
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-75",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-75.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "normalized",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "inboundText = inboundText.replace(\"\\\"\",\"\")\n                                 .replace(\";\",\"\")\n                                 .replace(\"\u0026\",\"\")\n                                 .replace(\"|\",\"\")\n                                 .replace(\"`\",\"\");\n\n        String fullCommand;\n\n        if (System.getProperty(\"os.name\").toLowerCase().contains(\"win\"))\n        {\n            fullCommand = \"cmd.exe /c dir \" + inboundText;\n        }\n        else\n        {\n            fullCommand = \"/bin/ls \" + inboundText;\n        }\n\n        Process worker = Runtime.getRuntime().exec(fullCommand);",
+                                                  "replacement":  "inboundText = inboundText.replace(\"\\\"\",\"\")\n                                 .replace(\";\",\"\")\n                                 .replace(\"\u0026\",\"\")\n                                 .replace(\"|\",\"\")\n                                 .replace(\"`\",\"\");\n\n        String[] fullCommand;\n\n        if (System.getProperty(\"os.name\").toLowerCase().contains(\"win\"))\n        {\n            fullCommand = new String[] {\"cmd.exe\", \"/c\", \"dir\", inboundText};\n        }\n        else\n        {\n            fullCommand = new String[] {\"/bin/ls\", inboundText};\n        }\n\n        Process worker = Runtime.getRuntime().exec(fullCommand);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "Runtime.exec() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-75.java",
+                                "line":  61,
+                                "column":  26,
+                                "evidence":  "Runtime.getRuntime().exec(fullCommand)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.580Z"
 }

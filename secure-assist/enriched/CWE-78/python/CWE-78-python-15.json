@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-15",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-15.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "cmd_line = f\"tar -c{kind}f {base}.tar.{kind} {base}\"\nproc = subprocess.run(cmd_line, shell=True, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "allowed = {\"gz\": [\"tar\", \"-czf\"], \"bz2\": [\"tar\", \"-cjf\"]}\ntool = allowed.get(kind)\nif tool is None:\n    raise ValueError(\"Unsupported archive format\")\nout_name = f\"{base}.tar.{kind}\"\nproc = subprocess.run(tool + [out_name, base], shell=False, capture_output=True, encoding=\"utf-8\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-15.py",
-      "line": 24,
-      "column": 36,
-      "evidence": "cmd_line"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.955Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-15",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-15.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "cmd_line = f\"tar -c{kind}f {base}.tar.{kind} {base}\"\n                p = subprocess.run(cmd_line, shell=True, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "allowed = {\"gz\": [\"tar\", \"-czf\"], \"bz2\": [\"tar\", \"-cjf\"]}\n                tool = allowed.get(kind)\n                if tool is None:\n                        raise ValueError(\"Unsupported archive format\")\n                out_name = f\"{base}.tar.{kind}\"\n                p = subprocess.run(tool + [out_name, base], shell=False, capture_output=True, encoding=\"utf-8\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "subprocess.run() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-15.py",
+                                "line":  24,
+                                "column":  36,
+                                "evidence":  "cmd_line"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.955Z"
 }

@@ -1,37 +1,47 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-32",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-32.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "with open(filename, \"r\", encoding=\"utf-8\") as f:\n    command = f.read().strip()\n\nproc = subprocess.run(command, shell=True, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "with open(filename, \"r\", encoding=\"utf-8\") as f:\n    command = f.read().strip().lower()\nallowed = {\"whoami\": [\"whoami\"], \"date\": [\"date\"], \"id\": [\"id\"]}\nbase = allowed.get(command)\nif base is None:\n    raise ValueError(\"Unsupported command in file\")\nproc = subprocess.run(base, shell=False, capture_output=True, encoding=\"utf-8\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-32.py",
-      "line": 12,
-      "column": 27,
-      "evidence": "filename"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:42.029Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-32",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-32.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "with open(filename, \"r\", encoding=\"utf-8\") as f:\n    command = f.read().strip()\n\nproc = subprocess.run(command, shell=True, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "with open(filename, \"r\", encoding=\"utf-8\") as f:\n    command = f.read().strip().lower()\nallowed = {\"whoami\": [\"whoami\"], \"date\": [\"date\"], \"id\": [\"id\"]}\nbase = allowed.get(command)\nif base is None:\n    raise ValueError(\"Unsupported command in file\")\nproc = subprocess.run(base, shell=False, capture_output=True, encoding=\"utf-8\")"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "filename = request.form.get(\"file\", \"\")\n                if not filename:\n                        filename = \"\"",
+                                                  "replacement":  "from pathlib import Path\n                base_dir = Path(\"/srv/ops/files\").resolve()\n                requested = request.form.get(\"file\", \"\")\n                filename = (base_dir / Path(requested).name).resolve()\n                if base_dir not in filename.parents and filename != base_dir:\n                        raise ValueError(\"invalid file path\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-32.py",
+                                "line":  12,
+                                "column":  27,
+                                "evidence":  "filename"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.029Z"
 }

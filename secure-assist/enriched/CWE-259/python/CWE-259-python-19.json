@@ -1,26 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-259-python-19",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-259/python/CWE-259-python-19.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-19.py",
-      "line": 5,
-      "column": 15,
-      "evidence": "path"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:38.648Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-259-python-19",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-259/python/CWE-259-python-19.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "def load_secret(path: str) -\u003e str:\n    with open(path, \"r\") as f:\n        return f.read().strip()",
+                                                  "replacement":  "def load_secret(path: str) -\u003e str:\n    from pathlib import Path\n\n    base_dir = Path(\"/etc/sync-agent/secrets\").resolve()\n    target = (base_dir / Path(path).name).resolve()\n    if base_dir not in target.parents and target != base_dir:\n        raise ValueError(\"invalid secret path\")\n    with open(target, \"r\") as f:\n        return f.read().strip()"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-259\\python\\CWE-259-python-19.py",
+                                "line":  5,
+                                "column":  15,
+                                "evidence":  "path"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:38.648Z"
 }

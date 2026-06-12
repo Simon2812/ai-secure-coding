@@ -1,90 +1,90 @@
 {
-  "schema_version": "1.0",
-  "id": "MULTI-CWE-java-25",
-  "language": "java",
-  "path": "/dataset/synthetic/MULTI-CWE/java/MULTI-CWE-java-25.java",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-22",
-      "fixes": [
-        {
-          "origin": "File f = new File(workspace + \"/\" + name);",
-          "replacement": "if (!name.matches(\"[a-zA-Z0-9._-]+\")) return \"\";\nFile f = new File(workspace + \"/\" + name);"
-        }
-      ]
-    },
-    {
-      "id": "v2",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "String cmd = \"sh -c \" + input;",
-          "replacement": "Process p = new ProcessBuilder(\"sh\", \"-c\", \"echo\").start();"
-        }
-      ]
-    },
-    {
-      "id": "v3",
-      "cwe": "CWE-327",
-      "fixes": [
-        {
-          "origin": "RC4",
-          "replacement": "AES/GCM/NoPadding"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "new File() receives user-controlled path.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
-      "line": 40,
-      "column": 27,
-      "evidence": "workspace + \"/\" + name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Files.readAllBytes() receives user-controlled path.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
-      "line": 46,
-      "column": 27,
-      "evidence": "Files.readAllBytes(f.toPath())"
-    },
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
-      "line": 52,
-      "column": 21,
-      "evidence": "Runtime.getRuntime().exec(cmd)"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-cipher",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "getInstance(\"DES\") uses a broken or weak cipher.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
-      "line": 70,
-      "column": 38,
-      "evidence": "javax.crypto.Cipher.getInstance(\"DES\")"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:45.297Z"
+    "schema_version":  "1.0",
+    "id":  "MULTI-CWE-java-25",
+    "language":  "java",
+    "path":  "/dataset/synthetic/MULTI-CWE/java/MULTI-CWE-java-25.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "File f = new File(workspace + \"/\" + name);",
+                                                  "replacement":  "if (!name.matches(\"[a-zA-Z0-9._-]+\")) return \"\";\nFile f = new File(workspace + \"/\" + name);"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "String cmd = \"sh -c \" + input;",
+                                                  "replacement":  "Process p = new ProcessBuilder(\"sh\", \"-c\", \"echo\").start();"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v3",
+                                "cwe":  "CWE-327",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "DES",
+                                                  "replacement":  "AES/GCM/NoPadding"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "new File() receives user-controlled path.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+                                "line":  40,
+                                "column":  27,
+                                "evidence":  "workspace + \"/\" + name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "Files.readAllBytes() receives user-controlled path.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+                                "line":  46,
+                                "column":  27,
+                                "evidence":  "Files.readAllBytes(f.toPath())"
+                            },
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "Runtime.exec() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+                                "line":  52,
+                                "column":  21,
+                                "evidence":  "Runtime.getRuntime().exec(cmd)"
+                            },
+                            {
+                                "cweId":  "CWE-327",
+                                "ruleId":  "ast-weak-cipher",
+                                "vulnerability":  "Use of Broken Cryptographic Algorithm",
+                                "severity":  "medium",
+                                "message":  "getInstance(\"DES\") uses a broken or weak cipher.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\java\\MULTI-CWE-java-25.java",
+                                "line":  70,
+                                "column":  38,
+                                "evidence":  "javax.crypto.Cipher.getInstance(\"DES\")"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:45.297Z"
 }

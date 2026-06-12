@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-c-41",
-  "language": "c",
-  "path": "/dataset/synthetic/CWE-78/c/CWE-78-c-41.c",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "char cmd[512];\n\nsnprintf(cmd, sizeof(cmd), template, value);\n\nif (pid == 0) {\n    char *args[] = {\"sh\", \"-c\", cmd, NULL};\n    execv(\"/bin/sh\", args);\n    _exit(127);\n}",
-          "replacement": "if (strcmp(template, \"wc -l %s\") != 0) {\n    return 1;\n}\n\nif (pid == 0) {\n    char *args[] = {\"wc\", \"-l\", (char *)value, NULL};\n    execvp(\"wc\", args);\n    _exit(127);\n}"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:40.666Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-c-41",
+    "language":  "c",
+    "path":  "/dataset/synthetic/CWE-78/c/CWE-78-c-41.c",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "char cmd[512];\n\nsnprintf(cmd, sizeof(cmd), template, value);\n\npid_t pid = fork();\nif (pid \u003c 0) {\n    return 1;\n}\n\nif (pid == 0) {\n    char *args[] = {\"sh\", \"-c\", cmd, NULL};\n    execv(\"/bin/sh\", args);\n    _exit(127);\n}",
+                                                  "replacement":  "if (strcmp(template, \"wc -l %s\") != 0) {\n    return 1;\n}\n\npid_t pid = fork();\nif (pid \u003c 0) {\n    return 1;\n}\n\nif (pid == 0) {\n    char *args[] = {\"wc\", \"-l\", (char *)value, NULL};\n    execvp(\"wc\", args);\n    _exit(127);\n}"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:40.666Z"
 }

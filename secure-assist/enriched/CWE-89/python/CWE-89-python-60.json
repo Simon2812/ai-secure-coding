@@ -1,48 +1,48 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-60",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-60.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "assignments = \", \".join(f\"{k} = '{v}'\" for k, v in fields.items())\nquery = \"UPDATE \" + table + \" SET \" + assignments + \" WHERE id = \" + account_id + \" RETURNING id, email\"\n\ncur.execute(query)",
-          "replacement": "cols = list(fields.keys())\nvals = [fields[c] for c in cols]\nset_sql = sql.SQL(\", \").join(sql.Composed([sql.Identifier(c), sql.SQL(\" = %s\")]) for c in cols)\nquery = sql.SQL(\"UPDATE {} SET {} WHERE id = %s RETURNING id, email\").format(sql.Identifier(table), set_sql)\ncur.execute(query, vals + [account_id])"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-60.py",
-      "line": 44,
-      "column": 25,
-      "evidence": "query"
-    },
-    {
-      "cweId": "CWE-259",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Password",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-60.py",
-      "line": 13,
-      "column": 21,
-      "evidence": "\"acct_pass\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:44.184Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-60",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-60.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "assignments = \", \".join(f\"{k} = \u0027{v}\u0027\" for k, v in fields.items())\n        query = \"UPDATE \" + table + \" SET \" + assignments + \" WHERE id = \" + account_id + \" RETURNING id, email\"\n\n        try:\n            cur.execute(query)",
+                                                  "replacement":  "cols = list(fields.keys())\n        vals = [fields[c] for c in cols]\n        set_sql = sql.SQL(\", \").join(sql.Composed([sql.Identifier(c), sql.SQL(\" = %s\")]) for c in cols)\n        query = sql.SQL(\"UPDATE {} SET {} WHERE id = %s RETURNING id, email\").format(sql.Identifier(table), set_sql)\n\n        try:\n            cur.execute(query, vals + [account_id])"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-60.py",
+                                "line":  44,
+                                "column":  25,
+                                "evidence":  "query"
+                            },
+                            {
+                                "cweId":  "CWE-259",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Password",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027password\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-60.py",
+                                "line":  13,
+                                "column":  21,
+                                "evidence":  "\"acct_pass\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:44.184Z"
 }
