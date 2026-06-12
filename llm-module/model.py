@@ -339,7 +339,7 @@ class SecureCodingModel:
         metadata_root = Path(metadata_root)
 
         for json_file in metadata_root.rglob("*.json"):
-            with open(json_file, "r", encoding="utf-8") as f:
+            with open(json_file, "r", encoding="utf-8-sig") as f:
                 metadata = json.load(f)
 
             # Source code path is stored inside metadata.
