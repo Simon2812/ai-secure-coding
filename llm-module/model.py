@@ -620,6 +620,51 @@ class SecureCodingModel:
         print("\nTraining completed.")
 
 
+    def _repair_invalid_json_escapes(self, text):
+        """
+        Remove invalid backslash escapes
+        from model-generated JSON text.
+        """
+
+        valid_escapes = {
+            '"',
+            "\\",
+            "/",
+            "b",
+            "f",
+            "n",
+            "r",
+            "t",
+            "u",
+        }
+
+        repaired = []
+        index = 0
+
+        while index < len(text):
+            char = text[index]
+
+            if (
+                char == "\\"
+                and index + 1 < len(text)
+            ):
+                next_char = text[index + 1]
+
+                if next_char in valid_escapes:
+                    repaired.append(char)
+                    repaired.append(next_char)
+                else:
+                    repaired.append(next_char)
+
+                index += 2
+                continue
+
+            repaired.append(char)
+            index += 1
+
+        return "".join(repaired)
+
+
     def extract_json(self, text):
         start = text.find("{")
     
@@ -627,12 +672,23 @@ class SecureCodingModel:
             raise ValueError("No JSON found.")
     
         decoder = json.JSONDecoder()
+        json_text = text[start:]
     
         try:
-            obj, _ = decoder.raw_decode(text[start:])
+            obj, _ = decoder.raw_decode(json_text)
             return obj
         except json.JSONDecodeError as error:
-            raise ValueError(f"Invalid JSON: {error}") from error
+            repaired_text = self._repair_invalid_json_escapes(
+                json_text
+            )
+
+            try:
+                obj, _ = decoder.raw_decode(repaired_text)
+                return obj
+            except json.JSONDecodeError as repaired_error:
+                raise ValueError(
+                    f"Invalid JSON: {repaired_error}"
+                ) from error
     
 
     def test(self, test_data, evaluator):
