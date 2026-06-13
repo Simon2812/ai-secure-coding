@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-07",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-07.py",
-  "split": "test",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "statement = text(f\"SELECT id, full_name FROM people WHERE full_name ILIKE '%{term}%'\\\")\nwith engine.connect() as conn:\n    result = conn.execute(statement)",
-          "replacement": "statement = text(\"SELECT id, full_name FROM people WHERE full_name ILIKE :pattern\")\nwith engine.connect() as conn:\n    result = conn.execute(statement, {\"pattern\": f\"%{term}%\"})"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-07.py",
-      "line": 10,
-      "column": 31,
-      "evidence": "statement"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.840Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-07",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-07.py",
+    "split":  "test",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "statement = text(f\"SELECT id, full_name FROM people WHERE full_name ILIKE \u0027%{term}%\u0027\")\n    with engine.connect() as conn:\n        result = conn.execute(statement)",
+                                                  "replacement":  "statement = text(\"SELECT id, full_name FROM people WHERE full_name ILIKE :pattern\")\nwith engine.connect() as conn:\n    result = conn.execute(statement, {\"pattern\": f\"%{term}%\"})"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-07.py",
+                                "line":  10,
+                                "column":  31,
+                                "evidence":  "statement"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.840Z"
 }

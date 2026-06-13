@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-java-10",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-10.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "Process process = Runtime.getRuntime().exec(osCommand + data);\n        process.waitFor();",
-          "replacement": "String[] command = osCommand.trim().split(\"\\\\s+\");\nString[] full = new String[command.length + 1];\nSystem.arraycopy(command, 0, full, 0, command.length);\nfull[command.length] = data;\nProcess process = Runtime.getRuntime().exec(full);\nprocess.waitFor();"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-10.java",
-      "line": 51,
-      "column": 27,
-      "evidence": "Runtime.getRuntime().exec(full)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.201Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-10",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-10.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "String[] command = osCommand.trim().split(\"\\\\s+\");\n        String[] full = new String[command.length + 1];\n        System.arraycopy(command, 0, full, 0, command.length);\n        full[command.length] = data;\n\n        Process process = Runtime.getRuntime().exec(full);\n        process.waitFor();",
+                                                  "replacement":  "String[] command = osCommand.trim().split(\"\\\\s+\");\n        String[] full = new String[command.length + 1];\n        System.arraycopy(command, 0, full, 0, command.length);\n        full[command.length] = data;\n\n        Process process = Runtime.getRuntime().exec(full);\n        process.waitFor();"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "Runtime.exec() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-10.java",
+                                "line":  51,
+                                "column":  27,
+                                "evidence":  "Runtime.getRuntime().exec(full)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.201Z"
 }

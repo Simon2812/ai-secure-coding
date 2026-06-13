@@ -1,102 +1,112 @@
 {
-  "schema_version": "1.0",
-  "id": "MULTI-CWE-c-14",
-  "language": "c",
-  "path": "/dataset/synthetic/MULTI-CWE/c/MULTI-CWE-c-14.c",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-190",
-      "fixes": [
-        {
-          "origin": "return n * 100;",
-          "replacement": "if (n <= 0 || n > INT_MAX / 100)\n{\n    return 0;\n}\nreturn n * 8;"
-        }
-      ]
-    },
-    {
-      "id": "v2",
-      "cwe": "CWE-787",
-      "fixes": [
-        {
-          "origin": "strcpy(buf, name);",
-          "replacement": "strncpy(buf, name, size - 1);\nbuf[size - 1] = '\\0';"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "Arithmetic on user-controlled integer may overflow.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
-      "line": 42,
-      "column": 11,
-      "evidence": "(char *)malloc(n * 16)"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "Loop writes to array using a user-controlled bound or index without bounds check.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
-      "line": 11,
-      "column": 13,
-      "evidence": "strlen(buf)"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcat() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
-      "line": 20,
-      "column": 5,
-      "evidence": "strcat(cmd, path)"
-    },
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "system() receives a non-literal command argument.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
-      "line": 21,
-      "column": 5,
-      "evidence": "system(cmd)"
-    },
-    {
-      "cweId": "CWE-190",
-      "ruleId": "ast-integer-overflow",
-      "vulnerability": "Integer Overflow",
-      "severity": "medium",
-      "message": "malloc() size argument contains arithmetic that may overflow.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
-      "line": 42,
-      "column": 26,
-      "evidence": "n * 16"
-    },
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
-      "line": 47,
-      "column": 9,
-      "evidence": "strcpy(ptr, base)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:44.589Z"
+    "schema_version":  "1.0",
+    "id":  "MULTI-CWE-c-14",
+    "language":  "c",
+    "path":  "/dataset/synthetic/MULTI-CWE/c/MULTI-CWE-c-14.c",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-190",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "ptr = (char *)malloc(n * 16);",
+                                                  "replacement":  "if (n \u003c= 0 || n \u003e 1000000)\n    return 1;\n\n    ptr = (char *)malloc((size_t)n * 16);"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-787",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "strcpy(ptr, base);",
+                                                  "replacement":  "snprintf(ptr, (size_t)n * 16, \"%s\", base);"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v3",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "    char cmd[256] = \"cat \";\n    strcat(cmd, path);\n    system(cmd);",
+                                                  "replacement":  "    execl(\"/bin/cat\", \"cat\", path, (char *)NULL);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-190",
+                                "ruleId":  "ast-integer-overflow",
+                                "vulnerability":  "Integer Overflow",
+                                "severity":  "medium",
+                                "message":  "Arithmetic on user-controlled integer may overflow.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
+                                "line":  42,
+                                "column":  11,
+                                "evidence":  "(char *)malloc(n * 16)"
+                            },
+                            {
+                                "cweId":  "CWE-787",
+                                "ruleId":  "ast-oob-write",
+                                "vulnerability":  "Out-of-bounds Write",
+                                "severity":  "high",
+                                "message":  "Loop writes to array using a user-controlled bound or index without bounds check.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
+                                "line":  11,
+                                "column":  13,
+                                "evidence":  "strlen(buf)"
+                            },
+                            {
+                                "cweId":  "CWE-787",
+                                "ruleId":  "ast-oob-write",
+                                "vulnerability":  "Out-of-bounds Write",
+                                "severity":  "high",
+                                "message":  "strcat() does not perform bounds checking and may write past a buffer.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
+                                "line":  20,
+                                "column":  5,
+                                "evidence":  "strcat(cmd, path)"
+                            },
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "system() receives a non-literal command argument.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
+                                "line":  21,
+                                "column":  5,
+                                "evidence":  "system(cmd)"
+                            },
+                            {
+                                "cweId":  "CWE-190",
+                                "ruleId":  "ast-integer-overflow",
+                                "vulnerability":  "Integer Overflow",
+                                "severity":  "medium",
+                                "message":  "malloc() size argument contains arithmetic that may overflow.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
+                                "line":  42,
+                                "column":  26,
+                                "evidence":  "n * 16"
+                            },
+                            {
+                                "cweId":  "CWE-787",
+                                "ruleId":  "ast-oob-write",
+                                "vulnerability":  "Out-of-bounds Write",
+                                "severity":  "high",
+                                "message":  "strcpy() does not perform bounds checking and may write past a buffer.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\c\\MULTI-CWE-c-14.c",
+                                "line":  47,
+                                "column":  9,
+                                "evidence":  "strcpy(ptr, base)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:44.589Z"
 }

@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import Any, List
+from typing import Any, List, Optional
 
 from fastapi import (
     FastAPI,
@@ -7,11 +7,13 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
+from evaluator import Evaluator
 from model import SecureCodingModel
 
 
-# Global singleton.
+# Global singletons.
 llm_model = SecureCodingModel()
+origin_locator = Evaluator()
 
 
 class FixModel(BaseModel):
@@ -30,6 +32,8 @@ class VulnerabilityModel(BaseModel):
 
     cwe: str
     fixes: List[FixModel]
+    start_line: Optional[int] = None
+    end_line: Optional[int] = None
 
 
 class AnalyzeRequest(BaseModel):
@@ -47,6 +51,68 @@ class AnalyzeResponse(BaseModel):
     """
 
     vulnerabilities: List[VulnerabilityModel]
+
+
+def add_origin_line_ranges(
+    prediction: dict,
+    code: str,
+):
+    """
+    Add source line ranges to vulnerabilities when their
+    fix origins can be located in the submitted snippet.
+    """
+
+    if not isinstance(prediction, dict):
+        return prediction
+
+    vulnerabilities = prediction.get(
+        "vulnerabilities",
+        [],
+    )
+
+    if not isinstance(vulnerabilities, list):
+        return prediction
+
+    for vulnerability in vulnerabilities:
+        if not isinstance(vulnerability, dict):
+            continue
+
+        fixes = vulnerability.get(
+            "fixes",
+            [],
+        )
+
+        if not isinstance(fixes, list):
+            continue
+
+        ranges = []
+
+        for fix in fixes:
+            if not isinstance(fix, dict):
+                continue
+
+            origin = fix.get("origin")
+
+            if not isinstance(origin, str):
+                continue
+
+            line_range = origin_locator.find_origin_line_range(
+                code,
+                origin,
+            )
+
+            if line_range is not None:
+                ranges.append(line_range)
+
+        if ranges:
+            vulnerability["start_line"] = (
+                min(start for start, _ in ranges)
+            )
+            vulnerability["end_line"] = (
+                max(end for _, end in ranges)
+            )
+
+    return prediction
 
 
 @asynccontextmanager
@@ -97,6 +163,7 @@ def health():
 @app.post(
     "/analyze",
     response_model=AnalyzeResponse,
+    response_model_exclude_none=True,
 )
 def analyze(request: AnalyzeRequest):
     """
@@ -104,9 +171,14 @@ def analyze(request: AnalyzeRequest):
     """
 
     try:
-        return llm_model.predict(
+        prediction = llm_model.predict(
             code=request.code,
             static_findings=request.analysis,
+        )
+
+        return add_origin_line_ranges(
+            prediction=prediction,
+            code=request.code,
         )
 
     except Exception as error:

@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-39",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-39.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "cmd = f\"Get-Process | Where-Object {{$_.Name -like '*{term}*'}} | Select-Object -First 3\"\nargs = [\"powershell\", \"-NoProfile\", \"-Command\", cmd]\n\nproc = subprocess.run(args, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "allowed = {\"chrome\": \"chrome\", \"python\": \"python\", \"explorer\": \"explorer\"}\nkey = term.lower()\npname = allowed.get(key)\nif pname is None:\n    raise ValueError(\"Unsupported process\")\nargs = [\"powershell\", \"-NoProfile\", \"-Command\", \"Get-Process -Name \" + pname + \" | Select-Object -First 3\"]\nproc = subprocess.run(args, capture_output=True, encoding=\"utf-8\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-39.py",
-      "line": 17,
-      "column": 36,
-      "evidence": "args"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:42.061Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-39",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-39.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "cmd = f\"Get-Process | Where-Object {{$_.Name -like \u0027*{term}*\u0027}} | Select-Object -First 3\"\n                args = [\"powershell\", \"-NoProfile\", \"-Command\", cmd]\n\n                p = subprocess.run(args, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "allowed = {\"chrome\": \"chrome\", \"python\": \"python\", \"explorer\": \"explorer\"}\n                key = term.lower()\n                pname = allowed.get(key)\n                if pname is None:\n                        raise ValueError(\"Unsupported process\")\n                args = [\"powershell\", \"-NoProfile\", \"-Command\", \"Get-Process -Name \" + pname + \" | Select-Object -First 3\"]\n                p = subprocess.run(args, capture_output=True, encoding=\"utf-8\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "subprocess.run() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-39.py",
+                                "line":  17,
+                                "column":  36,
+                                "evidence":  "args"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.061Z"
 }

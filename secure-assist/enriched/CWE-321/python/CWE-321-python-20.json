@@ -1,48 +1,63 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-321-python-20",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-321/python/CWE-321-python-20.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-20.py",
-      "line": 10,
-      "column": 34,
-      "evidence": "output_name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "tarfile.open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-20.py",
-      "line": 12,
-      "column": 23,
-      "evidence": "archive_path"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-20.py",
-      "line": 14,
-      "column": 44,
-      "evidence": "item"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:39.135Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-321-python-20",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-321/python/CWE-321-python-20.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "archive_path = staging_dir / output_name",
+                                                  "replacement":  "archive_path = (staging_dir / Path(output_name).name).resolve()\n    if staging_dir not in archive_path.parents and archive_path != staging_dir:\n        raise ValueError(\"invalid archive path\")"
+                                              },
+                                              {
+                                                  "origin":  "        for item in files:\n            archive.add(item, arcname=Path(item).name)",
+                                                  "replacement":  "        allowed_root = Path(\"/srv/bundles/input\").resolve()\n        for item in files:\n            source = Path(item).resolve()\n            if allowed_root not in source.parents and source != allowed_root:\n                raise ValueError(\"invalid bundle input path\")\n            archive.add(source, arcname=source.name)"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-20.py",
+                                "line":  10,
+                                "column":  34,
+                                "evidence":  "output_name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "tarfile.open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-20.py",
+                                "line":  12,
+                                "column":  23,
+                                "evidence":  "archive_path"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "Path() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-20.py",
+                                "line":  14,
+                                "column":  44,
+                                "evidence":  "item"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:39.135Z"
 }

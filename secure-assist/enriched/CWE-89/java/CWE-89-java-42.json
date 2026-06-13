@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-java-42",
-  "language": "java",
-  "path": "/dataset/synthetic/CWE-89/java/CWE-89-java-42.java",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "String sql = \"DELETE FROM accounts WHERE role='\" + role + \"'\";\njava.sql.Statement st = conn.createStatement();\nst.executeUpdate(sql);",
-          "replacement": "String sql = \"DELETE FROM accounts WHERE role=?\";\njava.sql.PreparedStatement st = conn.prepareStatement(sql);\nst.setString(1, role);\nst.executeUpdate();"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-42.java",
-      "line": 6,
-      "column": 26,
-      "evidence": "sql"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.294Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-java-42",
+    "language":  "java",
+    "path":  "/dataset/synthetic/CWE-89/java/CWE-89-java-42.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "String sql = DELETE FROM accounts WHERE role=\u0027 + role + \u0027;\n        java.sql.Statement st = conn.createStatement();\n        st.executeUpdate(sql);",
+                                                  "replacement":  "String sql = \"DELETE FROM accounts WHERE role=?\";\n        java.sql.PreparedStatement st = conn.prepareStatement(sql);\n        st.setString(1, role);\n        st.executeUpdate();"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\java\\CWE-89-java-42.java",
+                                "line":  6,
+                                "column":  26,
+                                "evidence":  "sql"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.294Z"
 }

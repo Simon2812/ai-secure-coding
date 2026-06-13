@@ -54,7 +54,7 @@ class SecureCodingModel:
         # Experiment configuration (tunable between runs).
         self.training_config = {
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-            "prompt_version": "v1",
+            "prompt_version": "v3",
             "max_length": 2048,
             "epochs": 3,
             "learning_rate": 1e-4,
@@ -163,6 +163,19 @@ class SecureCodingModel:
                 checkpoint_dir,
             )
         )
+
+        # Keep generation deterministic, but make sure checkpoint
+        # inference does not stop immediately on missing token IDs.
+        self.generation_config["pad_token_id"] = (
+            self.tokenizer.pad_token_id
+        )
+        self.generation_config["eos_token_id"] = (
+            self.tokenizer.eos_token_id
+        )
+        self.generation_config.setdefault(
+            "min_new_tokens",
+            5,
+        )
     
         self.model.print_trainable_parameters()
     
@@ -265,6 +278,11 @@ class SecureCodingModel:
         if generation_overrides:
             generation_config.update(generation_overrides)
 
+        if not generation_config.get("do_sample", False):
+            generation_config.pop("temperature", None)
+            generation_config.pop("top_p", None)
+            generation_config.pop("top_k", None)
+
         outputs = self.model.generate(
             **inputs,
             **generation_config,
@@ -283,7 +301,39 @@ class SecureCodingModel:
         print(text)
         print("========================\n")
 
-        return self.extract_json(text)
+        try:
+            return self.extract_json(text)
+        except ValueError as error:
+            retry_config = generation_config.copy()
+            retry_config.update(
+                {
+                    "do_sample": True,
+                    "temperature": 0.2,
+                    "top_p": 0.9,
+                    "min_new_tokens": 20,
+                }
+            )
+
+            outputs = self.model.generate(
+                **inputs,
+                **retry_config,
+            )
+
+            generated = outputs[0][prompt_len:]
+
+            text = self.tokenizer.decode(
+                generated,
+                skip_special_tokens=True,
+            )
+
+            print("\n===== MODEL OUTPUT RETRY =====")
+            print(text)
+            print("==============================\n")
+
+            try:
+                return self.extract_json(text)
+            except ValueError:
+                raise error
 
 
     def predict(self, code, static_findings):
@@ -339,7 +389,7 @@ class SecureCodingModel:
         metadata_root = Path(metadata_root)
 
         for json_file in metadata_root.rglob("*.json"):
-            with open(json_file, "r", encoding="utf-8") as f:
+            with open(json_file, "r", encoding="utf-8-sig") as f:
                 metadata = json.load(f)
 
             # Source code path is stored inside metadata.
@@ -446,7 +496,6 @@ class SecureCodingModel:
                     prompt,
                     return_tensors="pt",
                     truncation=True,
-                    truncation_side="left",
                     max_length=prompt_max_length,
                     add_special_tokens=True,
                 )
@@ -621,6 +670,51 @@ class SecureCodingModel:
         print("\nTraining completed.")
 
 
+    def _repair_invalid_json_escapes(self, text):
+        """
+        Remove invalid backslash escapes
+        from model-generated JSON text.
+        """
+
+        valid_escapes = {
+            '"',
+            "\\",
+            "/",
+            "b",
+            "f",
+            "n",
+            "r",
+            "t",
+            "u",
+        }
+
+        repaired = []
+        index = 0
+
+        while index < len(text):
+            char = text[index]
+
+            if (
+                char == "\\"
+                and index + 1 < len(text)
+            ):
+                next_char = text[index + 1]
+
+                if next_char in valid_escapes:
+                    repaired.append(char)
+                    repaired.append(next_char)
+                else:
+                    repaired.append(next_char)
+
+                index += 2
+                continue
+
+            repaired.append(char)
+            index += 1
+
+        return "".join(repaired)
+
+
     def extract_json(self, text):
         start = text.find("{")
     
@@ -628,12 +722,23 @@ class SecureCodingModel:
             raise ValueError("No JSON found.")
     
         decoder = json.JSONDecoder()
+        json_text = text[start:]
     
         try:
-            obj, _ = decoder.raw_decode(text[start:])
+            obj, _ = decoder.raw_decode(json_text)
             return obj
         except json.JSONDecodeError as error:
-            raise ValueError(f"Invalid JSON: {error}") from error
+            repaired_text = self._repair_invalid_json_escapes(
+                json_text
+            )
+
+            try:
+                obj, _ = decoder.raw_decode(repaired_text)
+                return obj
+            except json.JSONDecodeError as repaired_error:
+                raise ValueError(
+                    f"Invalid JSON: {repaired_error}"
+                ) from error
     
 
     def test(self, test_data, evaluator):
@@ -652,6 +757,10 @@ class SecureCodingModel:
 
         per_cwe = defaultdict(metric_dict)
         per_language = defaultdict(metric_dict)
+
+        overall_pr = pr_dict()
+        per_cwe_pr = defaultdict(pr_dict)
+        per_language_pr = defaultdict(pr_dict)
 
         with torch.no_grad():
             for sample in test_data:

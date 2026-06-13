@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-java-34",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-34.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "argList.add(\"echo \" + bar);",
-          "replacement": "argList.add(\"echo\");\nargList.add(bar);"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "new ProcessBuilder() receives user-controlled command.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-34.java",
-      "line": 67,
-      "column": 29,
-      "evidence": "new ProcessBuilder(command)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.372Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-34",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-34.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "command.add(\"date \" + value);",
+                                                  "replacement":  "command.add(\"date\");\n        command.add(value);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "new ProcessBuilder() receives user-controlled command.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-34.java",
+                                "line":  67,
+                                "column":  29,
+                                "evidence":  "new ProcessBuilder(command)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.372Z"
 }

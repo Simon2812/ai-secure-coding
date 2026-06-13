@@ -1,101 +1,111 @@
 {
-  "schema_version": "1.0",
-  "id": "MULTI-CWE-python-21",
-  "language": "python",
-  "path": "/dataset/synthetic/MULTI-CWE/python/MULTI-CWE-python-21.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "query = (\n    \"SELECT id, owner, task, status FROM jobs \"\n    \"WHERE owner = '\" + owner + \"' \"\n    \"AND status = '\" + status + \"'\"\n)\n\ncursor.execute(query)",
-          "replacement": "query = (\n    \"SELECT id, owner, task, status FROM jobs \"\n    \"WHERE owner = ? AND status = ?\"\n)\n\ncursor.execute(query, (owner, status))"
-        }
-      ]
-    },
-    {
-      "id": "v2",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "command = f\"bash -c '{task}'\"\n\nresult = subprocess.run(\n    command,\n    shell=True,\n    capture_output=True,\n    text=True\n)",
-          "replacement": "result = subprocess.run(\n    [\"bash\", \"-c\", task],\n    capture_output=True,\n    text=True\n)"
-        }
-      ]
-    },
-    {
-      "id": "v3",
-      "cwe": "CWE-259",
-      "fixes": [
-        {
-          "origin": "self.api_key = \"internal-api-key-123\"",
-          "replacement": "self.api_key = os.environ.get(\"API_KEY\", \"\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
-      "line": 37,
-      "column": 28,
-      "evidence": "query"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
-      "line": 70,
-      "column": 29,
-      "evidence": "file_name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
-      "line": 73,
-      "column": 19,
-      "evidence": "path"
-    },
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
-      "line": 81,
-      "column": 9,
-      "evidence": "command"
-    },
-    {
-      "cweId": "CWE-321",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Cryptographic Key",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'self.api_key'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
-      "line": 96,
-      "column": 24,
-      "evidence": "\"internal-api-key-123\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:46.257Z"
+    "schema_version":  "1.0",
+    "id":  "MULTI-CWE-python-21",
+    "language":  "python",
+    "path":  "/dataset/synthetic/MULTI-CWE/python/MULTI-CWE-python-21.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "query = (\n    \"SELECT id, owner, task, status FROM jobs \"\n    \"WHERE owner = \u0027\" + owner + \"\u0027 \"\n    \"AND status = \u0027\" + status + \"\u0027\"\n)\n\ncursor.execute(query)",
+                                                  "replacement":  "query = (\n    \"SELECT id, owner, task, status FROM jobs \"\n    \"WHERE owner = ? AND status = ?\"\n)\n\ncursor.execute(query, (owner, status))"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "command = f\"bash -c \u0027{task}\u0027\"\n\nresult = subprocess.run(\n    command,\n    shell=True,\n    capture_output=True,\n    text=True\n)",
+                                                  "replacement":  "result = subprocess.run(\n    [\"bash\", \"-c\", task],\n    capture_output=True,\n    text=True\n)"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v3",
+                                "cwe":  "CWE-259",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "self.api_key = \"internal-api-key-123\"",
+                                                  "replacement":  "self.api_key = os.environ.get(\"API_KEY\", \"\")"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v4",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "    def target_path(self, file_name: str) -\u003e Path:\n        return (self.root / file_name).resolve()",
+                                                  "replacement":  "    def target_path(self, file_name: str) -\u003e Path:\n        safe_name = Path(file_name).name\n        path = (self.root / safe_name).resolve()\n        if self.root not in path.parents and path != self.root:\n            raise ValueError(\"invalid export path\")\n        return path"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
+                                "line":  37,
+                                "column":  28,
+                                "evidence":  "query"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
+                                "line":  70,
+                                "column":  29,
+                                "evidence":  "file_name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
+                                "line":  73,
+                                "column":  19,
+                                "evidence":  "path"
+                            },
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "subprocess.run() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
+                                "line":  81,
+                                "column":  9,
+                                "evidence":  "command"
+                            },
+                            {
+                                "cweId":  "CWE-321",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Cryptographic Key",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027self.api_key\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-21.py",
+                                "line":  96,
+                                "column":  24,
+                                "evidence":  "\"internal-api-key-123\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:46.257Z"
 }

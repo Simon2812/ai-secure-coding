@@ -1,0 +1,81 @@
+{
+  "test": {
+    "precision": 0.9238,
+    "recall": 0.822,
+    "tp": 97,
+    "fp": 8,
+    "fn": 21
+  },
+  "per_cwe": {
+    "CWE-22": {
+      "precision": 0.9375,
+      "recall": 0.7895,
+      "tp": 15,
+      "fp": 1,
+      "fn": 4
+    },
+    "CWE-78": {
+      "precision": 1.0,
+      "recall": 0.9259,
+      "tp": 25,
+      "fp": 0,
+      "fn": 2
+    },
+    "CWE-89": {
+      "precision": 0.8889,
+      "recall": 1.0,
+      "tp": 16,
+      "fp": 2,
+      "fn": 0
+    },
+    "CWE-190": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3,
+      "fp": 0,
+      "fn": 1
+    },
+    "CWE-259": {
+      "precision": 1.0,
+      "recall": 0.7,
+      "tp": 7,
+      "fp": 0,
+      "fn": 3
+    },
+    "CWE-321": {
+      "precision": 1.0,
+      "recall": 0.6667,
+      "tp": 6,
+      "fp": 0,
+      "fn": 3
+    },
+    "CWE-327": {
+      "precision": 0.6667,
+      "recall": 0.6,
+      "tp": 6,
+      "fp": 3,
+      "fn": 4
+    },
+    "CWE-328": {
+      "precision": 0.9,
+      "recall": 0.75,
+      "tp": 9,
+      "fp": 1,
+      "fn": 3
+    },
+    "CWE-416": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 3,
+      "fp": 0,
+      "fn": 0
+    },
+    "CWE-787": {
+      "precision": 0.875,
+      "recall": 0.875,
+      "tp": 7,
+      "fp": 1,
+      "fn": 1
+    }
+  }
+}

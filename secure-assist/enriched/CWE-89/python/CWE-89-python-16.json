@@ -1,48 +1,48 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-16",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-16.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "id_blob = \",\".join(ids)\nstatement = (\n    \"SELECT id, rule_id, severity, created_at \"\n    \"FROM risk_events \"\n    \"WHERE rule_id IN (\" + id_blob + \") \"\n    \"AND created_at >= %s \"\n    \"ORDER BY created_at DESC\"\n)\n\ncur.execute(statement, (since,))",
-          "replacement": "placeholders = \",\".join([\"%s\"] * len(ids))\nstatement = (\n    \"SELECT id, rule_id, severity, created_at \"\n    \"FROM risk_events \"\n    \"WHERE rule_id IN (\" + placeholders + \") \"\n    \"AND created_at >= %s \"\n    \"ORDER BY created_at DESC\"\n)\n\ncur.execute(statement, tuple(ids) + (since,))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
-      "line": 50,
-      "column": 29,
-      "evidence": "statement"
-    },
-    {
-      "cweId": "CWE-259",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Password",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
-      "line": 15,
-      "column": 21,
-      "evidence": "\"risk_pass\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.896Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-16",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-16.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "id_blob = \",\".join(ids)\n        statement = (\n            \"SELECT id, rule_id, severity, created_at \"\n            \"FROM risk_events \"\n            \"WHERE rule_id IN (\" + id_blob + \") \"\n            \"AND created_at \u003e= %s \"\n            \"ORDER BY created_at DESC\"\n        )\n\n        with self._connect() as conn:\n            with conn.cursor() as cur:\n                cur.execute(statement, (since,))",
+                                                  "replacement":  "placeholders = \",\".join([\"%s\"] * len(ids))\n        statement = (\n            \"SELECT id, rule_id, severity, created_at \"\n            \"FROM risk_events \"\n            \"WHERE rule_id IN (\" + placeholders + \") \"\n            \"AND created_at \u003e= %s \"\n            \"ORDER BY created_at DESC\"\n        )\n\n        with self._connect() as conn:\n            with conn.cursor() as cur:\n                cur.execute(statement, tuple(ids) + (since,))"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
+                                "line":  50,
+                                "column":  29,
+                                "evidence":  "statement"
+                            },
+                            {
+                                "cweId":  "CWE-259",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Password",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027password\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-16.py",
+                                "line":  15,
+                                "column":  21,
+                                "evidence":  "\"risk_pass\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.896Z"
 }

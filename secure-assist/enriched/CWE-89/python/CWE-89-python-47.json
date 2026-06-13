@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-41",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-41.py",
-  "split": "test",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "if opts.min_amount:\n    sql += \"AND p.amount >= {min_amount} \".format(min_amount=opts.min_amount)\n\nsql += \"ORDER BY p.created_at DESC\"\nreturn sql, params",
-          "replacement": "if opts.min_amount:\n    sql += \"AND p.amount >= %s \"\n    params.append(int(opts.min_amount))\n\nsql += \"ORDER BY p.created_at DESC\"\nreturn sql, params"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-41.py",
-      "line": 8,
-      "column": 17,
-      "evidence": "query"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:44.073Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-41",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-41.py",
+    "split":  "test",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "query = f\"SELECT id, email FROM users WHERE username = \u0027{username}\u0027\"\n    cur.execute(query)",
+                                                  "replacement":  "query = \"SELECT id, email FROM users WHERE username = ?\"\n    cur.execute(query, (username,))"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-41.py",
+                                "line":  8,
+                                "column":  17,
+                                "evidence":  "query"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:44.073Z"
 }

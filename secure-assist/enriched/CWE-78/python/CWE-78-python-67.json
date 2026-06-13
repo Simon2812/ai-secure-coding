@@ -1,26 +1,37 @@
-{
-  "schema_version": "1.0",
-  "id": "CWE-78-python-67",
-  "language": "python",
-  "path": "/dataset/normalized/CWE-78/python/CWE-78-python-67.py",
-  "split": "test",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-67.py",
-      "line": 34,
-      "column": 47,
-      "evidence": "command_line"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:42.238Z"
+﻿{
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-67",
+    "language":  "python",
+    "path":  "/dataset/normalized/CWE-78/python/CWE-78-python-67.py",
+    "split":  "test",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "command_line = \"\"\n                if platform.system() == \"Windows\":\n                        command_line = \"cmd.exe /c \"\n                else:\n                        command_line = \"sh -c \"\n                command_line += f\"echo {decoded_value}\"\n\n                try:\n                        proc = subprocess.run(command_line, shell=True, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "args = [\"cmd.exe\", \"/c\", \"echo\", decoded_value] if platform.system() == \"Windows\" else [\"/bin/echo\", decoded_value]\n\n                try:\n                        proc = subprocess.run(args, shell=False, capture_output=True, encoding=\"utf-8\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "subprocess.run() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-67.py",
+                                "line":  34,
+                                "column":  47,
+                                "evidence":  "command_line"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.238Z"
 }

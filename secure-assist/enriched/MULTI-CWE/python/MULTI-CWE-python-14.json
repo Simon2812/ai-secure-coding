@@ -28,6 +28,16 @@
           "replacement": "query = (\n    \"SELECT metric, value, created_at \"\n    \"FROM host_metrics \"\n    \"WHERE host = ? \"\n    \"ORDER BY created_at DESC LIMIT 50\"\n)\n\ncursor.execute(query, (host,))"
         }
       ]
+    },
+    {
+      "id": "v3",
+      "cwe": "CWE-22",
+      "fixes": [
+        {
+          "origin": "def target_file(self, name: str) -> Path:\n        return (self.root / name).resolve()",
+          "replacement": "def target_file(self, name: str) -> Path:\n        target = (self.root / Path(name).name).resolve()\n        if self.root not in target.parents and target != self.root:\n            raise ValueError(\"invalid output path\")\n        return target"
+        }
+      ]
     }
   ],
   "static_findings": [

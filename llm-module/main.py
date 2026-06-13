@@ -34,12 +34,5 @@ if __name__ == "__main__":
         # ./checkpoints/<experiment_name>
         experiment_name="stage1-qwen",
 
-        # Override default training configuration
-        training_overrides={
-            "learning_rate": 2e-4,
-            "lora_rank": 16,
-            "epochs": 3,
-        },
-
         evaluator=evaluator,
     )

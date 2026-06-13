@@ -1,48 +1,69 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-79",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-79.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-79.py",
-      "line": 29,
-      "column": 19,
-      "evidence": "path"
-    },
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-79.py",
-      "line": 43,
-      "column": 29,
-      "evidence": "stmt"
-    },
-    {
-      "cweId": "CWE-259",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Password",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-79.py",
-      "line": 12,
-      "column": 21,
-      "evidence": "\"invpass\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:44.332Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-79",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-79.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "with open(path, newline=\"\", encoding=\"utf-8\") as f:",
+                                                  "replacement":  "from pathlib import Path\n        import_root = Path(\"/srv/inventory/imports\").resolve()\n        import_path = (import_root / Path(path).name).resolve()\n        if import_root not in import_path.parents and import_path != import_root:\n            raise ValueError(\"invalid import path\")\n        with open(import_path, newline=\"\", encoding=\"utf-8\") as f:"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-259",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "password: str = \"invpass\"",
+                                                  "replacement":  "password: str = __import__(\"os\").environ.get(\"INVENTORY_DB_PASSWORD\", \"\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-79.py",
+                                "line":  29,
+                                "column":  19,
+                                "evidence":  "path"
+                            },
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-79.py",
+                                "line":  43,
+                                "column":  29,
+                                "evidence":  "stmt"
+                            },
+                            {
+                                "cweId":  "CWE-259",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Password",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027password\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-79.py",
+                                "line":  12,
+                                "column":  21,
+                                "evidence":  "\"invpass\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:44.332Z"
 }

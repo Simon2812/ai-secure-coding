@@ -1,26 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-61",
-  "language": "python",
-  "path": "/dataset/normalized/CWE-78/python/CWE-78-python-61.py",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "codecs.open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-61.py",
-      "line": 26,
-      "column": 50,
-      "evidence": "f'{helpers.utils.TESTFILES_DIR}/{selected}'"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:42.178Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-61",
+    "language":  "python",
+    "path":  "/dataset/normalized/CWE-78/python/CWE-78-python-61.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "fileTarget = codecs.open(f\u0027{helpers.utils.TESTFILES_DIR}/{selected}\u0027, \u0027r\u0027, \u0027utf-8\u0027)",
+                                                  "replacement":  "from pathlib import Path\n                        base_dir = Path(helpers.utils.TESTFILES_DIR).resolve()\n                        file_path = (base_dir / Path(selected).name).resolve()\n                        if base_dir not in file_path.parents and file_path != base_dir:\n                                raise ValueError(\"invalid file path\")\n                        fileTarget = codecs.open(file_path, \u0027r\u0027, \u0027utf-8\u0027)"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "codecs.open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\python\\CWE-78-python-61.py",
+                                "line":  26,
+                                "column":  50,
+                                "evidence":  "f\u0027{helpers.utils.TESTFILES_DIR}/{selected}\u0027"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.178Z"
 }

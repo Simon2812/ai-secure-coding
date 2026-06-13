@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-11",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-11.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "order_clause = \"ORDER BY \" + sort_field + \" DESC\"\nfinal_sql = base_sql + order_clause\n\ncur.execute(final_sql, tuple(params))",
-          "replacement": "allowed_fields = {\"created_at\", \"amount\", \"status\", \"id\"}\n\nif sort_field not in allowed_fields:\n    sort_field = \"created_at\"\n\norder_clause = \"ORDER BY \" + sort_field + \" DESC\"\nfinal_sql = base_sql + order_clause\n\ncur.execute(final_sql, tuple(params))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:43.851Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-11",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-11.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "order_clause = \"ORDER BY \" + sort_field + \" DESC\"\n        final_sql = base_sql + order_clause\n\n        with self._connect() as conn:\n            with conn.cursor() as cur:\n                cur.execute(final_sql, tuple(params))",
+                                                  "replacement":  "allowed_fields = {\"created_at\", \"amount\", \"status\", \"id\"}\n\n        if sort_field not in allowed_fields:\n            sort_field = \"created_at\"\n\n        order_clause = \"ORDER BY \" + sort_field + \" DESC\"\n        final_sql = base_sql + order_clause\n\n        with self._connect() as conn:\n            with conn.cursor() as cur:\n                cur.execute(final_sql, tuple(params))"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.851Z"
 }

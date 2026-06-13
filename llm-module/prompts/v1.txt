@@ -14,11 +14,11 @@ For each vulnerability:
 - Preserve original behavior.
 - Make the replacement minimal and secure.
 
-Source Code:
-{code}
-
 Static Analyzer Findings:
 {static_findings}
+
+Source Code:
+{code}
 
 Return ONLY valid JSON:
 

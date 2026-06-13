@@ -1,59 +1,73 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-321-python-10",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-321/python/CWE-321-python-10.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-321",
-      "fixes": [
-        {
-          "origin": "phrase = \"nightly-export-passphrase\"",
-          "replacement": "import getpass\nphrase = getpass.getpass(\"Export passphrase: \")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-10.py",
-      "line": 15,
-      "column": 19,
-      "evidence": "out_dir"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-10.py",
-      "line": 38,
-      "column": 25,
-      "evidence": "name"
-    },
-    {
-      "cweId": "CWE-259",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Password",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'phrase'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-10.py",
-      "line": 30,
-      "column": 18,
-      "evidence": "\"nightly-export-passphrase\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:39.087Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-321-python-10",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-321/python/CWE-321-python-10.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-321",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "phrase = \"nightly-export-passphrase\"",
+                                                  "replacement":  "import getpass\nphrase = getpass.getpass(\"Export passphrase: \")"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "target = Path(out_dir)\n    target.mkdir(parents=True, exist_ok=True)",
+                                                  "replacement":  "base_dir = Path(\"/srv/exporter/snapshots\").resolve()\n    target = (base_dir / Path(out_dir).name).resolve()\n    if base_dir not in target.parents and target != base_dir:\n        raise ValueError(\"invalid output directory\")\n    target.mkdir(parents=True, exist_ok=True)"
+                                              },
+                                              {
+                                                  "origin":  "name = f\"{row.get(\u0027tenant\u0027, \u0027default\u0027)}-{exported}.bin\"\n        path = target / name",
+                                                  "replacement":  "tenant = Path(str(row.get(\u0027tenant\u0027, \u0027default\u0027))).name\n        name = f\"{tenant}-{exported}.bin\"\n        path = (target / name).resolve()\n        if target not in path.parents and path != target:\n            raise ValueError(\"invalid snapshot path\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "Path() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-10.py",
+                                "line":  15,
+                                "column":  19,
+                                "evidence":  "out_dir"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-10.py",
+                                "line":  38,
+                                "column":  25,
+                                "evidence":  "name"
+                            },
+                            {
+                                "cweId":  "CWE-259",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Password",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027phrase\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-10.py",
+                                "line":  30,
+                                "column":  18,
+                                "evidence":  "\"nightly-export-passphrase\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:39.087Z"
 }

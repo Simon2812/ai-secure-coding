@@ -1,6 +1,7 @@
 import json
 import subprocess
 import tempfile
+from difflib import SequenceMatcher
 
 from pathlib import Path
 from collections import Counter
@@ -230,79 +231,38 @@ class Evaluator:
     def _normalize_for_match(self, text):
         """
         Normalize text for matching while preserving token content.
-    
+
         Handles:
         - real whitespace/newlines
         - literal escape sequences like \\n, \\t, \\r
-        - escaped quotes like \\\" and \\'
+        - escaped quotes like \\" and \\\'
         - doubled backslashes
         """
-    
+
         if not isinstance(text, str):
             return ""
-    
-        result = []
-        previous_was_space = False
-        i = 0
-    
-        while i < len(text):
-            char = text[i]
-    
-            if char == "\\" and i + 1 < len(text):
-                next_char = text[i + 1]
-    
-                if next_char in {"n", "r", "t"}:
-                    if not previous_was_space:
-                        result.append(" ")
-                        previous_was_space = True
-                    i += 2
-                    continue
-    
-                if next_char in {'"', "'", "\\"}:
-                    result.append(next_char)
-                    previous_was_space = False
-                    i += 2
-                    continue
-    
-            if char.isspace():
-                if not previous_was_space:
-                    result.append(" ")
-                    previous_was_space = True
-                i += 1
-                continue
-    
-            result.append(char)
-            previous_was_space = False
-            i += 1
-    
-        return "".join(result).strip()
-    
-    
-    def _find_normalized_span(self, code, origin):
+
+        normalized, _ = self._build_normalized_text(text)
+        return normalized
+
+
+    def _build_normalized_text(self, text):
         """
-        Find origin in code while ignoring whitespace and common
-        escape-sequence differences.
-    
-        Returns:
-            (start, end) in original code, or None.
+        Build normalized text and map each normalized character
+        back to a span in the original text.
         """
-    
-        normalized_origin = self._normalize_for_match(origin)
-    
-        if not normalized_origin:
-            return None
-    
+
         normalized_parts = []
         span_map = []
         previous_was_space = False
         i = 0
-    
-        while i < len(code):
-            char = code[i]
-    
-            if char == "\\" and i + 1 < len(code):
-                next_char = code[i + 1]
-    
+
+        while i < len(text):
+            char = text[i]
+
+            if char == "\\" and i + 1 < len(text):
+                next_char = text[i + 1]
+
                 if next_char in {"n", "r", "t"}:
                     if not previous_was_space:
                         normalized_parts.append(" ")
@@ -310,14 +270,14 @@ class Evaluator:
                         previous_was_space = True
                     i += 2
                     continue
-    
+
                 if next_char in {'"', "'", "\\"}:
                     normalized_parts.append(next_char)
                     span_map.append((i, i + 2))
                     previous_was_space = False
                     i += 2
                     continue
-    
+
             if char.isspace():
                 if not previous_was_space:
                     normalized_parts.append(" ")
@@ -325,34 +285,140 @@ class Evaluator:
                     previous_was_space = True
                 i += 1
                 continue
-    
+
             normalized_parts.append(char)
             span_map.append((i, i + 1))
             previous_was_space = False
             i += 1
-    
-        normalized_code = "".join(normalized_parts).strip()
-    
+
         leading_trim = 0
         while (
             leading_trim < len(normalized_parts)
             and normalized_parts[leading_trim] == " "
         ):
             leading_trim += 1
-    
-        match_start = normalized_code.find(normalized_origin)
-    
-        if match_start == -1:
+
+        trailing_trim = len(normalized_parts)
+        while (
+            trailing_trim > leading_trim
+            and normalized_parts[trailing_trim - 1] == " "
+        ):
+            trailing_trim -= 1
+
+        normalized = "".join(
+            normalized_parts[leading_trim:trailing_trim]
+        )
+        trimmed_map = span_map[leading_trim:trailing_trim]
+
+        return normalized, trimmed_map
+
+
+    def _find_fuzzy_normalized_span(
+        self,
+        normalized_code,
+        span_map,
+        normalized_origin,
+    ):
+        """
+        Fuzzy fallback for small origin mismatches.
+        Uses edit similarity over similarly sized windows.
+        """
+
+        origin_length = len(normalized_origin)
+
+        if origin_length < 20:
             return None
-    
-        mapped_start = match_start + leading_trim
-        mapped_end = mapped_start + len(normalized_origin)
-    
-        original_start = span_map[mapped_start][0]
-        original_end = span_map[mapped_end - 1][1]
-    
+
+        best_score = 0.0
+        best_range = None
+        min_window = max(1, int(origin_length * 0.80))
+        max_window = min(
+            len(normalized_code),
+            int(origin_length * 1.20) + 1,
+        )
+
+        for window_length in range(min_window, max_window + 1):
+            step = max(1, window_length // 8)
+
+            for start in range(
+                0,
+                len(normalized_code) - window_length + 1,
+                step,
+            ):
+                candidate = normalized_code[
+                    start:start + window_length
+                ]
+                score = SequenceMatcher(
+                    None,
+                    normalized_origin,
+                    candidate,
+                    autojunk=False,
+                ).ratio()
+
+                if score > best_score:
+                    best_score = score
+                    best_range = (start, start + window_length)
+
+        if best_score < 0.90 or best_range is None:
+            return None
+
+        start, end = best_range
+        original_start = span_map[start][0]
+        original_end = span_map[end - 1][1]
+
         return original_start, original_end
-    
+
+
+    def _find_normalized_span(self, code, origin):
+        """
+        Find origin in code while ignoring whitespace, common
+        escape-sequence differences, and small model drift.
+
+        Returns:
+            (start, end) in original code, or None.
+        """
+
+        normalized_origin = self._normalize_for_match(origin)
+
+        if not normalized_origin:
+            return None
+
+        normalized_code, span_map = self._build_normalized_text(code)
+
+        if not normalized_code or not span_map:
+            return None
+
+        match_start = normalized_code.find(normalized_origin)
+
+        if match_start != -1:
+            match_end = match_start + len(normalized_origin)
+            original_start = span_map[match_start][0]
+            original_end = span_map[match_end - 1][1]
+            return original_start, original_end
+
+        return self._find_fuzzy_normalized_span(
+            normalized_code,
+            span_map,
+            normalized_origin,
+        )
+
+
+    def find_origin_line_range(self, code, origin):
+        """
+        Return 1-based start/end lines for an origin snippet.
+        """
+
+        span = self._find_normalized_span(code, origin)
+
+        if span is None:
+            return None
+
+        start, end = span
+        start_line = code.count("\n", 0, start) + 1
+        end_line = code.count("\n", 0, max(start, end - 1)) + 1
+
+        return start_line, end_line
+
     def _apply_fixes(
         self,
         code,

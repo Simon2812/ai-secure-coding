@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-30",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-30.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "sql = (\"UPDATE job_queue \"\"SET status = 'DONE', completed_by = %s \"\"WHERE id = \" + job_id)\ncur.execute(sql, (worker,))",
-          "replacement": "sql = (\"UPDATE job_queue \"\"SET status = 'DONE', completed_by = %s \"\"WHERE id = %s\")\ncur.execute(sql, (worker, job_id))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-30.py",
-      "line": 21,
-      "column": 21,
-      "evidence": "sql"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.977Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-30",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-30.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "sql = (\n            \"UPDATE job_queue \"\n            \"SET status = \u0027DONE\u0027, completed_by = %s \"\n            \"WHERE id = \" + job_id\n        )\n\n        cur.execute(sql, (worker,))",
+                                                  "replacement":  "sql = (\n            \"UPDATE job_queue \"\n            \"SET status = \u0027DONE\u0027, completed_by = %s \"\n            \"WHERE id = %s\"\n        )\n\n        cur.execute(sql, (worker, job_id))"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-30.py",
+                                "line":  21,
+                                "column":  21,
+                                "evidence":  "sql"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.977Z"
 }

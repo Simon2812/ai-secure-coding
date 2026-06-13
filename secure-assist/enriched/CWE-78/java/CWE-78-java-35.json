@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-java-35",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-35.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "Runtime r = Runtime.getRuntime();\n\ntry {\n    Process p = r.exec(args, argsEnv);\n    org.owasp.benchmark.helpers.Utils.printOSCommandResults(p, response);\n} catch (IOException e) {\n    System.out.println(\n            \"Problem executing cmdi - TestCase\");\n    response.getWriter()\n            .println(org.owasp.esapi.ESAPI.encoder().encodeForHTML(e.getMessage()));\n    return;\n}",
-          "replacement": "java.util.List<String> cmdList = new java.util.ArrayList<>();\nString os = System.getProperty(\"os.name\");\nif (os != null && os.contains(\"Windows\")) {\n    cmdList.add(\"cmd.exe\");\n    cmdList.add(\"/c\");\n    cmdList.add(\"echo\");\n    cmdList.add(bar);\n} else {\n    cmdList.add(\"ls\");\n    cmdList.add(bar);\n}\nProcessBuilder pb = new ProcessBuilder(cmdList);\npb.environment().put(\"foo\", \"bar\");\nProcess p = pb.start();\nresponse.getWriter().println(\"ok\");"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "Runtime.exec() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-35.java",
-      "line": 66,
-      "column": 25,
-      "evidence": "rt.exec(args, env)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.384Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-35",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-35.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "Runtime rt = Runtime.getRuntime();\n\n        try {\n            Process p = rt.exec(args, env);\n            response.getWriter().println(\"ok\");\n        } catch (IOException e) {\n            throw new ServletException(e);\n        }",
+                                                  "replacement":  "java.util.List\u003cString\u003e cmdList = new java.util.ArrayList\u003c\u003e();\n        String osName = System.getProperty(\"os.name\");\n        if (osName != null \u0026\u0026 osName.contains(\"Windows\")) {\n            cmdList.add(\"cmd.exe\");\n            cmdList.add(\"/c\");\n            cmdList.add(\"echo\");\n            cmdList.add(value);\n        } else {\n            cmdList.add(\"ls\");\n            cmdList.add(value);\n        }\n        ProcessBuilder pb = new ProcessBuilder(cmdList);\n        pb.environment().put(\"foo\", \"bar\");\n        Process p = pb.start();\n        response.getWriter().println(\"ok\");"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "Runtime.exec() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-35.java",
+                                "line":  66,
+                                "column":  25,
+                                "evidence":  "rt.exec(args, env)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.384Z"
 }
