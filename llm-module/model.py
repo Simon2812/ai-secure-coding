@@ -56,8 +56,8 @@ class SecureCodingModel:
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
             "prompt_version": "v3",
             "max_length": 2048,
-            "epochs": 5,
-            "learning_rate": 5e-5,
+            "epochs": 3,
+            "learning_rate": 1e-4,
             "lora_rank": 8,
         }
 
@@ -163,6 +163,19 @@ class SecureCodingModel:
                 checkpoint_dir,
             )
         )
+
+        # Keep generation deterministic, but make sure checkpoint
+        # inference does not stop immediately on missing token IDs.
+        self.generation_config["pad_token_id"] = (
+            self.tokenizer.pad_token_id
+        )
+        self.generation_config["eos_token_id"] = (
+            self.tokenizer.eos_token_id
+        )
+        self.generation_config.setdefault(
+            "min_new_tokens",
+            5,
+        )
     
         self.model.print_trainable_parameters()
     
@@ -265,6 +278,11 @@ class SecureCodingModel:
         if generation_overrides:
             generation_config.update(generation_overrides)
 
+        if not generation_config.get("do_sample", False):
+            generation_config.pop("temperature", None)
+            generation_config.pop("top_p", None)
+            generation_config.pop("top_k", None)
+
         outputs = self.model.generate(
             **inputs,
             **generation_config,
@@ -283,7 +301,39 @@ class SecureCodingModel:
         print(text)
         print("========================\n")
 
-        return self.extract_json(text)
+        try:
+            return self.extract_json(text)
+        except ValueError as error:
+            retry_config = generation_config.copy()
+            retry_config.update(
+                {
+                    "do_sample": True,
+                    "temperature": 0.2,
+                    "top_p": 0.9,
+                    "min_new_tokens": 20,
+                }
+            )
+
+            outputs = self.model.generate(
+                **inputs,
+                **retry_config,
+            )
+
+            generated = outputs[0][prompt_len:]
+
+            text = self.tokenizer.decode(
+                generated,
+                skip_special_tokens=True,
+            )
+
+            print("\n===== MODEL OUTPUT RETRY =====")
+            print(text)
+            print("==============================\n")
+
+            try:
+                return self.extract_json(text)
+            except ValueError:
+                raise error
 
 
     def predict(self, code, static_findings):
