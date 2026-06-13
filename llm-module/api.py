@@ -43,7 +43,6 @@ class AnalyzeRequest(BaseModel):
 
     code: str
     analysis: Any
-    start_line: int
 
 
 class AnalyzeResponse(BaseModel):
@@ -57,7 +56,6 @@ class AnalyzeResponse(BaseModel):
 def add_origin_line_ranges(
     prediction: dict,
     code: str,
-    snippet_start_line: int,
 ):
     """
     Add source line ranges to vulnerabilities when their
@@ -74,8 +72,6 @@ def add_origin_line_ranges(
 
     if not isinstance(vulnerabilities, list):
         return prediction
-
-    line_offset = snippet_start_line - 1
 
     for vulnerability in vulnerabilities:
         if not isinstance(vulnerability, dict):
@@ -110,12 +106,10 @@ def add_origin_line_ranges(
 
         if ranges:
             vulnerability["start_line"] = (
-                min(start for start, _ in ranges) +
-                line_offset
+                min(start for start, _ in ranges)
             )
             vulnerability["end_line"] = (
-                max(end for _, end in ranges) +
-                line_offset
+                max(end for _, end in ranges)
             )
 
     return prediction
@@ -185,7 +179,6 @@ def analyze(request: AnalyzeRequest):
         return add_origin_line_ranges(
             prediction=prediction,
             code=request.code,
-            snippet_start_line=request.start_line,
         )
 
     except Exception as error:
