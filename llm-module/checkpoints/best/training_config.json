@@ -1,6 +1,6 @@
 {
     "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-    "prompt_version": "v3",
+    "prompt_version": "v1",
     "max_length": 2048,
     "epochs": 3,
     "learning_rate": 0.0001,

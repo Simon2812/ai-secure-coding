@@ -1,53 +1,67 @@
 {
   "test": {
-    "precision": 0.93,
-    "recall": 0.79,
-    "tp": 93,
-    "fp": 7,
-    "fn": 25
+    "precision": 0.9238,
+    "recall": 0.822,
+    "tp": 97,
+    "fp": 8,
+    "fn": 21
   },
   "per_cwe": {
-    "CWE-190": {
-      "precision": 0.75,
-      "recall": 0.75,
-      "tp": 3,
-      "fp": 1,
-      "fn": 1
-    },
     "CWE-22": {
-      "precision": 0.8824,
+      "precision": 0.9375,
       "recall": 0.7895,
       "tp": 15,
-      "fp": 2,
+      "fp": 1,
       "fn": 4
     },
-    "CWE-259": {
-      "precision": 0.8889,
-      "recall": 0.8,
-      "tp": 8,
-      "fp": 1,
+    "CWE-78": {
+      "precision": 1.0,
+      "recall": 0.9259,
+      "tp": 25,
+      "fp": 0,
       "fn": 2
+    },
+    "CWE-89": {
+      "precision": 0.8889,
+      "recall": 1.0,
+      "tp": 16,
+      "fp": 2,
+      "fn": 0
+    },
+    "CWE-190": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3,
+      "fp": 0,
+      "fn": 1
+    },
+    "CWE-259": {
+      "precision": 1.0,
+      "recall": 0.7,
+      "tp": 7,
+      "fp": 0,
+      "fn": 3
     },
     "CWE-321": {
       "precision": 1.0,
-      "recall": 0.7778,
-      "tp": 7,
+      "recall": 0.6667,
+      "tp": 6,
       "fp": 0,
-      "fn": 2
+      "fn": 3
     },
     "CWE-327": {
-      "precision": 0.8571,
+      "precision": 0.6667,
       "recall": 0.6,
       "tp": 6,
-      "fp": 1,
+      "fp": 3,
       "fn": 4
     },
     "CWE-328": {
-      "precision": 1.0,
-      "recall": 0.6667,
-      "tp": 8,
-      "fp": 0,
-      "fn": 4
+      "precision": 0.9,
+      "recall": 0.75,
+      "tp": 9,
+      "fp": 1,
+      "fn": 3
     },
     "CWE-416": {
       "precision": 1.0,
@@ -56,56 +70,12 @@
       "fp": 0,
       "fn": 0
     },
-    "CWE-78": {
-      "precision": 1.0,
-      "recall": 0.7407,
-      "tp": 20,
-      "fp": 0,
-      "fn": 7
-    },
     "CWE-787": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "tp": 8,
-      "fp": 0,
-      "fn": 0
-    },
-    "CWE-89": {
-      "precision": 0.8824,
-      "recall": 0.9375,
-      "tp": 15,
-      "fp": 2,
+      "precision": 0.875,
+      "recall": 0.875,
+      "tp": 7,
+      "fp": 1,
       "fn": 1
-    }
-  },
-  "per_language": {
-    "c": {
-      "precision": 0.9655,
-      "recall": 0.8235,
-      "tp": 28,
-      "fp": 1,
-      "fn": 6
-    },
-    "cpp": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "tp": 1,
-      "fp": 0,
-      "fn": 0
-    },
-    "java": {
-      "precision": 0.8649,
-      "recall": 0.8421,
-      "tp": 32,
-      "fp": 5,
-      "fn": 6
-    },
-    "python": {
-      "precision": 0.9697,
-      "recall": 0.6957,
-      "tp": 32,
-      "fp": 1,
-      "fn": 14
     }
   }
 }
