@@ -369,38 +369,89 @@ class Evaluator:
         return original_start, original_end
 
 
-    def _find_normalized_span(self, code, origin):
+    def _find_normalized_spans(self, code, origin):
         """
-        Find origin in code while ignoring whitespace, common
-        escape-sequence differences, and small model drift.
+        Find all exact normalized origin matches in code.
+        If no exact match exists, return at most one fuzzy match.
 
         Returns:
-            (start, end) in original code, or None.
+            List of (start, end) spans in original code.
         """
 
         normalized_origin = self._normalize_for_match(origin)
 
         if not normalized_origin:
-            return None
+            return []
 
         normalized_code, span_map = self._build_normalized_text(code)
 
         if not normalized_code or not span_map:
-            return None
+            return []
 
-        match_start = normalized_code.find(normalized_origin)
+        spans = []
+        search_start = 0
 
-        if match_start != -1:
+        while True:
+            match_start = normalized_code.find(
+                normalized_origin,
+                search_start,
+            )
+
+            if match_start == -1:
+                break
+
             match_end = match_start + len(normalized_origin)
             original_start = span_map[match_start][0]
             original_end = span_map[match_end - 1][1]
-            return original_start, original_end
+            spans.append((original_start, original_end))
+            search_start = match_end
 
-        return self._find_fuzzy_normalized_span(
+        if spans:
+            return spans
+
+        fuzzy_span = self._find_fuzzy_normalized_span(
             normalized_code,
             span_map,
             normalized_origin,
         )
+
+        return [fuzzy_span] if fuzzy_span is not None else []
+
+
+    def _find_normalized_span(self, code, origin):
+        """
+        Return the first normalized origin match for compatibility.
+        """
+
+        spans = self._find_normalized_spans(code, origin)
+        return spans[0] if spans else None
+
+
+    def find_origin_line_ranges(self, code, origin):
+        """
+        Return all 1-based start/end line ranges for an origin.
+        Exact normalized matches may return multiple ranges.
+        Fuzzy matching returns at most one range.
+        """
+
+        ranges = []
+
+        for start, end in self._find_normalized_spans(
+            code,
+            origin,
+        ):
+            start_line = code.count("\n", 0, start) + 1
+            end_line = (
+                code.count(
+                    "\n",
+                    0,
+                    max(start, end - 1),
+                ) +
+                1
+            )
+            ranges.append((start_line, end_line))
+
+        return ranges
 
 
     def find_origin_line_range(self, code, origin):
@@ -408,16 +459,12 @@ class Evaluator:
         Return 1-based start/end lines for an origin snippet.
         """
 
-        span = self._find_normalized_span(code, origin)
+        ranges = self.find_origin_line_ranges(code, origin)
 
-        if span is None:
+        if not ranges:
             return None
 
-        start, end = span
-        start_line = code.count("\n", 0, start) + 1
-        end_line = code.count("\n", 0, max(start, end - 1)) + 1
-
-        return start_line, end_line
+        return ranges[0]
 
     def _apply_fixes(
         self,
@@ -464,21 +511,12 @@ class Evaluator:
                 if not isinstance(replacement, str):
                     continue
 
-                if origin in patched_code:
-                    patched_code = patched_code.replace(
-                        origin,
-                        replacement,
-                        1,
-                    )
-                    continue
-                
-                span = self._find_normalized_span(
+                spans = self._find_normalized_spans(
                     patched_code,
                     origin,
                 )
-                
-                if span is not None:
-                    start, end = span
+
+                for start, end in reversed(spans):
                     patched_code = (
                         patched_code[:start] +
                         replacement +
