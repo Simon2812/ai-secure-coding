@@ -54,10 +54,10 @@ class SecureCodingModel:
         # Experiment configuration (tunable between runs).
         self.training_config = {
             "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
-            "prompt_version": "v2",
+            "prompt_version": "v3",
             "max_length": 2048,
             "epochs": 5,
-            "learning_rate": 1e-4,
+            "learning_rate": 5e-5,
             "lora_rank": 8,
         }
 
