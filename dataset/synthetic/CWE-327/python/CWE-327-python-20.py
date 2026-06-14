@@ -1,16 +1,6 @@
-import hashlib
+from Crypto.Cipher import AES
 
 
-def build_cache_entry(key):
-    data = ("entry:" + key).encode("utf-8")
-    cache_id = hashlib.sha256(data).hexdigest()
-    return cache_id
-
-
-def main():
-    value = build_cache_entry("alpha")
-    print(value)
-
-
-if __name__ == "__main__":
-    main()
+def encrypt_snapshot(key, plaintext):
+    cipher = AES.new(key, AES.MODE_SIV)
+    return cipher.encrypt(plaintext)

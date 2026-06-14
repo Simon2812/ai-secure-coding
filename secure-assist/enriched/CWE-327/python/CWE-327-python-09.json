@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "hashlib.md5(data)",
-          "replacement": "hashlib.sha256(data)"
+          "origin": "RC4.new(key)",
+          "replacement": "AES.new(key, AES.MODE_GCM)"
         }
       ]
     }
@@ -23,48 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.md5(data).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-09.py",
-      "line": 7,
-      "column": 16,
-      "evidence": "hashlib.md5(data).hexdigest()"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.md5(data).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-09.py",
-      "line": 7,
-      "column": 16,
-      "evidence": "hashlib.md5(data).hexdigest()"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "hashlib.md5() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-09.py",
-      "line": 7,
-      "column": 16,
-      "evidence": "hashlib.md5(data)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.md5() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-09.py",
-      "line": 7,
-      "column": 16,
-      "evidence": "hashlib.md5(data)"
+      "message": "RC4.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-09.py",
+      "line": 6,
+      "column": 14,
+      "evidence": "RC4.new(key)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.534Z"
+  "enriched_at": "2026-06-14T15:42:06.141Z"
 }

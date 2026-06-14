@@ -1,20 +1,7 @@
-import hashlib
+from Crypto.Cipher import RC4
+from Crypto.Cipher import AES
 
 
-def process_event(event_name, payload):
-
-    def sign(data):
-        return hashlib.md5(data).hexdigest()
-
-    combined = (event_name + "|" + payload).encode("utf-8")
-    signature = sign(combined)
-    return signature
-
-
-def main():
-    value = process_event("update", "record42")
-    print(value)
-
-
-if __name__ == "__main__":
-    main()
+def encrypt_session(key, plaintext):
+    cipher = RC4.new(key)
+    return cipher.encrypt(plaintext)

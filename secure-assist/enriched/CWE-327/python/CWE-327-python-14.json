@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"md5\"",
-          "replacement": "\"sha216\""
+          "origin": "\"3DES\"",
+          "replacement": "\"AES\""
         }
       ]
     }
@@ -23,26 +23,26 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-14.py",
-      "line": 12,
-      "column": 14,
-      "evidence": "hashlib.new(algo, data)"
+      "message": "Cipher.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-14.py",
+      "line": 2,
+      "column": 12,
+      "evidence": "Cipher.new(algorithm, key)"
     },
     {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
+      "cweId": "CWE-327",
+      "ruleId": "ast-weak-cipher",
+      "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-14.py",
-      "line": 12,
+      "message": "create_cipher() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-14.py",
+      "line": 7,
       "column": 14,
-      "evidence": "hashlib.new(algo, data)"
+      "evidence": "create_cipher(algorithm, key)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.549Z"
+  "enriched_at": "2026-06-14T15:42:07.107Z"
 }

@@ -58,8 +58,8 @@ def add_origin_line_ranges(
     code: str,
 ):
     """
-    Add source line ranges to vulnerabilities when their
-    fix origins can be located in the submitted snippet.
+    Expand vulnerabilities into one response entry per located
+    fix occurrence. Unmatched fixes remain without line ranges.
     """
 
     if not isinstance(prediction, dict):
@@ -73,6 +73,8 @@ def add_origin_line_ranges(
     if not isinstance(vulnerabilities, list):
         return prediction
 
+    expanded_vulnerabilities = []
+
     for vulnerability in vulnerabilities:
         if not isinstance(vulnerability, dict):
             continue
@@ -83,9 +85,10 @@ def add_origin_line_ranges(
         )
 
         if not isinstance(fixes, list):
+            expanded_vulnerabilities.append(vulnerability)
             continue
 
-        ranges = []
+        added_entry = False
 
         for fix in fixes:
             if not isinstance(fix, dict):
@@ -94,23 +97,45 @@ def add_origin_line_ranges(
             origin = fix.get("origin")
 
             if not isinstance(origin, str):
+                expanded_vulnerabilities.append(
+                    {
+                        "cwe": vulnerability.get("cwe"),
+                        "fixes": [fix],
+                    }
+                )
+                added_entry = True
                 continue
 
-            line_range = origin_locator.find_origin_line_range(
+            line_ranges = origin_locator.find_origin_line_ranges(
                 code,
                 origin,
             )
 
-            if line_range is not None:
-                ranges.append(line_range)
+            if not line_ranges:
+                expanded_vulnerabilities.append(
+                    {
+                        "cwe": vulnerability.get("cwe"),
+                        "fixes": [fix],
+                    }
+                )
+                added_entry = True
+                continue
 
-        if ranges:
-            vulnerability["start_line"] = (
-                min(start for start, _ in ranges)
-            )
-            vulnerability["end_line"] = (
-                max(end for _, end in ranges)
-            )
+            for start_line, end_line in line_ranges:
+                added_entry = True
+                expanded_vulnerabilities.append(
+                    {
+                        "cwe": vulnerability.get("cwe"),
+                        "fixes": [fix],
+                        "start_line": start_line,
+                        "end_line": end_line,
+                    }
+                )
+
+        if not added_entry:
+            expanded_vulnerabilities.append(vulnerability)
+
+    prediction["vulnerabilities"] = expanded_vulnerabilities
 
     return prediction
 

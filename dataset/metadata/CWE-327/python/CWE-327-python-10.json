@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "hashlib.sha1",
-          "replacement": "hashlib.sha512"
+          "origin": "Blowfish",
+          "replacement": "AES"
         }
       ]
     }
