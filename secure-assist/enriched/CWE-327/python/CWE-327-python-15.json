@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"sha1\"",
-          "replacement": "\"sha512\""
+          "origin": "\"Blowfish\"",
+          "replacement": "\"AES\""
         }
       ]
     }
@@ -23,48 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.new(\"sha1\", combined).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-15.py",
-      "line": 11,
-      "column": 17,
-      "evidence": "hashlib.new(\"sha1\", combined).hexdigest()"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.new(\"sha1\", combined).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-15.py",
-      "line": 11,
-      "column": 17,
-      "evidence": "hashlib.new(\"sha1\", combined).hexdigest()"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-15.py",
-      "line": 11,
-      "column": 17,
-      "evidence": "hashlib.new(\"sha1\", combined)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-15.py",
-      "line": 11,
-      "column": 17,
-      "evidence": "hashlib.new(\"sha1\", combined)"
+      "message": "build_cipher() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-15.py",
+      "line": 7,
+      "column": 14,
+      "evidence": "build_cipher(cipher_name, key)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.552Z"
+  "enriched_at": "2026-06-14T15:42:07.313Z"
 }

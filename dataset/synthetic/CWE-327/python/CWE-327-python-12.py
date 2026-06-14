@@ -1,20 +1,7 @@
-import hashlib
+import Crypto.Cipher.DES
+import Crypto.Cipher.AES
 
 
-class ManifestBuilder:
-
-    def build_marker(self, name, version):
-        raw = (name + "#" + version).encode("utf-8")
-        algo = "ripemd160"
-        marker = hashlib.new(algo, raw).hexdigest()
-        return marker
-
-
-def main():
-    builder = ManifestBuilder()
-    value = builder.build_marker("pkg", "1.2")
-    print(value)
-
-
-if __name__ == "__main__":
-    main()
+def encrypt_packet(key, plaintext):
+    cipher = Crypto.Cipher.DES.new(key, Crypto.Cipher.DES.MODE_ECB)
+    return cipher.encrypt(plaintext)

@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "token = hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest()",
-          "replacement": "token = hmac.new(self.secret_key, payload, digestmod=hashlib.sha256).hexdigest()"
+          "origin": "DES3",
+          "replacement": "AES"
         }
       ]
     }
@@ -23,48 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
-      "line": 12,
-      "column": 17,
-      "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest()"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
-      "line": 12,
-      "column": 17,
-      "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest()"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
-      "line": 12,
-      "column": 17,
-      "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
-      "line": 12,
-      "column": 17,
-      "evidence": "hmac.new(self.secret_key, payload, digestmod=hashlib.md5)"
+      "message": "DES3.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-03.py",
+      "line": 5,
+      "column": 14,
+      "evidence": "DES3.new(key, DES3.MODE_ECB)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.516Z"
+  "enriched_at": "2026-06-14T15:42:04.991Z"
 }

@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"md5\"",
-          "replacement": "\"sha216\""
+          "origin": "\"3DES\"",
+          "replacement": "\"AES\""
         }
       ]
     }

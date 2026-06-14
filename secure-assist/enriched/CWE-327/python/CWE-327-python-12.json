@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"ripemd160\"",
-          "replacement": "\"sha512\""
+          "origin": "Crypto.Cipher.DES",
+          "replacement": "Crypto.Cipher.AES"
         }
       ]
     }
@@ -23,26 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-12.py",
-      "line": 9,
-      "column": 18,
-      "evidence": "hashlib.new(algo, raw)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-12.py",
-      "line": 9,
-      "column": 18,
-      "evidence": "hashlib.new(algo, raw)"
+      "message": "Crypto.Cipher.DES.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-12.py",
+      "line": 6,
+      "column": 14,
+      "evidence": "Crypto.Cipher.DES.new(key, Crypto.Cipher.DES.MODE_ECB)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.544Z"
+  "enriched_at": "2026-06-14T15:42:06.733Z"
 }

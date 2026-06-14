@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"md4\"",
-          "replacement": "\"sha256\""
+          "origin": "Blowfish",
+          "replacement": "AES"
         }
       ]
     }

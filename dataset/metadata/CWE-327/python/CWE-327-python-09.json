@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "hashlib.md5(data)",
-          "replacement": "hashlib.sha256(data)"
+          "origin": "RC4.new(key)",
+          "replacement": "AES.new(key, AES.MODE_GCM)"
         }
       ]
     }

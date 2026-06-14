@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "options = [\"sha256\", \"sha1\", \"sha512\"]",
-          "replacement": "options = [\"sha256\", \"sha512\"]"
+          "origin": "ARC4.new(key, drop=3072)",
+          "replacement": "AES.new(key, AES.MODE_GCM)"
         }
       ]
     }

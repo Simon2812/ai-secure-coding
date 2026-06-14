@@ -1,18 +1,6 @@
-import hashlib
-import hmac
+from Crypto.Cipher import AES
 
 
-def generate_auth_code(secret, message):
-    key = secret.encode("utf-8")
-    data = message.encode("utf-8")
-    code = hmac.new(key, data, digestmod=hashlib.sha512).hexdigest()
-    return code
-
-
-def main():
-    result = generate_auth_code("secure-key", "payload-22")
-    print(result)
-
-
-if __name__ == "__main__":
-    main()
+def encrypt_export(key, nonce, plaintext):
+    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
+    return cipher.encrypt(plaintext)

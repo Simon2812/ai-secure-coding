@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"sha1\"",
-          "replacement": "\"sha512\""
+          "origin": "\"Blowfish\"",
+          "replacement": "\"AES\""
         }
       ]
     }

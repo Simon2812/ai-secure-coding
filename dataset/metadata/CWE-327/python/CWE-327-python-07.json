@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "self.algorithm = \"md5\"",
-          "replacement": "self.algorithm = \"sha512\""
+          "origin": "ARC4.new(key)",
+          "replacement": "AES.new(key, AES.MODE_GCM)"
         }
       ]
     }
