@@ -43,13 +43,15 @@ def add_analyze_parser(
         "-o",
         "--output",
         help=(
-            "Report output path. Defaults to report.json next to the "
-            "input file, or report.json in the current directory for "
-            "inline code."
+            "Report output path. Defaults to report.json in the "
+            "current working directory."
         ),
     )
 
-    parser.set_defaults(handler=run_analyze)
+    parser.set_defaults(
+        handler=run_analyze,
+        command_parser=parser,
+    )
 
     return parser
 
