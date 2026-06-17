@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
+from asc.core.errors import AscError
 from asc.core.input import AnalysisInput
 
 
@@ -14,12 +15,10 @@ def default_report_path(analysis_input: AnalysisInput) -> Path:
     """
     Choose the default report path.
 
-    File input writes the report next to the analyzed file. Inline
-    input writes to report.json in the current working directory.
+    When users do not pass -o, write report.json to the directory
+    where they invoked the command. This keeps report placement
+    predictable even when the analyzed file lives elsewhere.
     """
-
-    if analysis_input.source_path is not None:
-        return analysis_input.source_path.parent / "report.json"
 
     return Path("report.json")
 
@@ -67,12 +66,124 @@ def write_report(
     `-o reports/report.json` without preparing the folder first.
     """
 
-    output_path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    try:
+        output_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
-    output_path.write_text(
-        json.dumps(report, indent=2) + "\n",
-        encoding="utf-8",
-    )
+        output_path.write_text(
+            json.dumps(report, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as error:
+        raise AscError(
+            f"failed to write report {output_path}: {error}"
+        ) from error
+
+
+def load_report(report_path: Path) -> Dict[str, Any]:
+    """
+    Load and validate an ASC report.
+
+    The apply command relies on the report as its source of truth.
+    This helper keeps all report structure errors in one place and
+    raises user-facing messages through AscError.
+    """
+
+    if not report_path.exists():
+        raise AscError(f"report file does not exist: {report_path}")
+
+    if not report_path.is_file():
+        raise AscError(f"report path is not a file: {report_path}")
+
+    try:
+        report = json.loads(
+            report_path.read_text(encoding="utf-8-sig")
+        )
+    except json.JSONDecodeError as error:
+        raise AscError(
+            f"report is not valid JSON: {report_path}"
+        ) from error
+    except OSError as error:
+        raise AscError(
+            f"failed to read report {report_path}: {error}"
+        ) from error
+
+    _validate_report_structure(report)
+    _validate_report_source_path(report)
+
+    return report
+
+
+def _validate_report_structure(report: Any) -> None:
+    """
+    Validate the minimal report structure needed by apply.
+    """
+
+    if not isinstance(report, dict):
+        raise AscError("report must be a JSON object")
+
+    metadata = report.get("metadata")
+    if not isinstance(metadata, dict):
+        raise AscError("report.metadata must be an object")
+
+    findings = report.get("findings")
+    if not isinstance(findings, list):
+        raise AscError("report.findings must be a list")
+
+    seen_ids = set()
+
+    for index, finding in enumerate(findings, start=1):
+        if not isinstance(finding, dict):
+            raise AscError(
+                f"report finding at position {index} must be an object"
+            )
+
+        finding_id = finding.get("id")
+        if not isinstance(finding_id, int):
+            raise AscError(
+                f"report finding at position {index} must have "
+                "an integer id"
+            )
+
+        if finding_id <= 0:
+            raise AscError(
+                f"report finding id must be positive: {finding_id}"
+            )
+
+        if finding_id in seen_ids:
+            raise AscError(
+                f"report contains duplicate finding id: {finding_id}"
+            )
+
+        seen_ids.add(finding_id)
+
+
+def _validate_report_source_path(report: Dict[str, Any]) -> None:
+    """
+    Validate source_path when the report points to a file.
+    """
+
+    metadata = report["metadata"]
+    source_path = metadata.get("source_path")
+
+    if source_path is None:
+        raise AscError(
+            "cannot apply fixes because report has no source file"
+        )
+
+    if not isinstance(source_path, str) or not source_path.strip():
+        raise AscError("report.metadata.source_path must be a file path")
+
+    path = Path(source_path)
+
+    if not path.exists():
+        raise AscError(
+            f"source file from report does not exist: {path}"
+        )
+
+    if not path.is_file():
+        raise AscError(
+            f"source path from report is not a file: {path}"
+        )
