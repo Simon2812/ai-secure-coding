@@ -51,6 +51,14 @@ def build_initial_report(analysis_input: AnalysisInput) -> Dict[str, Any]:
                 else None
             ),
         },
+        "analysis": {
+            "static_findings": [],
+            "model_findings": [],
+            "normalized_static_findings": [],
+            "normalized_model_findings": [],
+            "intersections": [],
+            "model_response": None,
+        },
         "findings": [],
     }
 
