@@ -93,9 +93,7 @@ def _build_prioritized_findings(
 
         high_findings.append(
             _build_high_finding(
-                static_finding=static_finding,
                 model_finding=model_finding,
-                intersection=intersection,
                 catalog=catalog,
             )
         )
@@ -126,32 +124,22 @@ def _build_prioritized_findings(
 
 
 def _build_high_finding(
-    static_finding: Dict[str, Any],
     model_finding: Dict[str, Any],
-    intersection: Dict[str, Any],
     catalog: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
     Build a high-confidence finding confirmed by both tools.
     """
 
-    cwe = model_finding.get("cwe") or static_finding.get("cwe")
+    cwe = model_finding.get("cwe")
 
     return {
         "cwe": cwe,
         **_catalog_fields(catalog, cwe),
         "confidence": "high",
-        "line": static_finding.get("line") or model_finding.get("start_line"),
-        "column": static_finding.get("column"),
+        "start_line": model_finding.get("start_line"),
         "end_line": model_finding.get("end_line"),
         "fixes": _fixes(model_finding),
-        "static_index": static_finding.get("index"),
-        "model_index": model_finding.get("index"),
-        "intersection": intersection,
-        "details": {
-            "static": _static_details(static_finding),
-            "model": _model_details(model_finding),
-        },
     }
 
 
@@ -169,14 +157,9 @@ def _build_model_finding(
         "cwe": cwe,
         **_catalog_fields(catalog, cwe),
         "confidence": "medium",
-        "line": model_finding.get("start_line"),
-        "column": None,
+        "start_line": model_finding.get("start_line"),
         "end_line": model_finding.get("end_line"),
         "fixes": _fixes(model_finding),
-        "model_index": model_finding.get("index"),
-        "details": {
-            "model": _model_details(model_finding),
-        },
     }
 
 
@@ -195,13 +178,7 @@ def _build_static_finding(
         **_catalog_fields(catalog, cwe),
         "confidence": "low",
         "line": static_finding.get("line"),
-        "column": static_finding.get("column"),
-        "end_line": static_finding.get("line"),
         "fixes": [],
-        "static_index": static_finding.get("index"),
-        "details": {
-            "static": _static_details(static_finding),
-        },
     }
 
 
@@ -238,31 +215,6 @@ def _with_finding_id(
     }
 
 
-def _static_details(static_finding: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Keep analyzer-specific details for later inspection.
-    """
-
-    return {
-        "rule_id": static_finding.get("rule_id"),
-        "vulnerability": static_finding.get("vulnerability"),
-        "message": static_finding.get("message"),
-        "file": static_finding.get("file"),
-        "evidence": static_finding.get("evidence"),
-    }
-
-
-def _model_details(model_finding: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Keep model-specific details for later inspection.
-    """
-
-    return {
-        "start_line": model_finding.get("start_line"),
-        "end_line": model_finding.get("end_line"),
-    }
-
-
 def _fixes(model_finding: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Return model fixes when present.
@@ -290,8 +242,11 @@ def _sort_by_line(
     return sorted(
         findings,
         key=lambda finding: (
-            _line_sort_value(finding.get("line")),
-            _line_sort_value(finding.get("column")),
+            _line_sort_value(
+                finding.get("start_line")
+                if "start_line" in finding
+                else finding.get("line")
+            ),
         ),
     )
 
