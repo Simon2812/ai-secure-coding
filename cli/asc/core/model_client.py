@@ -63,7 +63,6 @@ def normalize_model_finding(
             "start_line": None,
             "end_line": None,
             "fixes": [],
-            "raw": vulnerability,
         }
 
     fixes = vulnerability.get("fixes", [])
@@ -78,7 +77,6 @@ def normalize_model_finding(
         "start_line": vulnerability.get("start_line"),
         "end_line": vulnerability.get("end_line"),
         "fixes": fixes,
-        "raw": vulnerability,
     }
 
 

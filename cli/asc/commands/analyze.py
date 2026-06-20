@@ -7,7 +7,8 @@ from pathlib import Path
 
 from asc.core.input import resolve_analysis_input
 from asc.core.pipeline import run_analysis_pipeline
-from asc.core.report import build_initial_report, default_report_path, write_report
+from asc.core.report import default_report_path, write_report
+from asc.core.report_builder import build_analysis_report
 
 
 def add_analyze_parser(
@@ -27,8 +28,7 @@ def add_analyze_parser(
         help="Analyze a source file or inline code snippet.",
         description=(
             "Analyze a source file or inline code snippet and create "
-            "a JSON report with static analyzer output, model output "
-            "and correlation data."
+            "a prioritized JSON report."
         ),
     )
 
@@ -61,8 +61,8 @@ def run_analyze(args: argparse.Namespace) -> int:
     """
     Resolve input and write the initial analysis report.
 
-    Task 2.1/2.2 populates the report `analysis` section only.
-    Final report findings are still built later in Task 3.
+    The command runs the analysis pipeline and then builds a final
+    prioritized report.
     """
 
     analysis_input = resolve_analysis_input(args.input)
@@ -72,8 +72,11 @@ def run_analyze(args: argparse.Namespace) -> int:
         else default_report_path(analysis_input)
     )
 
-    report = build_initial_report(analysis_input)
-    report["analysis"] = run_analysis_pipeline(analysis_input)
+    analysis = run_analysis_pipeline(analysis_input)
+    report = build_analysis_report(
+        analysis_input=analysis_input,
+        analysis=analysis,
+    )
     write_report(report, output_path)
 
     print(f"Report written to {output_path}")

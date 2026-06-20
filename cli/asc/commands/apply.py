@@ -92,8 +92,9 @@ def run_apply(args: argparse.Namespace) -> int:
 
     if _contains_low_confidence_finding(selected_findings):
         print(
-            "Note: low-confidence findings may not include suggested "
-            "replacements. You can ask the IDE agent to help create a fix."
+            "Note: low-confidence findings do not include automatic "
+            "fixes. Review them manually or use your IDE assistant to "
+            "create a remediation."
         )
 
     return 0
