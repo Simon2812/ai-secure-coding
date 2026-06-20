@@ -1,4 +1,4 @@
-"""Static analyzer integration for the ASC analysis pipeline."""
+"""Static analyzer client for the ASC analysis pipeline."""
 
 from __future__ import annotations
 
@@ -66,7 +66,6 @@ def normalize_static_finding(
             "line": None,
             "column": None,
             "evidence": None,
-            "raw": finding,
         }
 
     return {
@@ -81,7 +80,6 @@ def normalize_static_finding(
         "line": finding.get("line"),
         "column": finding.get("column"),
         "evidence": finding.get("evidence"),
-        "raw": finding,
     }
 
 
