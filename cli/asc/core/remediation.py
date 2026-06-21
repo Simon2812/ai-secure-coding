@@ -595,7 +595,7 @@ def _compile_java_source(
             encoding="utf-8",
         )
 
-        return subprocess.run(
+        result = subprocess.run(
             [
                 javac,
                 "-d",
@@ -606,6 +606,17 @@ def _compile_java_source(
             text=True,
             timeout=20,
         )
+
+        result.stdout = result.stdout.replace(
+            str(java_file),
+            str(source_path),
+        )
+        result.stderr = result.stderr.replace(
+            str(java_file),
+            str(source_path),
+        )
+
+        return result
 
 
 def _java_compile_unit_name(

@@ -104,7 +104,9 @@ def _call_model_api(
         api_url,
         data=payload,
         headers={
+            "Accept": "application/json",
             "Content-Type": "application/json",
+            "User-Agent": "asc-cli/0.1",
         },
         method="POST",
     )
