@@ -37,6 +37,13 @@ INLINE_CODE_MARKERS = {
     "%",
 }
 
+SOURCE_EXTENSIONS = {
+    ".c",
+    ".cpp",
+    ".java",
+    ".py",
+}
+
 
 @dataclass(frozen=True)
 class AnalysisInput:
@@ -94,6 +101,9 @@ def resolve_analysis_input(raw_input: str) -> AnalysisInput:
     if not raw_input.strip():
         raise AscError("inline code input cannot be empty")
 
+    if _looks_like_path(raw_input):
+        raise AscError(f"input file does not exist: {raw_input}")
+
     if not _looks_like_inline_code(raw_input):
         raise AscError(
             "input is not an existing file and does not look like "
@@ -107,6 +117,17 @@ def resolve_analysis_input(raw_input: str) -> AnalysisInput:
         filename=None,
         source_path=None,
     )
+
+
+def _looks_like_path(raw_input: str) -> bool:
+    """
+    Return whether a missing input was probably meant as a file path.
+    """
+
+    if "/" in raw_input or "\\" in raw_input:
+        return True
+
+    return Path(raw_input).suffix.lower() in SOURCE_EXTENSIONS
 
 
 def _looks_like_inline_code(raw_input: str) -> bool:
