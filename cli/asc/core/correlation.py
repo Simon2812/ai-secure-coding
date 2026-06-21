@@ -15,9 +15,8 @@ def correlate_findings(
     """
     Find static/model findings that likely describe the same issue.
 
-    This helper intentionally does not assign final report confidence
-    or IDs. Task 3 can use these intersections while building the
-    prioritized report.
+    The report builder uses these intersections to identify findings
+    confirmed by both analysis sources.
     """
 
     intersections = []

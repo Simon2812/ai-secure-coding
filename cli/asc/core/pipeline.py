@@ -15,10 +15,6 @@ def run_analysis_pipeline(
 ) -> Dict[str, Any]:
     """
     Run static analysis, model analysis and correlation.
-
-    This is Task 2 output only. It does not build final report
-    findings, assign confidence labels, sort vulnerabilities or
-    generate remediation IDs.
     """
 
     static_result = run_static_analyzer(analysis_input)

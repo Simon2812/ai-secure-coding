@@ -25,7 +25,7 @@ def run_model_analysis(
 
     The raw API response is preserved under `raw_response`.
     `findings` contains model vulnerabilities in a shape suitable
-    for correlation and later report construction.
+    for correlation and report construction.
     """
 
     response = _call_model_api(

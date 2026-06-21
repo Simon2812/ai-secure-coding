@@ -20,7 +20,7 @@ def build_analysis_report(
     analysis: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Build the Task 3 report from pipeline analysis output.
+    Build the final report from pipeline analysis output.
 
     Findings are prioritized by confidence:
     - high: static and model findings intersect
@@ -30,7 +30,6 @@ def build_analysis_report(
 
     catalog = load_cwe_catalog()
     report = build_initial_report(analysis_input)
-    report["analysis"] = analysis
 
     findings = _build_prioritized_findings(
         analysis=analysis,
@@ -98,6 +97,12 @@ def _build_prioritized_findings(
             )
         )
 
+    _mark_static_findings_covered_by_high_findings(
+        intersections=intersections,
+        used_static_indexes=used_static_indexes,
+        used_model_indexes=used_model_indexes,
+    )
+
     medium_findings = [
         _build_model_finding(
             model_finding=finding,
@@ -121,6 +126,32 @@ def _build_prioritized_findings(
         _sort_by_line(medium_findings) +
         _sort_by_line(low_findings)
     )
+
+
+def _mark_static_findings_covered_by_high_findings(
+    intersections: List[Dict[str, Any]],
+    used_static_indexes: Set[int],
+    used_model_indexes: Set[int],
+) -> None:
+    """
+    Mark every static finding covered by a high-confidence model finding.
+
+    Static analyzers can emit multiple findings for the same vulnerable
+    line or code path. Once one model finding becomes high confidence,
+    all static findings correlated with that same model finding should
+    be treated as covered instead of leaking into the low-confidence
+    section as duplicates.
+    """
+
+    for intersection in intersections:
+        model_index = intersection.get("model_index")
+        static_index = intersection.get("static_index")
+
+        if model_index not in used_model_indexes:
+            continue
+
+        if isinstance(static_index, int):
+            used_static_indexes.add(static_index)
 
 
 def _build_high_finding(
@@ -178,6 +209,7 @@ def _build_static_finding(
         **_catalog_fields(catalog, cwe),
         "confidence": "low",
         "line": static_finding.get("line"),
+        "evidence": static_finding.get("evidence"),
         "fixes": [],
     }
 
