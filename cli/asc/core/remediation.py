@@ -503,12 +503,30 @@ def _validate_updated_source(
     Prevent writing broken source when lightweight validation is available.
     """
 
-    if source_path.suffix.lower() != ".py":
-        if source_path.suffix.lower() == ".java":
+    suffix = source_path.suffix.lower()
+
+    if suffix != ".py":
+        if suffix == ".java":
             _validate_updated_java(
                 source_path=source_path,
                 original_code=original_code,
                 updated_code=updated_code,
+            )
+        elif suffix == ".c":
+            _validate_updated_c_family(
+                source_path=source_path,
+                original_code=original_code,
+                updated_code=updated_code,
+                compiler_name="gcc",
+                language_name="C",
+            )
+        elif suffix in {".cc", ".cpp", ".cxx"}:
+            _validate_updated_c_family(
+                source_path=source_path,
+                original_code=original_code,
+                updated_code=updated_code,
+                compiler_name="g++",
+                language_name="C++",
             )
 
         return
@@ -570,6 +588,89 @@ def _validate_updated_java(
         "automatic fixes would make the Java file fail compilation; "
         f"no changes were written:\n{details}"
     )
+
+
+def _validate_updated_c_family(
+    source_path: Path,
+    original_code: str,
+    updated_code: str,
+    compiler_name: str,
+    language_name: str,
+) -> None:
+    """
+    Prevent writing C/C++ that fails lightweight syntax validation.
+    """
+
+    compiler = shutil.which(compiler_name)
+
+    if compiler is None:
+        return
+
+    original_result = _compile_c_family_source(
+        compiler=compiler,
+        source_path=source_path,
+        code=original_code,
+    )
+
+    if original_result.returncode != 0:
+        return
+
+    updated_result = _compile_c_family_source(
+        compiler=compiler,
+        source_path=source_path,
+        code=updated_code,
+    )
+
+    if updated_result.returncode == 0:
+        return
+
+    details = updated_result.stderr.strip() or updated_result.stdout.strip()
+
+    raise AscError(
+        f"automatic fixes would make the {language_name} file fail "
+        f"syntax validation; no changes were written:\n{details}"
+    )
+
+
+def _compile_c_family_source(
+    compiler: str,
+    source_path: Path,
+    code: str,
+) -> subprocess.CompletedProcess[str]:
+    """
+    Run a C/C++ syntax-only compiler check in a temporary file.
+    """
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        source_file = tmp_path / source_path.name
+
+        source_file.write_text(
+            code,
+            encoding="utf-8",
+        )
+
+        result = subprocess.run(
+            [
+                compiler,
+                "-fsyntax-only",
+                str(source_file),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+
+        result.stdout = result.stdout.replace(
+            str(source_file),
+            str(source_path),
+        )
+        result.stderr = result.stderr.replace(
+            str(source_file),
+            str(source_path),
+        )
+
+        return result
 
 
 def _compile_java_source(
