@@ -25,11 +25,7 @@ def default_report_path(analysis_input: AnalysisInput) -> Path:
 
 def build_initial_report(analysis_input: AnalysisInput) -> Dict[str, Any]:
     """
-    Build the Task 1.1 report skeleton.
-
-    Later tasks will populate `findings` with correlated static/model
-    vulnerabilities. Keeping the skeleton stable now makes the apply
-    command easier to build later.
+    Build the base report structure shared by analyze and apply.
     """
 
     generated_at = (

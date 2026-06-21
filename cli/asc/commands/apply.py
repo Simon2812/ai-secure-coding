@@ -5,11 +5,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from asc.core.remediation import apply_selected_fixes
 from asc.core.report import load_report
 from asc.core.selection import select_findings
-
-
-LOW_CONFIDENCE_VALUES = {"low"}
 
 
 def add_apply_parser(
@@ -27,11 +25,10 @@ def add_apply_parser(
     parser = subparsers.add_parser(
         "apply",
         usage="asc apply [-h] [-a] report [id ...]",
-        help="Select fixes from a generated report.",
+        help="Apply fixes from a generated report.",
         description=(
-            "Load an ASC report and select findings for remediation. "
-            "Task 1.2 validates selection only; automatic remediation "
-            "will be implemented in Task 4.1."
+            "Load an ASC report and apply selected automatic fixes "
+            "to the report source file."
         ),
     )
 
@@ -64,10 +61,7 @@ def add_apply_parser(
 
 def run_apply(args: argparse.Namespace) -> int:
     """
-    Validate report and selected finding IDs.
-
-    This command prepares the public workflow for later remediation.
-    It intentionally does not modify source code yet.
+    Apply selected report fixes to the source file.
     """
 
     report_path = Path(args.report)
@@ -82,32 +76,21 @@ def run_apply(args: argparse.Namespace) -> int:
         print(f"Report has no findings: {report_path}")
         return 0
 
-    print(
-        f"Selected {len(selected_findings)} finding(s) "
-        f"from {report_path}."
-    )
-    print(
-        "Automatic remediation will be implemented in Task 4.1."
+    result = apply_selected_fixes(
+        report=report,
+        selected_findings=selected_findings,
     )
 
-    if _contains_low_confidence_finding(selected_findings):
-        print(
-            "Note: low-confidence findings do not include automatic "
-            "fixes. Review them manually or use your IDE assistant to "
-            "create a remediation."
-        )
+    for message in result["skipped"]:
+        print(message)
+
+    if result["applied"] == 0:
+        print("No automatic fixes were applied.")
+        return 0
+
+    print(
+        f"Applied {result['applied']} fix(es) to "
+        f"{result['source_path']}."
+    )
 
     return 0
-
-
-def _contains_low_confidence_finding(findings: list) -> bool:
-    """
-    Return whether any selected finding is low confidence.
-    """
-
-    return any(
-        str(finding.get("confidence", "")).lower()
-        in LOW_CONFIDENCE_VALUES
-        for finding in findings
-        if isinstance(finding, dict)
-    )

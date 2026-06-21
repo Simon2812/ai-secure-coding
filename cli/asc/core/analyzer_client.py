@@ -29,8 +29,8 @@ def run_static_analyzer(
     Run the TypeScript static analyzer and normalize its findings.
 
     The original analyzer output is preserved under `raw_findings`.
-    `findings` contains a stable, source-neutral shape for later
-    correlation and report construction.
+    `findings` contains a stable, source-neutral shape for correlation
+    and report construction.
     """
 
     source_path = _prepare_analyzer_source(analysis_input)

@@ -20,7 +20,7 @@ def build_analysis_report(
     analysis: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Build the Task 3 report from pipeline analysis output.
+    Build the final report from pipeline analysis output.
 
     Findings are prioritized by confidence:
     - high: static and model findings intersect

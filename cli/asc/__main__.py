@@ -43,10 +43,6 @@ class AscArgumentParser(argparse.ArgumentParser):
 def build_parser() -> argparse.ArgumentParser:
     """
     Build the top-level CLI parser.
-
-    The CLI is intentionally small at this stage. Task 1 adds the
-    public analyze/apply commands; later tasks will connect them to
-    the real static/model pipeline and remediation engine.
     """
 
     parser = AscArgumentParser(
