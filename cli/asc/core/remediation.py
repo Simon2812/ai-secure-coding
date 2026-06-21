@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass
 from pathlib import Path
+import re
+import shutil
+import subprocess
+import tempfile
 from typing import Any, Dict, List, Optional, Tuple
 
 from asc.core.errors import AscError
@@ -72,6 +77,11 @@ def apply_selected_fixes(
 
     if replacements:
         updated_code = _apply_replacements(code, replacements)
+        _validate_updated_source(
+            source_path=source_path,
+            original_code=code,
+            updated_code=updated_code,
+        )
 
         try:
             source_path.write_text(updated_code, encoding="utf-8")
@@ -131,6 +141,12 @@ def _plan_finding_replacements(
         )
 
         if not spans:
+            spans = _find_origin_spans_in_code(
+                code=code,
+                origin=origin,
+            )
+
+        if not spans:
             spans = [line_span]
 
         for start, end in spans:
@@ -139,7 +155,11 @@ def _plan_finding_replacements(
                     finding_id=finding_id,
                     start=start,
                     end=end,
-                    replacement=replacement,
+                    replacement=_indent_replacement_for_span(
+                        code=code,
+                        start=start,
+                        replacement=replacement,
+                    ),
                 )
             )
 
@@ -172,6 +192,26 @@ def _find_origin_spans_in_line_range(
         (range_start + start, range_start + end)
         for start, end in normalized_spans
     ]
+
+
+def _find_origin_spans_in_code(
+    code: str,
+    origin: str,
+) -> List[Tuple[int, int]]:
+    """
+    Find exact or normalized origin matches anywhere in the source.
+
+    This is used when the model provides the right origin but slightly
+    wrong line numbers. Exact origin matching is still required before
+    falling back to full-line replacement.
+    """
+
+    exact_spans = _find_exact_spans(code, origin)
+
+    if exact_spans:
+        return exact_spans
+
+    return _find_normalized_spans(code, origin)
 
 
 def _find_exact_spans(
@@ -421,3 +461,168 @@ def _apply_replacements(
         )
 
     return updated
+
+
+def _indent_replacement_for_span(
+    code: str,
+    start: int,
+    replacement: str,
+) -> str:
+    """
+    Preserve surrounding indentation for multi-line replacements.
+
+    Model fixes usually omit the indentation that already exists
+    before the matched origin. The first replacement line inherits
+    that prefix from the original source; following replacement lines
+    need it added explicitly.
+    """
+
+    if "\n" not in replacement:
+        return replacement
+
+    line_start = code.rfind("\n", 0, start) + 1
+    prefix = code[line_start:start]
+
+    if not prefix or not prefix.isspace():
+        return replacement
+
+    lines = replacement.splitlines(keepends=True)
+
+    return "".join(
+        line if index == 0 or not line.strip() else prefix + line
+        for index, line in enumerate(lines)
+    )
+
+
+def _validate_updated_source(
+    source_path: Path,
+    original_code: str,
+    updated_code: str,
+) -> None:
+    """
+    Prevent writing broken source when lightweight validation is available.
+    """
+
+    if source_path.suffix.lower() != ".py":
+        if source_path.suffix.lower() == ".java":
+            _validate_updated_java(
+                source_path=source_path,
+                original_code=original_code,
+                updated_code=updated_code,
+            )
+
+        return
+
+    try:
+        ast.parse(original_code)
+    except SyntaxError:
+        return
+
+    try:
+        ast.parse(updated_code)
+    except SyntaxError as error:
+        raise AscError(
+            "automatic fixes would make the Python file invalid; "
+            f"no changes were written: {error.msg} at line {error.lineno}"
+        ) from error
+
+
+def _validate_updated_java(
+    source_path: Path,
+    original_code: str,
+    updated_code: str,
+) -> None:
+    """
+    Prevent writing Java that fails standalone compilation.
+
+    Dataset files often contain public classes whose names do not match
+    the dataset filename. Compile temporary copies using the public class
+    name, and only enforce validation when the original source compiles
+    in the same lightweight standalone mode.
+    """
+
+    javac = shutil.which("javac")
+
+    if javac is None:
+        return
+
+    original_result = _compile_java_source(
+        javac=javac,
+        source_path=source_path,
+        code=original_code,
+    )
+
+    if original_result.returncode != 0:
+        return
+
+    updated_result = _compile_java_source(
+        javac=javac,
+        source_path=source_path,
+        code=updated_code,
+    )
+
+    if updated_result.returncode == 0:
+        return
+
+    details = updated_result.stderr.strip() or updated_result.stdout.strip()
+
+    raise AscError(
+        "automatic fixes would make the Java file fail compilation; "
+        f"no changes were written:\n{details}"
+    )
+
+
+def _compile_java_source(
+    javac: str,
+    source_path: Path,
+    code: str,
+) -> subprocess.CompletedProcess[str]:
+    """
+    Compile Java code in a temporary directory.
+    """
+
+    class_name = _java_compile_unit_name(
+        source_path=source_path,
+        code=code,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        java_file = tmp_path / f"{class_name}.java"
+
+        java_file.write_text(
+            code,
+            encoding="utf-8",
+        )
+
+        return subprocess.run(
+            [
+                javac,
+                "-d",
+                str(tmp_path),
+                str(java_file),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+
+
+def _java_compile_unit_name(
+    source_path: Path,
+    code: str,
+) -> str:
+    """
+    Pick the filename javac expects for a Java compilation unit.
+    """
+
+    match = re.search(
+        r"\bpublic\s+(?:final\s+|abstract\s+)?"
+        r"(?:class|interface|enum|record)\s+([A-Za-z_$][\w$]*)",
+        code,
+    )
+
+    if match:
+        return match.group(1)
+
+    return source_path.stem

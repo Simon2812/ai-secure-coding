@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -46,14 +47,6 @@ def build_initial_report(analysis_input: AnalysisInput) -> Dict[str, Any]:
                 if analysis_input.source_path is not None
                 else None
             ),
-        },
-        "analysis": {
-            "static_findings": [],
-            "model_findings": [],
-            "normalized_static_findings": [],
-            "normalized_model_findings": [],
-            "intersections": [],
-            "model_response": None,
         },
         "findings": [],
     }
@@ -180,7 +173,7 @@ def _validate_report_source_path(report: Dict[str, Any]) -> None:
     if not isinstance(source_path, str) or not source_path.strip():
         raise AscError("report.metadata.source_path must be a file path")
 
-    path = Path(source_path)
+    path = _resolve_report_source_path(source_path)
 
     if not path.exists():
         raise AscError(
@@ -191,3 +184,33 @@ def _validate_report_source_path(report: Dict[str, Any]) -> None:
         raise AscError(
             f"source path from report is not a file: {path}"
         )
+
+    metadata["source_path"] = str(path)
+
+
+def _resolve_report_source_path(source_path: str) -> Path:
+    """
+    Resolve a report source path for the current operating system.
+
+    Reports generated inside WSL store Windows files as /mnt/c/... paths.
+    When the same report is later applied from Windows, translate that
+    path to C:/... before checking whether the file exists.
+    """
+
+    stripped = source_path.strip()
+
+    if os.name == "nt":
+        normalized = stripped.replace("\\", "/")
+        parts = normalized.split("/")
+
+        if (
+            len(parts) >= 4
+            and parts[0] == ""
+            and parts[1] == "mnt"
+            and len(parts[2]) == 1
+            and parts[2].isalpha()
+        ):
+            drive = parts[2].upper()
+            return Path(f"{drive}:/" + "/".join(parts[3:]))
+
+    return Path(stripped)
