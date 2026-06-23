@@ -18,6 +18,10 @@ def run_analysis_pipeline(
     """
 
     static_result = run_static_analyzer(analysis_input)
+
+    if not static_result["raw_findings"]:
+        return _empty_model_analysis(static_result)
+
     model_result = run_model_analysis(
         code=analysis_input.code,
         static_findings=static_result["raw_findings"],
@@ -38,4 +42,27 @@ def run_analysis_pipeline(
         "normalized_model_findings": model_result["findings"],
         "intersections": intersections,
         "model_response": model_result["raw_response"],
+    }
+
+
+def _empty_model_analysis(
+    static_result: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Return a normal analysis shape when static analysis is clean.
+
+    The model is only called when static analysis produced candidates.
+    This avoids expensive model requests for files where the analyzer
+    found nothing to investigate.
+    """
+
+    return {
+        "static_findings": static_result["raw_findings"],
+        "model_findings": [],
+        "normalized_static_findings": static_result["findings"],
+        "normalized_model_findings": [],
+        "intersections": [],
+        "model_response": {
+            "vulnerabilities": [],
+        },
     }

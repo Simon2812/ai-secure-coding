@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from asc.core.errors import AscError
 from asc.core.input import AnalysisInput
@@ -150,29 +150,19 @@ def _guess_inline_suffix(code: str) -> str:
 
 def _run_analyzer_for_path(source_path: Path) -> List[Dict[str, Any]]:
     """
-    Execute analyzer_runner.ts and parse its JSON output.
+    Execute the fastest available analyzer runner and parse JSON output.
     """
 
     project_root = Path(__file__).resolve().parents[3]
     analyzer_root = project_root / "secure-assist"
-    analyzer_runner = (
-        analyzer_root
-        / "src"
-        / "analyzer"
-        / "analyzer_runner.ts"
+    command, missing_executable = _analyzer_command(
+        analyzer_root=analyzer_root,
+        source_path=source_path,
     )
-
-    if not analyzer_runner.exists():
-        raise AscError(f"analyzer runner not found: {analyzer_runner}")
 
     try:
         result = subprocess.run(
-            [
-                "npx",
-                "ts-node",
-                str(analyzer_runner),
-                str(source_path),
-            ],
+            command,
             cwd=analyzer_root,
             capture_output=True,
             text=True,
@@ -180,7 +170,8 @@ def _run_analyzer_for_path(source_path: Path) -> List[Dict[str, Any]]:
         )
     except FileNotFoundError as error:
         raise AscError(
-            "failed to run analyzer because npx was not found"
+            f"failed to run analyzer because {missing_executable} "
+            "was not found"
         ) from error
     except subprocess.TimeoutExpired as error:
         raise AscError(
@@ -206,3 +197,53 @@ def _run_analyzer_for_path(source_path: Path) -> List[Dict[str, Any]]:
         raise AscError("static analyzer output must be a JSON list")
 
     return findings
+
+
+def _analyzer_command(
+    analyzer_root: Path,
+    source_path: Path,
+) -> Tuple[List[str], str]:
+    """
+    Build the fastest available analyzer command.
+
+    If the TypeScript extension has already been compiled, use the
+    generated JavaScript runner through node. Otherwise fall back to
+    ts-node through npx so analyze still works from a fresh checkout.
+    """
+
+    compiled_runner = (
+        analyzer_root
+        / "out"
+        / "analyzer"
+        / "analyzer_runner.js"
+    )
+
+    if compiled_runner.exists():
+        return (
+            [
+                "node",
+                str(compiled_runner),
+                str(source_path),
+            ],
+            "node",
+        )
+
+    source_runner = (
+        analyzer_root
+        / "src"
+        / "analyzer"
+        / "analyzer_runner.ts"
+    )
+
+    if not source_runner.exists():
+        raise AscError(f"analyzer runner not found: {source_runner}")
+
+    return (
+        [
+            "npx",
+            "ts-node",
+            str(source_runner),
+            str(source_path),
+        ],
+        "npx",
+    )
