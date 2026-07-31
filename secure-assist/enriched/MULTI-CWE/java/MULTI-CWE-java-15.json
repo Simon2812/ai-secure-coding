@@ -28,6 +28,16 @@
           "replacement": "if (!op.equals(\"status\") && !op.equals(\"restart\")) throw new IllegalArgumentException();\nString command = \"bash -c \" + op;"
         }
       ]
+    },
+    {
+      "id": "v3",
+      "cwe": "CWE-22",
+      "fixes": [
+        {
+          "origin": "try (FileInputStream fis = new FileInputStream(configPath)) {\n            config.load(fis);\n        }",
+          "replacement": "java.nio.file.Path configRoot = java.nio.file.Paths.get(\"/etc/app\").toAbsolutePath().normalize();\n        java.nio.file.Path safeConfig = configRoot.resolve(java.nio.file.Paths.get(configPath).getFileName()).normalize();\n        if (!safeConfig.startsWith(configRoot)) {\n            throw new IllegalArgumentException(\"Invalid config path\");\n        }\n        try (FileInputStream fis = new FileInputStream(safeConfig.toFile())) {\n            config.load(fis);\n        }"
+        }
+      ]
     }
   ],
   "static_findings": [

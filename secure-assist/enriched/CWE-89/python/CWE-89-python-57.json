@@ -1,48 +1,48 @@
-{
-  "schema_version": "1.0",
-  "id": "CWE-89-python-57",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-57.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "cmd = \"COPY \" + table + \" (sku, name, qty) FROM '\" + file_path + \"' WITH (FORMAT csv, DELIMITER E'\\\\t')\"\n\ncur.execute(cmd)",
-          "replacement": "from psycopg2 import sql\n\ncmd = sql.SQL(\"COPY {} (sku, name, qty) FROM %s WITH (FORMAT csv, DELIMITER E'\\\\t')\").format(sql.Identifier(table))\n\ncur.execute(cmd, (file_path,))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-57.py",
-      "line": 70,
-      "column": 25,
-      "evidence": "\"SELECT COUNT(*) FROM \" + table"
-    },
-    {
-      "cweId": "CWE-259",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Password",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-57.py",
-      "line": 14,
-      "column": 21,
-      "evidence": "\"wh_pass\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:44.158Z"
+﻿{
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-57",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-57.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "cmd = \"COPY \" + table + \" (sku, name, qty) FROM \u0027\" + file_path + \"\u0027 WITH (FORMAT csv, DELIMITER E\u0027\\\\t\u0027)\"\n\n        try:\n            cur.execute(cmd)",
+                                                  "replacement":  "cmd = sql.SQL(\"COPY {} (sku, name, qty) FROM %s WITH (FORMAT csv, DELIMITER E\u0027\\t\u0027)\").format(sql.Identifier(table))\n\n        try:\n            cur.execute(cmd, (file_path,))"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-57.py",
+                                "line":  70,
+                                "column":  25,
+                                "evidence":  "\"SELECT COUNT(*) FROM \" + table"
+                            },
+                            {
+                                "cweId":  "CWE-259",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Password",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027password\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-57.py",
+                                "line":  14,
+                                "column":  21,
+                                "evidence":  "\"wh_pass\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:44.158Z"
 }

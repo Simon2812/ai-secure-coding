@@ -8,7 +8,18 @@
     "type": "synthetic",
     "name": null
   },
-  "vulnerabilities": [],
+  "vulnerabilities": [
+    {
+      "id": "v1",
+      "cwe": "CWE-22",
+      "fixes": [
+        {
+          "origin": "def build_metric_name(day):\n    return \"metrics_\" + day + \".csv\"",
+          "replacement": "def build_metric_name(day):\n    if not day.isdigit():\n        raise ValueError(\"invalid day\")\n    return \"metrics_\" + day + \".csv\""
+        }
+      ]
+    }
+  ],
   "static_findings": [
     {
       "cweId": "CWE-22",

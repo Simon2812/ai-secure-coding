@@ -1,0 +1,112 @@
+{
+  "CWE-22": {
+    "title": "Path Traversal",
+    "severity": "High",
+    "summary": "The code may allow user-controlled paths to access files outside the intended directory.",
+    "impact": [
+      "Unauthorized file access",
+      "Sensitive data disclosure",
+      "File overwrite or deletion"
+    ],
+    "recommendation": "Normalize and validate paths against an allowed base directory before file access."
+  },
+  "CWE-78": {
+    "title": "OS Command Injection",
+    "severity": "High",
+    "summary": "The code may execute operating system commands built from untrusted input.",
+    "impact": [
+      "Arbitrary command execution",
+      "Privilege escalation",
+      "System compromise"
+    ],
+    "recommendation": "Avoid shell execution, pass arguments as arrays, and validate allowed commands and arguments."
+  },
+  "CWE-89": {
+    "title": "SQL Injection",
+    "severity": "High",
+    "summary": "The code may build SQL queries using untrusted input.",
+    "impact": [
+      "Unauthorized data access",
+      "Data modification or deletion",
+      "Authentication bypass"
+    ],
+    "recommendation": "Use parameterized queries or prepared statements instead of string concatenation."
+  },
+  "CWE-190": {
+    "title": "Integer Overflow or Wraparound",
+    "severity": "Medium",
+    "summary": "The code may perform arithmetic that overflows the valid integer range.",
+    "impact": [
+      "Incorrect calculations",
+      "Bounds check bypass",
+      "Memory corruption"
+    ],
+    "recommendation": "Check integer bounds before arithmetic and use wider or checked arithmetic where appropriate."
+  },
+  "CWE-259": {
+    "title": "Use of Hard-coded Password",
+    "severity": "High",
+    "summary": "The code contains a password or credential embedded directly in source.",
+    "impact": [
+      "Credential disclosure",
+      "Unauthorized access",
+      "Difficult credential rotation"
+    ],
+    "recommendation": "Move secrets to a secure secret manager or environment-specific configuration."
+  },
+  "CWE-321": {
+    "title": "Use of Hard-coded Cryptographic Key",
+    "severity": "High",
+    "summary": "The code contains a cryptographic key embedded directly in source.",
+    "impact": [
+      "Key disclosure",
+      "Encrypted data compromise",
+      "Difficult key rotation"
+    ],
+    "recommendation": "Store cryptographic keys in a secure key manager and rotate exposed keys."
+  },
+  "CWE-327": {
+    "title": "Use of a Broken or Risky Cryptographic Algorithm",
+    "severity": "Medium",
+    "summary": "The code may use weak or deprecated cryptographic algorithms.",
+    "impact": [
+      "Weak confidentiality",
+      "Cryptographic downgrade",
+      "Data exposure"
+    ],
+    "recommendation": "Use modern approved algorithms such as AES-GCM or ChaCha20-Poly1305 where appropriate."
+  },
+  "CWE-328": {
+    "title": "Use of Weak Hash",
+    "severity": "Medium",
+    "summary": "The code may use weak or collision-prone hashing algorithms.",
+    "impact": [
+      "Hash collision attacks",
+      "Integrity check bypass",
+      "Weak password or token protection"
+    ],
+    "recommendation": "Use stronger hash functions such as SHA-256 or dedicated password hashing functions when storing passwords."
+  },
+  "CWE-416": {
+    "title": "Use After Free",
+    "severity": "High",
+    "summary": "The code may use memory after it has been freed.",
+    "impact": [
+      "Crash",
+      "Memory corruption",
+      "Potential code execution"
+    ],
+    "recommendation": "Do not access freed memory, clear pointers after free, and ensure ownership is well defined."
+  },
+  "CWE-787": {
+    "title": "Out-of-bounds Write",
+    "severity": "High",
+    "summary": "The code may write outside the bounds of allocated memory.",
+    "impact": [
+      "Crash",
+      "Memory corruption",
+      "Potential code execution"
+    ],
+    "recommendation": "Validate bounds before writing and use size-aware APIs."
+  }
+}

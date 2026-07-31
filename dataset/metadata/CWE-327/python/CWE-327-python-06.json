@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "checksum = hashlib.sha1(data).hexdigest()",
-          "replacement": "checksum = hashlib.sha256(data).hexdigest()"
+          "origin": "RC2",
+          "replacement": "AES"
         }
       ]
     }

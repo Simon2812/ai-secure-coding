@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "marker = hashlib.md5(serialized).hexdigest()",
-          "replacement": "marker = hashlib.sha256(serialized).hexdigest()"
+          "origin": "DES",
+          "replacement": "AES"
         }
       ]
     }
@@ -23,48 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.md5(serialized).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
-      "line": 13,
+      "message": "DES.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
+      "line": 5,
       "column": 14,
-      "evidence": "hashlib.md5(serialized).hexdigest()"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.md5(serialized).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
-      "line": 13,
-      "column": 14,
-      "evidence": "hashlib.md5(serialized).hexdigest()"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "hashlib.md5() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
-      "line": 13,
-      "column": 14,
-      "evidence": "hashlib.md5(serialized)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.md5() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-01.py",
-      "line": 13,
-      "column": 14,
-      "evidence": "hashlib.md5(serialized)"
+      "evidence": "DES.new(key, DES.MODE_ECB)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.510Z"
+  "enriched_at": "2026-06-14T15:42:04.653Z"
 }

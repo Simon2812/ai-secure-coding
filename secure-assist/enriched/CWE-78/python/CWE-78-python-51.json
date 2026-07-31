@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-51",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-51.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "os.environ[\"ECHO_VALUE\"] = v.strip()\n\nchain = [\"cmd.exe\", \"/c\", \"echo %ECHO_VALUE%\"]\nproc = subprocess.run(chain, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "value = v.strip()\nproc = subprocess.CompletedProcess(args=[\"echo\"], returncode=0, stdout=(value + \"\\n\"), stderr=\"\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:42.119Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-51",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-51.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "os.environ[\"ECHO_VALUE\"] = v.strip()\n\n                chain = [\"cmd.exe\", \"/c\", \"echo %ECHO_VALUE%\"]\n                p = subprocess.run(chain, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "value = v.strip()\n                p = subprocess.CompletedProcess(args=[\"echo\"], returncode=0, stdout=(value + \"\\n\"), stderr=\"\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.119Z"
 }

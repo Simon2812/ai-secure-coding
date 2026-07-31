@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-321-c-02",
-  "language": "c",
-  "path": "/dataset/normalized/CWE-321/c/CWE-321-c-02.c",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-321",
-      "fixes": [
-        {
-          "origin": "#define STATIC_SECRET_VALUE \"DefaultSeedValue\"",
-          "replacement": "#define STATIC_SECRET_VALUE getenv(\"APP_SECRET\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-787",
-      "ruleId": "ast-oob-write",
-      "vulnerability": "Out-of-bounds Write",
-      "severity": "high",
-      "message": "strcpy() does not perform bounds checking and may write past a buffer.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-02.c",
-      "line": 39,
-      "column": 9,
-      "evidence": "strcpy(source, INITIAL_VECTOR)"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:38.692Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-321-c-02",
+    "language":  "c",
+    "path":  "/dataset/normalized/CWE-321/c/CWE-321-c-02.c",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-321",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "#define INITIAL_VECTOR \"DefaultSeedValue\"",
+                                                  "replacement":  "#define INITIAL_VECTOR getenv(\"APP_SECRET\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-787",
+                                "ruleId":  "ast-oob-write",
+                                "vulnerability":  "Out-of-bounds Write",
+                                "severity":  "high",
+                                "message":  "strcpy() does not perform bounds checking and may write past a buffer.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-321\\c\\CWE-321-c-02.c",
+                                "line":  39,
+                                "column":  9,
+                                "evidence":  "strcpy(source, INITIAL_VECTOR)"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:38.692Z"
 }

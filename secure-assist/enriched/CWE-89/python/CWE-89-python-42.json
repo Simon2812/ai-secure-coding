@@ -1,48 +1,48 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-42",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-42.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "if min_total:\n    base_query += \"HAVING SUM(amount) >= \" + min_total\n\ncur.execute(base_query, (year,))",
-          "replacement": "if min_total:\n    base_query += \"HAVING SUM(amount) >= %s\"\n    cur.execute(base_query, (year, int(min_total)))\nelse:\n    cur.execute(base_query, (year,))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-42.py",
-      "line": 47,
-      "column": 21,
-      "evidence": "base_query"
-    },
-    {
-      "cweId": "CWE-259",
-      "ruleId": "ast-hardcoded-cred",
-      "vulnerability": "Use of Hard-coded Password",
-      "severity": "high",
-      "message": "Hard-coded credential assigned to 'password'.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-42.py",
-      "line": 10,
-      "column": 21,
-      "evidence": "\"fin_pass\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:44.057Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-42",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-42.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "if min_total:\n            base_query += \"HAVING SUM(amount) \u003e= \" + min_total\n\n        base_query += \" ORDER BY total DESC\"\n\n        cur.execute(base_query, (year,))",
+                                                  "replacement":  "if min_total:\n            base_query += \"HAVING SUM(amount) \u003e= %s\"\n            params = (year, int(min_total))\n        else:\n            params = (year,)\n\n        base_query += \" ORDER BY total DESC\"\n\n        cur.execute(base_query, params)"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-42.py",
+                                "line":  47,
+                                "column":  21,
+                                "evidence":  "base_query"
+                            },
+                            {
+                                "cweId":  "CWE-259",
+                                "ruleId":  "ast-hardcoded-cred",
+                                "vulnerability":  "Use of Hard-coded Password",
+                                "severity":  "high",
+                                "message":  "Hard-coded credential assigned to \u0027password\u0027.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-89\\python\\CWE-89-python-42.py",
+                                "line":  10,
+                                "column":  21,
+                                "evidence":  "\"fin_pass\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:44.057Z"
 }

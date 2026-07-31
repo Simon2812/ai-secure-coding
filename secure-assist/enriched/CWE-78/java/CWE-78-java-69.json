@@ -1,26 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-java-69",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-69.java",
-  "split": "train",
-  "source": {
-    "type": "normalized",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "new File() receives user-controlled path.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-69.java",
-      "line": 22,
-      "column": 36,
-      "evidence": "suppliedPath"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:41.548Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-69",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-69.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "normalized",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "File normalized = new File(suppliedPath).getCanonicalFile();\n        String verifiedPath = normalized.getPath();",
+                                                  "replacement":  "File baseDir = new File(\"/srv/inspect\").getCanonicalFile();\n        File normalized = new File(baseDir, new File(suppliedPath).getName()).getCanonicalFile();\n        if (!normalized.getPath().startsWith(baseDir.getPath() + File.separator))\n        {\n            throw new SecurityException(\"invalid path\");\n        }\n        String verifiedPath = normalized.getPath();"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "new File() receives user-controlled path.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-78\\java\\CWE-78-java-69.java",
+                                "line":  22,
+                                "column":  36,
+                                "evidence":  "suppliedPath"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.548Z"
 }

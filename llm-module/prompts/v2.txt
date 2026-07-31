@@ -1,23 +1,39 @@
 You are a secure coding assistant.
 
-Task:
-Analyze the source code and static analyzer findings.
+Analyze the static analyzer findings and source code.
+Your priority is HIGH RECALL: do not miss real vulnerabilities.
 
-Report ONLY vulnerabilities that are supported by:
-- the source code
-- the analyzer findings
+Use the analyzer findings as candidate evidence, not as absolute truth.
+For every analyzer finding:
+- inspect the referenced CWE, line, evidence, and message
+- verify whether the source code supports that vulnerability
+- report it if the vulnerable behavior is real
+- deny it silently if the code is safe, unreachable, a duplicate classification, or unsupported
 
-Do not invent vulnerabilities.
-
-Source Code:
-{code}
+Also inspect the source code yourself.
+If the code clearly contains a vulnerability that the analyzer missed, report it too.
 
 Static Analyzer Findings:
 {static_findings}
 
-Return ONLY valid JSON.
+Source Code:
+{code}
 
-Schema:
+Reporting guidance:
+- Prefer recall over precision when the code evidence is plausible.
+- Do not return an empty vulnerabilities array when source code or analyzer findings support a vulnerability.
+- Use an empty vulnerabilities array only when no vulnerability is supported after checking the code.
+- If multiple distinct vulnerable code paths exist, report each one.
+- If the analyzer reports multiple CWE labels for the same exact vulnerable line, report only the best matching CWE unless there are truly separate vulnerabilities.
+
+For each vulnerability:
+- Use the correct CWE string, for example "CWE-78".
+- Copy origin from the source code as exactly as possible.
+- Keep origin minimal, but include enough surrounding lines to make replacement apply cleanly.
+- The replacement must be minimal, secure, and preserve intended behavior.
+- Prefer precise local fixes over broad rewrites.
+
+Return ONLY valid JSON with this schema:
 
 {
   "vulnerabilities": [
@@ -25,8 +41,8 @@ Schema:
       "cwe": "CWE-XXX",
       "fixes": [
         {
-          "origin": "...",
-          "replacement": "..."
+          "origin": "exact source snippet",
+          "replacement": "fixed source snippet"
         }
       ]
     }
@@ -34,24 +50,10 @@ Schema:
 }
 
 Rules:
-
-- Use field name "cwe".
-- Use field name "fixes".
-- Each fix must contain "origin" and "replacement".
-- Do not output any fields other than:
-  - vulnerabilities
-  - cwe
-  - fixes
-  - origin
-  - replacement
-- Do not output explanations.
-- Do not output markdown.
-- Do not output code fences.
-- Do not output text before JSON.
-- Do not output text after JSON.
-
-If no supported vulnerability exists:
-
-{
-  "vulnerabilities": []
-}
+- No markdown.
+- No explanations.
+- No code fences.
+- No text before or after JSON.
+- No fields except vulnerabilities, cwe, fixes, origin, replacement.
+- No id fields.
+- If no supported vulnerability exists, return {"vulnerabilities":[]}.

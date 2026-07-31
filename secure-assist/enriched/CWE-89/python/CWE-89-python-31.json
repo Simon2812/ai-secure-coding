@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-python-31",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-89/python/CWE-89-python-31.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "query_text = (\n    \"SELECT customer_id, SUM(total) AS total_sum \"\n    \"FROM sales \"\n    \"WHERE region = '\" + region + \"' \"\n    \"GROUP BY customer_id \"\n    \"HAVING SUM(total) >= \" + str(min_total) + \" \"\n    \"ORDER BY total_sum DESC \"\n    \"LIMIT 50\"\n)\n\nreturn pd.read_sql_query(query_text, self._engine)",
-          "replacement": "query_text = (\n    \"SELECT customer_id, SUM(total) AS total_sum \"\n    \"FROM sales \"\n    \"WHERE region = %(region)s \"\n    \"GROUP BY customer_id \"\n    \"HAVING SUM(total) >= %(min_total)s \"\n    \"ORDER BY total_sum DESC \"\n    \"LIMIT 50\"\n)\n\nreturn pd.read_sql_query(query_text, self._engine, params={\"region\": region, \"min_total\": min_total})"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:43.982Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-python-31",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-89/python/CWE-89-python-31.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "query_text = (\n            \"SELECT customer_id, SUM(total) AS total_sum \"\n            \"FROM sales \"\n            \"WHERE region = \u0027\" + region + \"\u0027 \"\n            \"GROUP BY customer_id \"\n            \"HAVING SUM(total) \u003e= \" + str(min_total) + \" \"\n            \"ORDER BY total_sum DESC \"\n            \"LIMIT 50\"\n        )\n\n        logger.info(\"running sales report\")\n        return pd.read_sql_query(query_text, self._engine)",
+                                                  "replacement":  "query_text = (\n            \"SELECT customer_id, SUM(total) AS total_sum \"\n            \"FROM sales \"\n            \"WHERE region = %(region)s \"\n            \"GROUP BY customer_id \"\n            \"HAVING SUM(total) \u003e= %(min_total)s \"\n            \"ORDER BY total_sum DESC \"\n            \"LIMIT 50\"\n        )\n\n        logger.info(\"running sales report\")\n        return pd.read_sql_query(query_text, self._engine, params={\"region\": region, \"min_total\": min_total})"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.982Z"
 }

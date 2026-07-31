@@ -1,135 +1,145 @@
 {
-  "schema_version": "1.0",
-  "id": "MULTI-CWE-python-18",
-  "language": "python",
-  "path": "/dataset/synthetic/MULTI-CWE/python/MULTI-CWE-python-18.py",
-  "split": "val",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-327",
-      "fixes": [
-        {
-          "origin": "cipher = DES.new(secret.encode(\"utf-8\")[:8], DES.MODE_ECB)",
-          "replacement": "cipher = AES.new(secret.encode(\"utf-8\")[:16], AES.MODE_ECB)"
-        }
-      ]
-    },
-    {
-      "id": "v2",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "statement = (\n    \"SELECT id, agent_name, region, status, content_json \"\n    \"FROM sync_jobs \"\n    \"WHERE tenant = '\" + tenant + \"' \"\n    \"AND region = '\" + region + \"' \"\n    \"AND status = '\" + status + \"' \"\n    \"ORDER BY created_at ASC \"\n    f\"LIMIT {limit}\"\n)\n\ncursor.execute(statement)",
-          "replacement": "statement = (\n    \"SELECT id, agent_name, region, status, content_json \"\n    \"FROM sync_jobs \"\n    \"WHERE tenant = ? \"\n    \"AND region = ? \"\n    \"AND status = ? \"\n    \"ORDER BY created_at ASC \"\n    \"LIMIT ?\"\n)\n\ncursor.execute(statement, (tenant, region, status, limit))"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 38,
-      "column": 37,
-      "evidence": "self.export_file"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 42,
-      "column": 29,
-      "evidence": "self.batch_name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 43,
-      "column": 35,
-      "evidence": "file_name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 75,
-      "column": 36,
-      "evidence": "Path(name).name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "Path() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 75,
-      "column": 41,
-      "evidence": "name"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 80,
-      "column": 19,
-      "evidence": "target"
-    },
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query is constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 126,
-      "column": 20,
-      "evidence": "statement"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 179,
-      "column": 15,
-      "evidence": "path"
-    },
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "open() receives user-controlled path without validation.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
-      "line": 188,
-      "column": 15,
-      "evidence": "path"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:46.173Z"
+    "schema_version":  "1.0",
+    "id":  "MULTI-CWE-python-18",
+    "language":  "python",
+    "path":  "/dataset/synthetic/MULTI-CWE/python/MULTI-CWE-python-18.py",
+    "split":  "val",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-327",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "encrypted = xor_cipher(raw, secret.encode(\"utf-8\"))",
+                                                  "replacement":  "encrypted = raw"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "statement = (\n    \"SELECT id, agent_name, region, status, content_json \"\n    \"FROM sync_jobs \"\n    \"WHERE tenant = \u0027\" + tenant + \"\u0027 \"\n    \"AND region = \u0027\" + region + \"\u0027 \"\n    \"AND status = \u0027\" + status + \"\u0027 \"\n    \"ORDER BY created_at ASC \"\n    f\"LIMIT {limit}\"\n)\n\ncursor.execute(statement)",
+                                                  "replacement":  "statement = (\n    \"SELECT id, agent_name, region, status, content_json \"\n    \"FROM sync_jobs \"\n    \"WHERE tenant = ? \"\n    \"AND region = ? \"\n    \"AND status = ? \"\n    \"ORDER BY created_at ASC \"\n    \"LIMIT ?\"\n)\n\ncursor.execute(statement, (tenant, region, status, limit))"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v3",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "@property\n    def export_path(self) -\u003e Path:\n        return (self.exports_root / self.export_file).resolve()",
+                                                  "replacement":  "@property\n    def export_path(self) -\u003e Path:\n        target = (self.exports_root / Path(self.export_file).name).resolve()\n        if self.exports_root not in target.parents and target != self.exports_root:\n            raise ValueError(\"invalid export path\")\n        return target"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  38,
+                                "column":  37,
+                                "evidence":  "self.export_file"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "Path() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  42,
+                                "column":  29,
+                                "evidence":  "self.batch_name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  43,
+                                "column":  35,
+                                "evidence":  "file_name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  75,
+                                "column":  36,
+                                "evidence":  "Path(name).name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "Path() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  75,
+                                "column":  41,
+                                "evidence":  "name"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  80,
+                                "column":  19,
+                                "evidence":  "target"
+                            },
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query is constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  126,
+                                "column":  20,
+                                "evidence":  "statement"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  179,
+                                "column":  15,
+                                "evidence":  "path"
+                            },
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "open() receives user-controlled path without validation.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\MULTI-CWE\\python\\MULTI-CWE-python-18.py",
+                                "line":  188,
+                                "column":  15,
+                                "evidence":  "path"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:46.173Z"
 }

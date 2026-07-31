@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-44",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-44.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "args = [\"powershell\", \"-NoProfile\", \"-Command\", f\"Invoke-Expression \\\"{text}\\\"\"]\nproc = subprocess.run(args, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "allowed = {\"list\": \"Get-ChildItem -Force\", \"who\": \"whoami\", \"time\": \"Get-Date\"}\nkey = text.lower()\nscript = allowed.get(key)\nif script is None:\n    raise ValueError(\"Unsupported expression\")\nargs = [\"powershell\", \"-NoProfile\", \"-Command\", script]\nproc = subprocess.run(args, capture_output=True, encoding=\"utf-8\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-78",
-      "ruleId": "ast-cmd-injection",
-      "vulnerability": "OS Command Injection",
-      "severity": "high",
-      "message": "subprocess.run() receives user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-44.py",
-      "line": 15,
-      "column": 36,
-      "evidence": "args"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:42.084Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-44",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-44.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "args = [\"powershell\", \"-NoProfile\", \"-Command\", f\"Invoke-Expression \\\"{text}\\\"\"]\n                p = subprocess.run(args, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "allowed = {\"list\": \"Get-ChildItem -Force\", \"who\": \"whoami\", \"time\": \"Get-Date\"}\n                key = text.lower()\n                script = allowed.get(key)\n                if script is None:\n                        raise ValueError(\"Unsupported expression\")\n                args = [\"powershell\", \"-NoProfile\", \"-Command\", script]\n                p = subprocess.run(args, capture_output=True, encoding=\"utf-8\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-78",
+                                "ruleId":  "ast-cmd-injection",
+                                "vulnerability":  "OS Command Injection",
+                                "severity":  "high",
+                                "message":  "subprocess.run() receives user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-78\\python\\CWE-78-python-44.py",
+                                "line":  15,
+                                "column":  36,
+                                "evidence":  "args"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.084Z"
 }

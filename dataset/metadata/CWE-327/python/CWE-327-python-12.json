@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "\"ripemd160\"",
-          "replacement": "\"sha512\""
+          "origin": "Crypto.Cipher.DES",
+          "replacement": "Crypto.Cipher.AES"
         }
       ]
     }

@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "checksum = hashlib.sha1(data).hexdigest()",
-          "replacement": "checksum = hashlib.sha256(data).hexdigest()"
+          "origin": "RC2",
+          "replacement": "AES"
         }
       ]
     }
@@ -23,70 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hashlib.sha1(data).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
-      "line": 8,
-      "column": 20,
-      "evidence": "hashlib.sha1(data).hexdigest()"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.sha1(data).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
-      "line": 8,
-      "column": 20,
-      "evidence": "hashlib.sha1(data).hexdigest()"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "hashlib.sha1() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
-      "line": 8,
-      "column": 20,
-      "evidence": "hashlib.sha1(data)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hashlib.sha1() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
-      "line": 8,
-      "column": 20,
-      "evidence": "hashlib.sha1(data)"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "result.append() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
-      "line": 9,
-      "column": 9,
-      "evidence": "result.append(checksum)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "result.append() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
-      "line": 9,
-      "column": 9,
-      "evidence": "result.append(checksum)"
+      "message": "RC2.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-06.py",
+      "line": 5,
+      "column": 14,
+      "evidence": "RC2.new(key, RC2.MODE_ECB)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.526Z"
+  "enriched_at": "2026-06-14T15:42:05.562Z"
 }

@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-java-28",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-78/java/CWE-78-java-28.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "Process process = runtime.exec(base + argument);",
-          "replacement": "if (!argument.matches(\"[A-Za-z0-9._-]{1,64}\")) {\n    throw new ServletException(\"invalid input\");\n}\nProcess process = runtime.exec(base + argument);"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:41.317Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-java-28",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-78/java/CWE-78-java-28.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "ProcessBuilder builder = new ProcessBuilder(baseCmd, payload);",
+                                                  "replacement":  "if (!payload.matches(\"[A-Za-z0-9._-]{1,64}\")) {\n            throw new ServletException(\"invalid input\");\n        }\n\n        ProcessBuilder builder = new ProcessBuilder(baseCmd, payload);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:41.317Z"
 }

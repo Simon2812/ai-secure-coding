@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-java-32",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-89/java/CWE-89-java-32.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "OWASP Benchmark Project"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "String sql = \"SELECT userid from USERS where USERNAME='foo' and PASSWORD='\" + transformed + \"'\";\ntry {\nInteger results = org.steelgate.reviewcode.helpers.DatabaseHelper.JDBCtemplate.queryForObject(sql, Integer.class);",
-          "replacement": "String sql = \"SELECT userid from USERS where USERNAME=? and PASSWORD=?\";\ntry {\nInteger results = org.steelgate.reviewcode.helpers.DatabaseHelper.JDBCtemplate.queryForObject(sql, new Object[]{\"foo\", transformed}, Integer.class);"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:43.223Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-java-32",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-89/java/CWE-89-java-32.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "OWASP Benchmark Project"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "String sql = \"SELECT userid from USERS where USERNAME=\u0027foo\u0027 and PASSWORD=\u0027\" + transformed + \"\u0027\";\n\n        try {\n            Integer results =\n                    org.steelgate.reviewcode.helpers.DatabaseHelper.JDBCtemplate.queryForObject(\n                            sql, Integer.class);",
+                                                  "replacement":  "String sql = \"SELECT userid from USERS where USERNAME=? and PASSWORD=?\";\n\n        try {\n            Integer results =\n                    org.steelgate.reviewcode.helpers.DatabaseHelper.JDBCtemplate.queryForObject(\n                            sql, new Object[]{\"foo\", transformed}, Integer.class);"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.223Z"
 }

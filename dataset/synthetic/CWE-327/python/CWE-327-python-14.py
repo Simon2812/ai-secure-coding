@@ -1,22 +1,8 @@
-import hashlib
+def create_cipher(algorithm, key):
+    return Cipher.new(algorithm, key)
 
 
-def derive_fingerprint(content, secure_mode):
-    data = content.encode("utf-8")
-
-    if secure_mode:
-        algo = "sha512"
-    else:
-        algo = "md5"
-
-    result = hashlib.new(algo, data).hexdigest()
-    return result
-
-
-def main():
-    value = derive_fingerprint("payload-77", False)
-    print(value)
-
-
-if __name__ == "__main__":
-    main()
+def encrypt_document(key, plaintext):
+    algorithm = "3DES"
+    cipher = create_cipher(algorithm, key)
+    return cipher.encrypt(plaintext)

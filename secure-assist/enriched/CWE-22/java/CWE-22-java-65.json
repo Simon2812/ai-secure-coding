@@ -8,7 +8,18 @@
     "type": "benchmark",
     "name": "OWASP Benchmark Project"
   },
-  "vulnerabilities": [],
+  "vulnerabilities": [
+    {
+      "id": "v1",
+      "cwe": "CWE-22",
+      "fixes": [
+        {
+          "origin": "        File storageRoot = new File(\"/srv/storage/\");\n        File fileRef = new File(storageRoot, selected);",
+          "replacement": "        File storageRoot = new File(\"/srv/storage/\").getCanonicalFile();\n        File fileRef = new File(storageRoot, new File(selected).getName()).getCanonicalFile();\n        if (!fileRef.getPath().startsWith(storageRoot.getPath() + File.separator)) {\n            throw new IOException(\"Invalid file path\");\n        }"
+        }
+      ]
+    }
+  ],
   "static_findings": [
     {
       "cweId": "CWE-22",

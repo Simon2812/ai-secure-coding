@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "hashlib.sha1",
-          "replacement": "hashlib.sha512"
+          "origin": "Blowfish",
+          "replacement": "AES"
         }
       ]
     }
@@ -23,48 +23,15 @@
   "static_findings": [
     {
       "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
+      "ruleId": "ast-weak-cipher",
       "vulnerability": "Use of Broken Cryptographic Algorithm",
       "severity": "medium",
-      "message": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
-      "line": 8,
-      "column": 12,
-      "evidence": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest()"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
-      "line": 8,
-      "column": 12,
-      "evidence": "hmac.new(key, data, digestmod=hashlib.sha1).hexdigest()"
-    },
-    {
-      "cweId": "CWE-327",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Broken Cryptographic Algorithm",
-      "severity": "medium",
-      "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
-      "line": 8,
-      "column": 12,
-      "evidence": "hmac.new(key, data, digestmod=hashlib.sha1)"
-    },
-    {
-      "cweId": "CWE-328",
-      "ruleId": "ast-weak-hash",
-      "vulnerability": "Use of Weak Hash",
-      "severity": "medium",
-      "message": "hmac.new() uses a weak hashing algorithm.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
-      "line": 8,
-      "column": 12,
-      "evidence": "hmac.new(key, data, digestmod=hashlib.sha1)"
+      "message": "Blowfish.new() uses a broken or weak cipher.",
+      "file": "C:\\Users\\semen\\AI-Secure-Coding\\dataset\\synthetic\\CWE-327\\python\\CWE-327-python-10.py",
+      "line": 5,
+      "column": 14,
+      "evidence": "Blowfish.new(key, Blowfish.MODE_CBC, iv)"
     }
   ],
-  "enriched_at": "2026-06-07T14:05:39.537Z"
+  "enriched_at": "2026-06-14T15:42:06.352Z"
 }

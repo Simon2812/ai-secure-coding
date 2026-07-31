@@ -1,37 +1,37 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-89-java-19",
-  "language": "java",
-  "path": "/dataset/normalized/CWE-89/java/CWE-89-java-19.java",
-  "split": "train",
-  "source": {
-    "type": "benchmark",
-    "name": "Juliet Test Suite"
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-89",
-      "fixes": [
-        {
-          "origin": "Boolean updated = stmt.execute(\"insert into users (status) values ('updated') where name='\" + nameFromRemote + \"'\");",
-          "replacement": "java.sql.PreparedStatement ps = db.prepareStatement(\"insert into users (status) values ('updated') where name=?\");\nps.setString(1, nameFromRemote);\nBoolean updated = ps.execute();"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-89",
-      "ruleId": "ast-sqli",
-      "vulnerability": "SQL Injection",
-      "severity": "high",
-      "message": "SQL query constructed with user-controlled input.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-19.java",
-      "line": 63,
-      "column": 21,
-      "evidence": "\"insert into users (status) values ('updated') where name='\" + nameFromRemote + \"'\""
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:43.101Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-89-java-19",
+    "language":  "java",
+    "path":  "/dataset/normalized/CWE-89/java/CWE-89-java-19.java",
+    "split":  "train",
+    "source":  {
+                   "type":  "benchmark",
+                   "name":  "Juliet Test Suite"
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-89",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "Boolean updated = stmt.execute(\n                    \"insert into users (status) values (\u0027updated\u0027) where name=\u0027\" + nameFromRemote + \"\u0027\"\n            );",
+                                                  "replacement":  "java.sql.PreparedStatement ps = db.prepareStatement(\"insert into users (status) values (\u0027updated\u0027) where name=?\");\nps.setString(1, nameFromRemote);\nBoolean updated = ps.execute();"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-89",
+                                "ruleId":  "ast-sqli",
+                                "vulnerability":  "SQL Injection",
+                                "severity":  "high",
+                                "message":  "SQL query constructed with user-controlled input.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\normalized\\CWE-89\\java\\CWE-89-java-19.java",
+                                "line":  63,
+                                "column":  21,
+                                "evidence":  "\"insert into users (status) values (\u0027updated\u0027) where name=\u0027\" + nameFromRemote + \"\u0027\""
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:43.101Z"
 }

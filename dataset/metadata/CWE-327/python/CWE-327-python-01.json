@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "marker = hashlib.md5(serialized).hexdigest()",
-          "replacement": "marker = hashlib.sha256(serialized).hexdigest()"
+          "origin": "DES",
+          "replacement": "AES"
         }
       ]
     }

@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "hashlib.md4",
-          "replacement": "hashlib.sha256"
+          "origin": "\"DES\"",
+          "replacement": "\"AES\""
         }
       ]
     }

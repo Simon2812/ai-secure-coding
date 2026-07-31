@@ -1,25 +1,27 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-78-python-46",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-78/python/CWE-78-python-46.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-78",
-      "fixes": [
-        {
-          "origin": "cmd = \"git status --porcelain\"\nproc = subprocess.run(cmd, shell=True, cwd=base, capture_output=True, encoding=\"utf-8\")",
-          "replacement": "if not os.path.isdir(base):\n    raise ValueError(\"Invalid repo path\")\nproc = subprocess.run([\"git\", \"status\", \"--porcelain\"], shell=False, cwd=base, capture_output=True, encoding=\"utf-8\")"
-        }
-      ]
-    }
-  ],
-  "static_findings": [],
-  "enriched_at": "2026-06-07T14:05:42.095Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-78-python-46",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-78/python/CWE-78-python-46.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-78",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "cmd = \"git status --porcelain\"\n                p = subprocess.run(cmd, shell=True, cwd=base, capture_output=True, encoding=\"utf-8\")",
+                                                  "replacement":  "if not os.path.isdir(base):\n                        raise ValueError(\"Invalid repo path\")\n                p = subprocess.run([\"git\", \"status\", \"--porcelain\"], shell=False, cwd=base, capture_output=True, encoding=\"utf-8\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+
+                        ],
+    "enriched_at":  "2026-06-07T14:05:42.095Z"
 }

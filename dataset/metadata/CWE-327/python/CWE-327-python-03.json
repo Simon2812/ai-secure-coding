@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "token = hmac.new(self.secret_key, payload, digestmod=hashlib.md5).hexdigest()",
-          "replacement": "token = hmac.new(self.secret_key, payload, digestmod=hashlib.sha256).hexdigest()"
+          "origin": "DES3",
+          "replacement": "AES"
         }
       ]
     }

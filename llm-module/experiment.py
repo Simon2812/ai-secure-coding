@@ -1,5 +1,7 @@
 from pathlib import Path
+import gc
 import json
+import torch
 from model import SecureCodingModel
 
 
@@ -50,6 +52,13 @@ def run_experiment(
         evaluator,
         checkpoint_path,
     )
+
+    # -------- Free training model before loading best checkpoint --------
+    model.model = None
+    gc.collect()
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
     # -------- Load best checkpoint --------
     model.load_checkpoint(checkpoint_path / "best")

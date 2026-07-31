@@ -1,37 +1,47 @@
 {
-  "schema_version": "1.0",
-  "id": "CWE-321-python-06",
-  "language": "python",
-  "path": "/dataset/synthetic/CWE-321/python/CWE-321-python-06.py",
-  "split": "train",
-  "source": {
-    "type": "synthetic",
-    "name": null
-  },
-  "vulnerabilities": [
-    {
-      "id": "v1",
-      "cwe": "CWE-321",
-      "fixes": [
-        {
-          "origin": "seed = \"archive-service-seed\"",
-          "replacement": "import os\nseed = os.environ[\"ARCHIVE_SEED\"]"
-        }
-      ]
-    }
-  ],
-  "static_findings": [
-    {
-      "cweId": "CWE-22",
-      "ruleId": "ast-path-traversal",
-      "vulnerability": "Path Traversal",
-      "severity": "high",
-      "message": "pathlib path join with user-controlled input may allow path traversal.",
-      "file": "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-06.py",
-      "line": 51,
-      "column": 36,
-      "evidence": "filename"
-    }
-  ],
-  "enriched_at": "2026-06-07T14:05:39.063Z"
+    "schema_version":  "1.0",
+    "id":  "CWE-321-python-06",
+    "language":  "python",
+    "path":  "/dataset/synthetic/CWE-321/python/CWE-321-python-06.py",
+    "split":  "train",
+    "source":  {
+                   "type":  "synthetic",
+                   "name":  null
+               },
+    "vulnerabilities":  [
+                            {
+                                "id":  "v1",
+                                "cwe":  "CWE-321",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "seed = \"archive-service-seed\"",
+                                                  "replacement":  "import os\nseed = os.environ[\"ARCHIVE_SEED\"]"
+                                              }
+                                          ]
+                            },
+                            {
+                                "id":  "v2",
+                                "cwe":  "CWE-22",
+                                "fixes":  [
+                                              {
+                                                  "origin":  "filename = f\"{item.get(\u0027id\u0027, \u0027unknown\u0027)}-{count}.bin\"\n            path = self.base_dir / filename",
+                                                  "replacement":  "filename = f\"{item.get(\u0027id\u0027, \u0027unknown\u0027)}-{count}.bin\"\n            root = self.base_dir.resolve()\n            path = (root / Path(filename).name).resolve()\n            if root not in path.parents and path != root:\n                raise ValueError(\"invalid archive path\")"
+                                              }
+                                          ]
+                            }
+                        ],
+    "static_findings":  [
+                            {
+                                "cweId":  "CWE-22",
+                                "ruleId":  "ast-path-traversal",
+                                "vulnerability":  "Path Traversal",
+                                "severity":  "high",
+                                "message":  "pathlib path join with user-controlled input may allow path traversal.",
+                                "file":  "C:\\temp\\ai-secure-main\\dataset\\synthetic\\CWE-321\\python\\CWE-321-python-06.py",
+                                "line":  51,
+                                "column":  36,
+                                "evidence":  "filename"
+                            }
+                        ],
+    "enriched_at":  "2026-06-07T14:05:39.063Z"
 }

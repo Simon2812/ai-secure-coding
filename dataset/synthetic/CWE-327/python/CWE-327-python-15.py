@@ -1,22 +1,8 @@
-import hashlib
+def build_cipher(algorithm, key):
+    return Cipher.new(algorithm, key)
 
 
-def transform(parts):
-    return [p.upper() for p in parts]
-
-
-def build_artifact_signature(parts):
-    normalized = transform(parts)
-    combined = "|".join(normalized).encode("utf-8")
-    signature = hashlib.new("sha1", combined).hexdigest()
-    return signature
-
-
-def main():
-    data = ["aa", "bb", "cc"]
-    result = build_artifact_signature(data)
-    print(result)
-
-
-if __name__ == "__main__":
-    main()
+def encrypt_manifest(key, plaintext):
+    cipher_name = "Blowfish"
+    cipher = build_cipher(cipher_name, key)
+    return cipher.encrypt(plaintext)

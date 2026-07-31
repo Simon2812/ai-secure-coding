@@ -14,8 +14,8 @@
       "cwe": "CWE-327",
       "fixes": [
         {
-          "origin": "choice = \"sha1\"",
-          "replacement": "choice = \"sha256\""
+          "origin": "DES",
+          "replacement": "AES"
         }
       ]
     }
