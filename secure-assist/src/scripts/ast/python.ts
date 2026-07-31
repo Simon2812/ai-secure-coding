@@ -162,7 +162,8 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
       }
     }
 
-    // CWE-327 + CWE-328: weak hash (dual-emit — dataset labels either CWE)
+    // CWE-328: weak hash. Reported as CWE-328 only — weak *ciphers* are CWE-327,
+    // and the dataset labels no hash sample as CWE-327.
     // Checks fn name OR any arg (catches hashlib.new("md5"), hmac.new(..., digestmod=hashlib.md4), etc.)
     // Also resolves identifier args through valueMap (catches algo = "md5"; hashlib.new(algo))
     const hashArgWeak = args.some(a => {
@@ -170,15 +171,13 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
       return WEAK_HASH_FN.test(text);
     });
     if (fnName && (WEAK_HASH_FN.test(fnName) || hashArgWeak)) {
-      for (const cweId of ["CWE-327", "CWE-328"] as const) {
-        findings.push(makeAstFinding({
-          cweId, ruleId: "ast-weak-hash",
-          vulnerability: cweId === "CWE-328" ? "Use of Weak Hash" : "Use of Broken Cryptographic Algorithm",
-          severity: "medium",
-          message: `${fnName}() uses a weak hashing algorithm.`,
-          filePath, node, code,
-        }));
-      }
+      findings.push(makeAstFinding({
+        cweId: "CWE-328", ruleId: "ast-weak-hash",
+        vulnerability: "Use of Weak Hash",
+        severity: "medium",
+        message: `${fnName}() uses a weak hashing algorithm.`,
+        filePath, node, code,
+      }));
     }
     // CWE-327: weak cipher — checks fn name OR any arg
     const cipherArgWeak = args.some(a => {

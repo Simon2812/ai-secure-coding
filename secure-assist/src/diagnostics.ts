@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Finding } from "./analyzer/types";
+import { getCweInfo } from "./model/cweCatalog";
 
 export function createDiagnosticCollection(): vscode.DiagnosticCollection {
   return vscode.languages.createDiagnosticCollection("secure-assist");
@@ -18,9 +19,15 @@ export function updateDiagnostics(
     const end = new vscode.Position(line, col + Math.max(1, finding.evidence.length));
     const range = new vscode.Range(start, end);
 
+    // Enrich with the shared CWE catalog so the squiggle explains the class of
+    // issue, not just the rule that fired.
+    const info = getCweInfo(finding.cweId);
+    const header = info ? `${finding.cweId} — ${info.title}` : finding.cweId;
+    const extra = info?.recommendation ? `\n${info.recommendation}` : "";
+
     const diagnostic = new vscode.Diagnostic(
       range,
-      `[${finding.cweId}] ${finding.message}`,
+      `[${header}] ${finding.message}${extra}`,
       mapSeverity(finding.severity)
     );
 
