@@ -19,9 +19,9 @@
 
 ## Model / IDE integration (branch: ASC-68-model-ide-integration)
 
-- [ ] Wire the extension to POST `{ code, analysis: static_findings }` to `http://localhost:8000/analyze`
-- [ ] Map returned `vulnerabilities[]` (cwe + fixes + start_line/end_line) to VSCode diagnostics
-- [ ] Wire "Apply Fix" using each fix's `origin` / `replacement`
+- [x] Wire the extension to POST `{ code, analysis: static_findings }` to `http://localhost:8000/analyze`
+- [x] Map returned `vulnerabilities[]` (cwe + fixes + start_line/end_line) to VSCode diagnostics
+- [x] Wire "Apply Fix" using each fix's `origin` / `replacement`
 - [ ] Make the model endpoint URL configurable (VSCode setting)
 
 ## Later
