@@ -31,6 +31,11 @@ const WEAK_CIPHER_ALGOS = /^"(DES|RC2|RC4|Blowfish|TripleDES|3DES)(\/[^"]+)?"$/i
 const WEAK_HASH_NAME = /\b(md2|md4|md5|MD2|MD4|MD5|ripemd|RIPEMD|sha[-_]?1|SHA[-_]?1)/;
 const WEAK_CIPHER_NAME = /\b(TripleDES|3DES|DES(?!C([^a-z]|$))|RC2|RC4|ARC4|Blowfish)/;
 
+/** Strip any package qualifier: "java.io.File" → "File", "File" → "File". */
+function simpleTypeName(t: string): string {
+  return t.slice(t.lastIndexOf(".") + 1);
+}
+
 export function analyzeJava(code: string, filePath: string, tree: Tree): Finding[] {
   const findings: Finding[] = [];
   const root = tree.rootNode;
@@ -53,7 +58,9 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
     if (node.type === "object_creation_expression") {
       const typeNode = node.childForFieldName("type");
       const argsNode = node.childForFieldName("arguments");
-      const typeName = typeNode?.text ?? "";
+      // Normalize fully-qualified type names (java.io.File) to their simple name (File)
+      // so sink-set matching works whether the code uses `new File(...)` or `new java.io.File(...)`.
+      const typeName = simpleTypeName(typeNode?.text ?? "");
 
       if (PATH_SINK_TYPES.has(typeName) && argsNode) {
         const args = getJavaArgs(argsNode);

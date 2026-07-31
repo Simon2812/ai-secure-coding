@@ -1,0 +1,29 @@
+#vuln:
+
+import sqlite3
+from flask import Flask, request
+
+app = Flask(__name__)
+
+
+def run_query(cursor, name):
+    q = f"SELECT * FROM users WHERE username = '{name}'"
+    cursor.execute(q)
+    return cursor.fetchall()
+
+
+@app.route("/user")
+def user():
+    name = request.args.get("name")
+    conn = sqlite3.connect(":memory:")
+    cursor = conn.cursor()
+    return str(run_query(cursor, name))
+
+#safe:
+
+def run_query_safe(cursor, name):
+    cursor.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (name,)
+    )
+    return cursor.fetchall()

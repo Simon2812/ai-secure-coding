@@ -140,7 +140,8 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
     }
 
     // CWE-89: SQL injection — unwrap text()/literal() wrappers (SQLAlchemy)
-    if (fnName?.endsWith(".execute") && args.length > 0) {
+    // .raw() covers Django QuerySet.raw() — another raw-SQL sink alongside .execute()
+    if ((fnName?.endsWith(".execute") || fnName?.endsWith(".raw")) && args.length > 0) {
       let queryArg = args[0];
       // Unwrap text(f"...") / literal(f"...") → check inner arg
       if ((queryArg.type === "call") && /^(text|literal|sql)$/.test(callName(queryArg) ?? "")) {
@@ -339,7 +340,7 @@ function isPythonUserInputExpr(node: Node): boolean {
   const text = node.text;
   if (/\binput\s*\(/.test(text)) return true;
   if (/\bsys\.argv\b/.test(text)) return true;
-  if (/\brequest\.(args|form|files|values|json|data|get_json|cookies)\b/.test(text)) return true;
+  if (/\brequest\.(args|form|files|values|json|data|get_json|cookies|POST|GET|META)\b/.test(text)) return true;
   if (/\brequest\[/.test(text)) return true;
   if (/\burllib\.parse\.unquote/.test(text)) return true;
   if (/\burllib\.parse\.unquote_plus/.test(text)) return true;
