@@ -9,7 +9,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -20,8 +22,22 @@
       {
         "command": "secure-assist.showStoredFile",
         "title": "Secure Assist: Show Stored File"
+      },
+      {
+        "command": "secure-assist.scanWithAI",
+        "title": "Secure Assist: Scan with AI"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Secure Assist",
+      "properties": {
+        "secureAssist.modelEndpoint": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Base URL of the Secure Assist model server (Docker)."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

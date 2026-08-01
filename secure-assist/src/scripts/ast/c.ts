@@ -263,17 +263,15 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
         }
       }
 
-      // CWE-327 + CWE-328: weak hash (dual-emit — dataset labels either CWE)
+      // CWE-328: weak hash — hashes are CWE-328 only; weak ciphers are CWE-327.
       if (WEAK_HASH_FN.test(fnName)) {
-        for (const cweId of ["CWE-327", "CWE-328"] as const) {
-          findings.push(makeAstFinding({
-            cweId, ruleId: "ast-weak-hash",
-            vulnerability: cweId === "CWE-328" ? "Use of Weak Hash" : "Use of Broken Cryptographic Algorithm",
-            severity: "medium",
-            message: `${fnName}() uses a weak hashing algorithm (MD5/SHA1).`,
-            filePath, node, code,
-          }));
-        }
+        findings.push(makeAstFinding({
+          cweId: "CWE-328", ruleId: "ast-weak-hash",
+          vulnerability: "Use of Weak Hash",
+          severity: "medium",
+          message: `${fnName}() uses a weak hashing algorithm (MD5/SHA1).`,
+          filePath, node, code,
+        }));
       }
 
       // CWE-327: Windows Crypto API — CryptDeriveKey/CryptEncrypt with weak cipher
@@ -291,20 +289,18 @@ export function analyzeC(code: string, filePath: string, tree: Tree): Finding[] 
         }
       }
 
-      // CWE-327 + CWE-328: Windows Crypto API — CryptCreateHash with weak hash (dual-emit)
+      // CWE-328: Windows Crypto API — CryptCreateHash with a weak hash algorithm.
       if (fnName === "CryptCreateHash" && argsNode) {
         const args = getArgs(argsNode);
         const algoArg = args[1]; // second arg is the algorithm constant
         if (algoArg && WEAK_CALG_HASH.has(algoArg.text)) {
-          for (const cweId of ["CWE-327", "CWE-328"] as const) {
-            findings.push(makeAstFinding({
-              cweId, ruleId: "ast-weak-wincrypt-hash",
-              vulnerability: cweId === "CWE-328" ? "Use of Weak Hash" : "Use of Broken Cryptographic Algorithm",
-              severity: "medium",
-              message: `CryptCreateHash() uses ${algoArg.text}, a weak hashing algorithm.`,
-              filePath, node: algoArg, code,
-            }));
-          }
+          findings.push(makeAstFinding({
+            cweId: "CWE-328", ruleId: "ast-weak-wincrypt-hash",
+            vulnerability: "Use of Weak Hash",
+            severity: "medium",
+            message: `CryptCreateHash() uses ${algoArg.text}, a weak hashing algorithm.`,
+            filePath, node: algoArg, code,
+          }));
         }
       }
     }

@@ -76,17 +76,16 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
         }
       }
 
-      // CWE-327/328: weak hash/cipher in type name (new MD5Digest(), new DESEngine(), etc.)
+      // CWE-328: weak hash in type name (new MD5Digest(), etc.) — hashes are
+      // CWE-328 only; weak ciphers are handled as CWE-327 just below.
       if (WEAK_HASH_NAME.test(typeName)) {
-        for (const cweId of ["CWE-327", "CWE-328"] as const) {
-          findings.push(makeAstFinding({
-            cweId, ruleId: "ast-weak-hash",
-            vulnerability: cweId === "CWE-328" ? "Use of Weak Hash" : "Use of Broken Cryptographic Algorithm",
-            severity: "medium",
-            message: `new ${typeName}() uses a weak hashing algorithm (MD5/SHA1).`,
-            filePath, node, code,
-          }));
-        }
+        findings.push(makeAstFinding({
+          cweId: "CWE-328", ruleId: "ast-weak-hash",
+          vulnerability: "Use of Weak Hash",
+          severity: "medium",
+          message: `new ${typeName}() uses a weak hashing algorithm (MD5/SHA1).`,
+          filePath, node, code,
+        }));
       }
       if (WEAK_CIPHER_NAME.test(typeName) && !PATH_SINK_TYPES.has(typeName)) {
         findings.push(makeAstFinding({
@@ -221,15 +220,13 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
       if (methodName === "getInstance" && argsNode) {
         const args = getJavaArgs(argsNode);
         if (args.length > 0 && WEAK_HASH_ALGOS.test(args[0].text)) {
-          for (const cweId of ["CWE-327", "CWE-328"] as const) {
-            findings.push(makeAstFinding({
-              cweId, ruleId: "ast-weak-hash",
-              vulnerability: cweId === "CWE-328" ? "Use of Weak Hash" : "Use of Broken Cryptographic Algorithm",
-              severity: "medium",
-              message: `getInstance(${args[0].text}) uses a weak hash algorithm (MD5/SHA-1).`,
-              filePath, node, code,
-            }));
-          }
+          findings.push(makeAstFinding({
+            cweId: "CWE-328", ruleId: "ast-weak-hash",
+            vulnerability: "Use of Weak Hash",
+            severity: "medium",
+            message: `getInstance(${args[0].text}) uses a weak hash algorithm (MD5/SHA-1).`,
+            filePath, node, code,
+          }));
         }
         if (args.length > 0 && WEAK_CIPHER_ALGOS.test(args[0].text)) {
           findings.push(makeAstFinding({
@@ -242,17 +239,15 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
         }
       }
 
-      // CWE-327/328: weak hash in method/full name (DigestUtils.md5Hex, Hashing.md5, etc.)
+      // CWE-328: weak hash in method/full name (DigestUtils.md5Hex, Hashing.md5, etc.)
       if (WEAK_HASH_NAME.test(fullName) && methodName !== "getInstance") {
-        for (const cweId of ["CWE-327", "CWE-328"] as const) {
-          findings.push(makeAstFinding({
-            cweId, ruleId: "ast-weak-hash",
-            vulnerability: cweId === "CWE-328" ? "Use of Weak Hash" : "Use of Broken Cryptographic Algorithm",
-            severity: "medium",
-            message: `${fullName}() uses a weak hashing algorithm (MD5/SHA1).`,
-            filePath, node, code,
-          }));
-        }
+        findings.push(makeAstFinding({
+          cweId: "CWE-328", ruleId: "ast-weak-hash",
+          vulnerability: "Use of Weak Hash",
+          severity: "medium",
+          message: `${fullName}() uses a weak hashing algorithm (MD5/SHA1).`,
+          filePath, node, code,
+        }));
       }
       // CWE-327: weak cipher in method/full name
       if (WEAK_CIPHER_NAME.test(fullName) && methodName !== "getInstance") {
