@@ -71,7 +71,9 @@ export function buildTree(files: FileReport[]): FolderNode {
       }
       current = next;
     }
-    current.files.push({ ...file, path: fileName });
+    // Keep the workspace-relative path intact — it is the key the panel uses to
+    // resolve the file — and carry the basename separately for display.
+    current.files.push({ ...file, displayName: fileName });
   }
 
   aggregate(root);

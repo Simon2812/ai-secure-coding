@@ -100,6 +100,13 @@ summary:hover { background: var(--vscode-list-hoverBackground); }
 .finding.critical { border-left-color: #f85149; }
 .finding.medium   { border-left-color: #d29922; }
 .finding.low      { border-left-color: #6e7681; }
+/* Reported by the model but not by the static analyzer. */
+.finding.ai-only { border-left-color: #a371f7; border-left-style: dashed; }
+.badge-ai {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #a371f7; border: 1px solid #a371f7; border-radius: 999px;
+  padding: 1px 8px; white-space: nowrap;
+}
 .finding-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .cwe { font-weight: 600; }
 .loc { color: var(--vscode-descriptionForeground); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
@@ -133,11 +140,25 @@ details.folder[open] > summary .folder-icon { transform: rotate(90deg); }
 .folder-body { padding: 0 10px 6px 22px; }
 details.file { background: var(--vscode-editorWidget-background); }
 
+/* Per-file toolbar */
+.file-tools {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin: 8px 14px 12px; padding-top: 10px;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+.verdict { font-size: 0.75rem; padding: 1px 8px; border-radius: 999px; border: 1px solid; }
+.verdict.ok { color: #3fb950; border-color: #3fb950; }
+.verdict.applied { color: #3fb950; border-color: #3fb950; background: rgba(63, 185, 80, 0.12); }
+.verdict:empty { display: none; }
+/* A finding whose fix has been applied stays visible but reads as resolved. */
+.finding.fixed { opacity: 0.6; border-left-color: #3fb950 !important; }
+.finding.fixed .cwe { text-decoration: line-through; }
+.ai-findings:empty { display: none; }
+
 /* Inline source viewer */
-.code-wrap { margin: 0 14px 12px; }
 button.see-code { font-size: 0.78rem; }
 .code-block {
-  margin-top: 8px; border: 1px solid var(--vscode-panel-border); border-radius: 4px;
+  margin: 0 14px 12px; border: 1px solid var(--vscode-panel-border); border-radius: 4px;
   background: var(--vscode-textCodeBlock-background); overflow-x: auto;
   font-family: var(--vscode-editor-font-family); font-size: 0.78rem; line-height: 1.5;
   max-height: 460px; overflow-y: auto;
@@ -164,37 +185,51 @@ function renderFinding(
   const title = info ? `${f.cweId} — ${info.title}` : f.cweId;
   const id = `${fileIndex}-${index}`;
 
-  // The exported file is a read-only artifact: AI verification and jump-to-line
-  // both need the extension, so they are omitted rather than shown as dead UI.
+  // The exported file is a read-only artifact: jump-to-line needs the extension,
+  // so it degrades to plain text there.
   const location = interactive
     ? `<span class="loc" data-file="${escapeHtml(file.path)}" data-line="${f.line}">line ${f.line}</span>`
     : `<span class="loc-static">line ${f.line}</span>`;
 
-  const actions = interactive
-    ? `<div class="actions" id="actions-${id}">
-      <button class="verify" data-id="${id}" data-file="${escapeHtml(file.path)}" data-line="${f.line}" data-cwe="${escapeHtml(f.cweId)}">Verify with AI</button>
-      <span class="status" id="status-${id}"></span>
-    </div>`
-    : "";
-
   return `
-  <div class="finding ${sev}">
+  <div class="finding ${sev}" data-finding-id="${id}">
     <div class="finding-head">
       <span class="cwe">${escapeHtml(title)}</span>
       ${location}
+      <span class="verdict" id="verdict-${id}"></span>
     </div>
     <div class="msg">${escapeHtml(f.message)}</div>
     ${info?.recommendation ? `<div class="rec">${escapeHtml(info.recommendation)}</div>` : ""}
     ${f.evidence ? `<pre class="evidence">${escapeHtml(f.evidence)}</pre>` : ""}
-    ${actions}
+    <div class="actions" id="actions-${id}"></div>
   </div>`;
 }
 
-/** The file's source with line numbers, vulnerable lines marked. */
-function renderCode(file: FileReport, fileIndex: number): string {
-  if (!file.code) return "";
-  const flagged = new Set(file.findings.map((f) => f.line));
-  const rows = file.code
+/**
+ * Per-file toolbar: one AI verification for the whole file (a single inference
+ * covers every finding in it) plus the source viewer.
+ */
+function renderFileTools(file: FileReport, fileIndex: number, interactive: boolean): string {
+  const verify = interactive
+    ? `<button class="verify" data-file="${escapeHtml(file.path)}" data-index="${fileIndex}">Verify with AI</button>
+       <span class="status" id="filestatus-${fileIndex}"></span>`
+    : "";
+
+  const code = file.code
+    ? `<button class="see-code" data-target="code-${fileIndex}">See code</button>`
+    : "";
+
+  if (!verify && !code) return "";
+  return `<div class="file-tools">${code}${verify}</div>`;
+}
+
+/**
+ * Source lines with line numbers, flagged lines highlighted.
+ * Exported so the panel can re-render a file's code after a fix is applied.
+ */
+export function renderCodeRows(code: string, flaggedLines: Iterable<number>): string {
+  const flagged = new Set(flaggedLines);
+  return code
     .split("\n")
     .map((line, i) => {
       const n = i + 1;
@@ -202,12 +237,13 @@ function renderCode(file: FileReport, fileIndex: number): string {
       return `<div class="${cls}"><span class="ln">${n}</span><span class="lc">${escapeHtml(line) || "&nbsp;"}</span></div>`;
     })
     .join("");
+}
 
-  return `
-    <div class="code-wrap">
-      <button class="see-code" data-target="code-${fileIndex}">See code</button>
-      <div class="code-block" id="code-${fileIndex}" hidden>${rows}</div>
-    </div>`;
+/** The file's source with line numbers, vulnerable lines marked. */
+function renderCode(file: FileReport, fileIndex: number): string {
+  if (!file.code) return "";
+  const rows = renderCodeRows(file.code, file.findings.map((f) => f.line));
+  return `<div class="code-block" id="code-${fileIndex}" hidden>${rows}</div>`;
 }
 
 function renderFile(file: FileReport, fileIndex: number, interactive: boolean): string {
@@ -215,17 +251,24 @@ function renderFile(file: FileReport, fileIndex: number, interactive: boolean): 
   const count = file.findings.length;
   const header = `
     <summary>
-      <span class="file-path">${escapeHtml(file.path)}</span>
+      <span class="file-path">${escapeHtml(file.displayName ?? file.path)}</span>
       ${count === 0 ? '<span class="clean">✓ clean</span>' : `<span class="status">${count} finding${count === 1 ? "" : "s"}</span>`}
       <span class="file-score ${band}">${file.score}</span>
     </summary>`;
 
-  if (count === 0) return `<details class="file">${header}</details>`;
-
   const findings = file.findings
     .map((_f, i) => renderFinding(file, i, fileIndex, interactive))
     .join("");
-  return `<details class="file">${header}${findings}${renderCode(file, fileIndex)}</details>`;
+
+  // Clean files get the same tools: the model may still find something the
+  // static analyzer missed, which is exactly where it adds value.
+  return `<details class="file">
+    ${header}
+    ${findings}
+    <div class="ai-findings" id="aifindings-${fileIndex}"></div>
+    ${renderFileTools(file, fileIndex, interactive)}
+    ${renderCode(file, fileIndex)}
+  </details>`;
 }
 
 /** Recursively render a folder and everything beneath it. */
@@ -277,6 +320,8 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
   const script = interactive
     ? `<script>
         const vscode = acquireVsCodeApi();
+        // Elapsed-time tickers per file, cleared when the response arrives.
+        const timers = {};
         document.addEventListener('click', (e) => {
           const loc = e.target.closest('.loc');
           if (loc) {
@@ -286,11 +331,17 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
           const verify = e.target.closest('button.verify');
           if (verify) {
             verify.disabled = true;
-            document.getElementById('status-' + verify.dataset.id).textContent = 'asking the model…';
-            vscode.postMessage({
-              type: 'verify', id: verify.dataset.id,
-              file: verify.dataset.file, line: Number(verify.dataset.line), cwe: verify.dataset.cwe,
-            });
+            const idx = verify.dataset.index;
+            const status = document.getElementById('filestatus-' + idx);
+            // Inference takes tens of seconds, so tick the elapsed time to make
+            // it obvious the request is still in flight rather than stuck.
+            let seconds = 0;
+            status.textContent = 'asking the model... 0s';
+            timers[idx] = setInterval(() => {
+              seconds += 1;
+              status.textContent = 'asking the model... ' + seconds + 's';
+            }, 1000);
+            vscode.postMessage({ type: 'verifyFile', index: idx, file: verify.dataset.file });
             return;
           }
           const fix = e.target.closest('button.fix');
@@ -309,28 +360,105 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
           }
         });
 
+        function addFixButtons(container, id, count) {
+          for (let i = 0; i < count; i++) {
+            const b = document.createElement('button');
+            b.className = 'fix primary';
+            b.textContent = 'Apply fix' + (count > 1 ? ' #' + (i + 1) : '');
+            b.dataset.id = id; b.dataset.fixIndex = String(i);
+            container.appendChild(b);
+          }
+        }
+
         window.addEventListener('message', (event) => {
           const msg = event.data;
-          const status = document.getElementById('status-' + msg.id);
-          const actions = document.getElementById('actions-' + msg.id);
-          if (!status || !actions) return;
-          if (msg.type === 'verified') {
-            status.textContent = msg.confirmed
-              ? 'AI confirmed this finding.'
-              : 'AI did not confirm this finding.';
-            (msg.fixes || []).forEach((_f, i) => {
-              const b = document.createElement('button');
-              b.className = 'fix primary';
-              b.textContent = 'Apply fix' + (msg.fixes.length > 1 ? ' #' + (i + 1) : '');
-              b.dataset.id = msg.id; b.dataset.file = msg.file; b.dataset.fixIndex = String(i);
-              actions.insertBefore(b, status);
+          const status = document.getElementById('filestatus-' + msg.index);
+          if (timers[msg.index]) { clearInterval(timers[msg.index]); delete timers[msg.index]; }
+
+          if (msg.type === 'fileVerified') {
+            // Only confirmations are reported: the analyzer and the model catch
+            // different things, so "the AI didn't flag it" says nothing about
+            // whether a static finding is real.
+            const confirmed = (msg.results || []).length;
+            const found = (msg.aiOnly || []).length;
+            const parts = [];
+            if (confirmed > 0) parts.push('AI confirmed ' + confirmed + ' finding' + (confirmed === 1 ? '' : 's'));
+            if (found > 0) parts.push('found ' + found + ' the analyzer missed');
+            if (status) {
+              status.textContent = parts.length > 0
+                ? parts.join(', ') + '.'
+                : 'AI reported nothing additional for this file.';
+            }
+
+            // Confirmed findings get a badge and, where offered, their fixes.
+            (msg.results || []).forEach((r) => {
+              const verdict = document.getElementById('verdict-' + r.id);
+              if (verdict) {
+                verdict.textContent = 'AI confirmed';
+                verdict.className = 'verdict ok';
+              }
+              const actions = document.getElementById('actions-' + r.id);
+              if (actions && r.fixCount > 0) addFixButtons(actions, r.id, r.fixCount);
             });
-            if (!msg.fixes || msg.fixes.length === 0) {
-              status.textContent += ' No fix suggested.';
+
+            // Findings only the model reported.
+            const host = document.getElementById('aifindings-' + msg.index);
+            (msg.aiOnly || []).forEach((v) => {
+              if (!host) return;
+              const div = document.createElement('div');
+              div.className = 'finding ai-only';
+              div.setAttribute('data-finding-id', v.id);
+              div.innerHTML =
+                '<div class="finding-head">' +
+                  '<span class="badge-ai">Detected by AI</span>' +
+                  '<span class="cwe"></span>' +
+                  '<span class="loc-static"></span>' +
+                  '<span class="verdict"></span>' +
+                '</div>' +
+                '<div class="msg">The static analyzer did not report this issue.</div>' +
+                '<div class="actions"></div>';
+              div.querySelector('.cwe').textContent = v.title ? v.cwe + ' - ' + v.title : v.cwe;
+              div.querySelector('.loc-static').textContent = v.line ? 'line ' + v.line : '';
+              addFixButtons(div.querySelector('.actions'), v.id, v.fixCount);
+              host.appendChild(div);
+            });
+          } else if (msg.type === 'fixApplied') {
+            // Mark the finding as resolved and refresh the file's code + score
+            // so the report reflects the edit instead of the original scan.
+            const row = document.querySelector('[data-finding-id="' + msg.id + '"]');
+            if (row) {
+              row.classList.add('fixed');
+              const verdict = row.querySelector('.verdict');
+              if (verdict) { verdict.textContent = 'Fix applied'; verdict.className = 'verdict applied'; }
+              const acts = row.querySelector('.actions');
+              if (acts) acts.innerHTML = '';
+            }
+
+            const block = document.getElementById('code-' + msg.fileIndex);
+            if (block && msg.codeRows) {
+              block.innerHTML = msg.codeRows;
+              // Reveal the updated code so the change is visible immediately.
+              block.removeAttribute('hidden');
+              const toggle = document.querySelector('button.see-code[data-target="code-' + msg.fileIndex + '"]');
+              if (toggle) toggle.textContent = 'Hide code';
+            }
+
+            const fileStatus = document.getElementById('filestatus-' + msg.fileIndex);
+            if (fileStatus) {
+              fileStatus.textContent = 'Fix applied. ' + msg.findingCount +
+                ' finding' + (msg.findingCount === 1 ? '' : 's') + ' remaining.';
+            }
+
+            const summary = block ? block.closest('details.file')?.querySelector('summary') : null;
+            const scoreEl = summary ? summary.querySelector('.file-score') : null;
+            if (scoreEl) {
+              scoreEl.textContent = msg.score;
+              scoreEl.className = 'file-score ' +
+                (msg.score >= 80 ? 'good' : msg.score >= 50 ? 'warning' : 'critical');
             }
           } else if (msg.type === 'verifyFailed') {
-            status.textContent = msg.message || 'AI verification failed.';
-            const btn = actions.querySelector('button.verify');
+            if (status) status.textContent = msg.message || 'AI verification failed.';
+            const btn = document.querySelector('button.verify[data-index="' + msg.index + '"]');
             if (btn) btn.disabled = false;
           }
         });

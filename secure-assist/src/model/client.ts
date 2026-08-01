@@ -74,12 +74,19 @@ export function analyzeWithModel(
       }
     );
 
+    // Inference on a large file can take a minute; fail rather than hang forever.
+    req.setTimeout(180_000, () => {
+      req.destroy(new Error("The model did not respond within 180s."));
+    });
+
     req.on("error", (err) =>
       reject(
-        new Error(
-          `Could not reach the model server at ${target}. ` +
-            `Is the Docker container running? (${err.message})`
-        )
+        err.message.startsWith("The model did not respond")
+          ? err
+          : new Error(
+              `Could not reach the model server at ${target}. ` +
+                `Is the Docker container running? (${err.message})`
+            )
       )
     );
 

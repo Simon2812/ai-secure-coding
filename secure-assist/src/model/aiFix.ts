@@ -110,20 +110,22 @@ function resolveFix(
  *
  * The model's fixes are not always correct, so the change is never applied
  * silently — the user sees the exact before/after first.
+ *
+ * Returns true when the edit was written, so callers can refresh their own UI.
  */
 export async function previewAndApplyFix(
   uri: vscode.Uri,
   fix: ModelFix,
   cwe: string,
   aiDiagnostics?: vscode.DiagnosticCollection
-): Promise<void> {
+): Promise<boolean> {
   const document = await vscode.workspace.openTextDocument(uri);
   const resolved = resolveFix(document, fix);
   if (!resolved) {
     vscode.window.showWarningMessage(
       "Secure Assist: the code changed since the AI scan — re-run the scan."
     );
-    return;
+    return false;
   }
 
   const preview =
@@ -137,14 +139,14 @@ export async function previewAndApplyFix(
     { modal: true },
     "Apply fix"
   );
-  if (choice !== "Apply fix") return;
+  if (choice !== "Apply fix") return false;
 
   const edit = new vscode.WorkspaceEdit();
   edit.replace(uri, resolved.range, resolved.replacement);
   const applied = await vscode.workspace.applyEdit(edit);
   if (!applied) {
     vscode.window.showErrorMessage("Secure Assist: could not apply the fix.");
-    return;
+    return false;
   }
 
   // The finding no longer applies to the edited code — drop it and refresh the
@@ -154,6 +156,7 @@ export async function previewAndApplyFix(
     const updated = await vscode.workspace.openTextDocument(uri);
     aiDiagnostics.set(uri, modelVulnsToDiagnostics(updated, getModelResults(uri)));
   }
+  return true;
 }
 
 /**

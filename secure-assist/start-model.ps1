@@ -35,12 +35,24 @@ if (-not (Test-Path $hfCache)) {
     New-Item -ItemType Directory -Path $hfCache -Force | Out-Null
 }
 
-Write-Host "Starting model server on http://localhost:8000 ..." -ForegroundColor Cyan
-Write-Host "Wait for 'LLM service ready.' — press Ctrl+C to stop." -ForegroundColor DarkGray
+# A container from an earlier run may still hold port 8000.
+$running = docker ps --filter "ancestor=$image" --format "{{.ID}} {{.Names}}" 2>&1 |
+    Where-Object { $_ -notmatch "WARNING" }
+if ($running) {
+    Write-Host "The model server is already running:" -ForegroundColor Yellow
+    Write-Host "    $running"
+    Write-Host "It is serving on http://localhost:8000 - nothing to do."
+    Write-Host "To restart it, stop the old container first:"
+    Write-Host "    docker stop $(($running -split ' ')[0])"
+    exit 0
+}
 
-# Build the mount arguments first — a braced variable followed by a colon is
+Write-Host "Starting model server on http://localhost:8000 ..." -ForegroundColor Cyan
+Write-Host "Wait for 'LLM service ready.' then press Ctrl+C to stop." -ForegroundColor DarkGray
+
+# Build the mount arguments first - a braced variable followed by a colon is
 # parsed as a scope qualifier, so compose the host/container pairs beforehand.
-# huggingface mount  - reuse the downloaded model instead of fetching it again.
+# huggingface mount   - reuse the downloaded model instead of fetching it again.
 # secure-assist mount - evaluator.py requires the analyzer directory to exist.
 $hfMount     = $hfCache + ":/root/.cache/huggingface"
 $assistMount = $secureAssist + ":/secure-assist"

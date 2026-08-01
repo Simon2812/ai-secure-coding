@@ -14,8 +14,10 @@ export interface FileReport {
   uri: vscode.Uri;
   findings: Finding[];
   score: number;
-  /** Source text, kept only for files with findings so the report can show it. */
+  /** Source text, so the report can show the file's code on demand. */
   code?: string;
+  /** Basename, set when the file is placed in the report's folder tree. */
+  displayName?: string;
 }
 
 export interface ScanReport {
@@ -77,9 +79,7 @@ export async function scanWorkspace(
       uri,
       findings,
       score: scoreForFindings(findings),
-      // Only files with findings need their source in the report — this keeps
-      // the exported HTML from carrying the entire clean codebase.
-      code: findings.length > 0 ? code : undefined,
+      code,
     });
   }
 

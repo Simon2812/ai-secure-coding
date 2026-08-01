@@ -1,13 +1,23 @@
 import * as vscode from "vscode";
 import { ScanReport, scanWorkspace } from "./scanner";
-import { buildReportHtml } from "./reportHtml";
-import { analyzeWithModel, getModelEndpoint, ModelFix } from "../model/client";
+import { buildReportHtml, renderCodeRows } from "./reportHtml";
+import { scoreForFindings } from "./score";
+import {
+  analyzeWithModel,
+  getModelEndpoint,
+  ModelFix,
+  ModelVulnerability,
+} from "../model/client";
 import { analyzeCode } from "../analyzer/analyze";
 import { correlateFindings } from "../model/correlation";
 import { previewAndApplyFix } from "../model/aiFix";
+import { getCweInfo } from "../model/cweCatalog";
 
 /** Fixes returned by a "Verify with AI" request, keyed by the report's row id. */
-type VerifiedFixes = Map<string, { uri: vscode.Uri; fixes: ModelFix[]; cwe: string }>;
+type VerifiedFixes = Map<
+  string,
+  { uri: vscode.Uri; fixes: ModelFix[]; cwe: string; fileIndex: string; relPath: string }
+>;
 
 export class ReportPanel {
   private static current: ReportPanel | undefined;
@@ -15,6 +25,8 @@ export class ReportPanel {
   private readonly panel: vscode.WebviewPanel;
   private readonly output: vscode.OutputChannel;
   private readonly verified: VerifiedFixes = new Map();
+  /** AI-only findings already injected into the report, so repeat verifies don't duplicate them. */
+  private readonly aiOnlyShown = new Set<string>();
   private disposables: vscode.Disposable[] = [];
   private report: ScanReport;
 
@@ -35,6 +47,7 @@ export class ReportPanel {
     if (ReportPanel.current) {
       ReportPanel.current.report = report;
       ReportPanel.current.verified.clear();
+      ReportPanel.current.aiOnlyShown.clear();
       ReportPanel.current.render();
       ReportPanel.current.panel.reveal();
       return;
@@ -74,8 +87,8 @@ export class ReportPanel {
       case "open":
         await this.openAt(msg.file, msg.line);
         break;
-      case "verify":
-        await this.verify(msg);
+      case "verifyFile":
+        await this.verifyFile(msg);
         break;
       case "fix":
         await this.applyFix(msg);
@@ -88,6 +101,7 @@ export class ReportPanel {
         if (report) {
           this.report = report;
           this.verified.clear();
+          this.aiOnlyShown.clear();
           this.render();
         }
         break;
@@ -110,12 +124,26 @@ export class ReportPanel {
   }
 
   /**
-   * Ask the model about one file and report whether it corroborates the static
-   * finding the user clicked, along with any fixes it suggests for that CWE.
+   * Run the model once over a whole file.
+   *
+   * A single inference covers every finding in the file, so verification is a
+   * per-file action: each static finding gets a verdict, and anything the model
+   * reports that the analyzer missed is returned as an AI-only finding. Clean
+   * files are worth verifying too — that is where the model can add detections.
    */
-  private async verify(msg: { id: string; file: string; line: number; cwe: string }): Promise<void> {
+  private async verifyFile(msg: { index: string; file: string }): Promise<void> {
     const uri = this.fileUri(msg.file);
-    if (!uri) return;
+    if (!uri) {
+      // Always answer the webview — an unanswered request leaves its spinner
+      // running forever with no way for the user to tell what went wrong.
+      this.output.appendLine(`[report] verify failed: unknown file "${msg.file}"`);
+      this.panel.webview.postMessage({
+        type: "verifyFailed",
+        index: msg.index,
+        message: "Could not resolve this file — re-scan the project.",
+      });
+      return;
+    }
 
     try {
       const doc = await vscode.workspace.openTextDocument(uri);
@@ -124,38 +152,96 @@ export class ReportPanel {
       const result = await analyzeWithModel(code, staticFindings, getModelEndpoint());
       const vulns = result.vulnerabilities ?? [];
 
-      // Confirmed when the model reports the same CWE overlapping this line.
-      const target = staticFindings.filter(
-        (f) => f.cweId === msg.cwe && f.line === msg.line
-      );
-      const correlation = correlateFindings(target, vulns);
-      const confirmed = correlation.intersections.length > 0;
+      const correlation = correlateFindings(staticFindings, vulns);
 
-      const fixes = vulns
-        .filter((v) => v.cwe === msg.cwe)
-        .flatMap((v) => v.fixes ?? [])
-        .filter((f) => code.includes(f.origin));
+      // Only findings the model actually corroborated are reported back. A
+      // finding it did not confirm gets no verdict and no fix — the two tools
+      // detect different things, so silence from one is not a judgement on the
+      // other, and offering a fix the model never proposed for it would be wrong.
+      const results = staticFindings.flatMap((finding, i) => {
+        if (!correlation.confirmedStatic.has(i)) return [];
 
-      this.verified.set(msg.id, { uri, fixes, cwe: msg.cwe });
+        // Take fixes only from the model findings that matched *this* one.
+        const matchedModelIndexes = correlation.intersections
+          .filter((x) => x.staticIndex === i)
+          .map((x) => x.modelIndex);
+        const fixes = matchedModelIndexes
+          .flatMap((mi) => vulns[mi]?.fixes ?? [])
+          .filter((f) => code.includes(f.origin));
+
+        const id = `${msg.index}-${i}`;
+        this.verified.set(id, {
+          uri,
+          fixes,
+          cwe: finding.cweId,
+          fileIndex: msg.index,
+          relPath: msg.file,
+        });
+        return [{ id, fixCount: fixes.length }];
+      });
+
+      const aiOnly = this.collectAiOnly(uri, msg.file, code, staticFindings, vulns, msg.index);
+
       this.output.appendLine(
-        `[report] verified ${msg.file}:${msg.line} ${msg.cwe} — ` +
-          `${confirmed ? "confirmed" : "not confirmed"}, ${fixes.length} fix(es)`
+        `[report] verified ${msg.file}: ${results.length}/${staticFindings.length} confirmed, ` +
+          `${aiOnly.length} AI-only`
       );
 
       this.panel.webview.postMessage({
-        type: "verified",
-        id: msg.id,
-        file: msg.file,
-        confirmed,
-        fixes: fixes.map((f) => ({ origin: f.origin })),
+        type: "fileVerified",
+        index: msg.index,
+        results,
+        aiOnly,
       });
     } catch (err: any) {
       this.panel.webview.postMessage({
         type: "verifyFailed",
-        id: msg.id,
+        index: msg.index,
         message: err?.message ?? String(err),
       });
     }
+  }
+
+  /**
+   * Model findings for a file that the static analyzer did not report.
+   *
+   * Each one is registered under its own id so the report can offer the same
+   * "Apply fix" flow for it as for a static finding.
+   */
+  private collectAiOnly(
+    uri: vscode.Uri,
+    relPath: string,
+    code: string,
+    staticFindings: ReturnType<typeof analyzeCode>,
+    vulns: ModelVulnerability[],
+    fileIndex: string
+  ): { id: string; cwe: string; title: string; line?: number; fixCount: number }[] {
+    const correlation = correlateFindings(staticFindings, vulns);
+    const results: { id: string; cwe: string; title: string; line?: number; fixCount: number }[] = [];
+
+    vulns.forEach((vuln, index) => {
+      if (correlation.confirmedModel.has(index)) return; // the analyzer found it too
+
+      const id = `ai-${relPath}-${index}`;
+      if (this.aiOnlyShown.has(id)) return; // already added to the report
+      this.aiOnlyShown.add(id);
+
+      const fixes = (vuln.fixes ?? []).filter((f) => code.includes(f.origin));
+      this.verified.set(id, { uri, fixes, cwe: vuln.cwe, fileIndex, relPath });
+
+      results.push({
+        id,
+        cwe: vuln.cwe,
+        title: getCweInfo(vuln.cwe)?.title ?? "",
+        line: vuln.start_line,
+        fixCount: fixes.length,
+      });
+      this.output.appendLine(
+        `[report] AI-only finding in ${relPath}: ${vuln.cwe} at line ${vuln.start_line ?? "?"}`
+      );
+    });
+
+    return results;
   }
 
   private async applyFix(msg: { id: string; fixIndex: number }): Promise<void> {
@@ -163,8 +249,38 @@ export class ReportPanel {
     if (!entry) return;
     const fix = entry.fixes[msg.fixIndex];
     if (!fix) return;
+
     // Reuses the same preview-then-apply flow as the editor quick fix.
-    await previewAndApplyFix(entry.uri, fix, entry.cwe);
+    const applied = await previewAndApplyFix(entry.uri, fix, entry.cwe);
+    if (!applied) return;
+
+    // Re-analyze the edited file so the report reflects the new state rather
+    // than the snapshot it was rendered from.
+    const doc = await vscode.workspace.openTextDocument(entry.uri);
+    const code = doc.getText();
+    const findings = analyzeCode(code, entry.relPath);
+    const score = scoreForFindings(findings);
+
+    // Keep the in-memory report in sync for re-export and later verifies.
+    const stored = this.report.files.find((f) => f.path === entry.relPath);
+    if (stored) {
+      stored.findings = findings;
+      stored.score = score;
+      stored.code = code;
+    }
+
+    this.output.appendLine(
+      `[report] fix applied to ${entry.relPath} — now ${findings.length} finding(s), score ${score}`
+    );
+
+    this.panel.webview.postMessage({
+      type: "fixApplied",
+      id: msg.id,
+      fileIndex: entry.fileIndex,
+      score,
+      findingCount: findings.length,
+      codeRows: renderCodeRows(code, findings.map((f) => f.line)),
+    });
   }
 
   private async exportHtml(): Promise<void> {
