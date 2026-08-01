@@ -26,6 +26,10 @@
       {
         "command": "secure-assist.scanWithAI",
         "title": "Secure Assist: Scan with AI"
+      },
+      {
+        "command": "secure-assist.deepScan",
+        "title": "Secure Assist: Deep Scan Project"
       }
     ],
     "configuration": {

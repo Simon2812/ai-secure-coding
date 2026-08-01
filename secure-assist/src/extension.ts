@@ -14,6 +14,7 @@ import {
 import { ModelFix } from "./model/client";
 import { loadCweCatalog, explainCwe } from "./model/cweCatalog";
 import { correlateFindings } from "./model/correlation";
+import { ReportPanel } from "./report/reportPanel";
 
 // Analysis is on by default — the user should get findings without having to
 // discover a "start tracking" command first.
@@ -249,6 +250,17 @@ export async function activate(context: vscode.ExtensionContext) {
   scanButton.command = "secure-assist.scanWithAI";
   scanButton.show();
 
+  // Deep scan: static analysis over the whole workspace, rendered as a report.
+  const deepScanCmd = vscode.commands.registerCommand("secure-assist.deepScan", async () => {
+    await ReportPanel.show(output);
+  });
+
+  const deepScanButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+  deepScanButton.text = "$(search) Deep Scan Project";
+  deepScanButton.tooltip = "Secure Assist: scan every source file and open the security report";
+  deepScanButton.command = "secure-assist.deepScan";
+  deepScanButton.show();
+
   // Backing command for the quick fix — shows the proposed change, then applies
   // it only on confirmation (model fixes are not always correct).
   const applyAiFixCmd = vscode.commands.registerCommand(
@@ -272,7 +284,9 @@ export async function activate(context: vscode.ExtensionContext) {
     changeSub,
     scanAiCmd,
     applyAiFixCmd,
+    deepScanCmd,
     scanButton,
+    deepScanButton,
     aiFixProvider,
     output,
     diagnostics,

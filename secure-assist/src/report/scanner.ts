@@ -1,0 +1,98 @@
+import * as vscode from "vscode";
+import { analyzeCode } from "../analyzer/analyze";
+import { Finding } from "../analyzer/types";
+import { projectScore, scoreForFindings, severityOf } from "./score";
+
+/** Files the AST analyzer understands. */
+const SCAN_GLOB = "**/*.{py,java,c,h,cpp,cc}";
+const EXCLUDE_GLOB = "**/{node_modules,out,dist,build,.git,venv,__pycache__}/**";
+const MAX_FILE_CHARS = 1_000_000;
+
+export interface FileReport {
+  /** Workspace-relative path, forward slashes. */
+  path: string;
+  uri: vscode.Uri;
+  findings: Finding[];
+  score: number;
+  /** Source text, kept only for files with findings so the report can show it. */
+  code?: string;
+}
+
+export interface ScanReport {
+  files: FileReport[];
+  score: number;
+  scannedCount: number;
+  cleanCount: number;
+  totalFindings: number;
+  counts: { critical: number; medium: number; low: number };
+  scannedAt: Date;
+}
+
+/**
+ * Run the static analyzer over every supported file in the workspace.
+ *
+ * Only the static analyzer runs here — it is fast and deterministic, so a
+ * whole project can be scanned in seconds. The model is invoked per finding,
+ * on demand, from the report.
+ */
+export async function scanWorkspace(
+  progress?: vscode.Progress<{ message?: string; increment?: number }>,
+  token?: vscode.CancellationToken
+): Promise<ScanReport> {
+  const uris = await vscode.workspace.findFiles(SCAN_GLOB, EXCLUDE_GLOB);
+  const files: FileReport[] = [];
+  const counts = { critical: 0, medium: 0, low: 0 };
+  let totalFindings = 0;
+
+  for (let i = 0; i < uris.length; i++) {
+    if (token?.isCancellationRequested) break;
+    const uri = uris[i];
+    const relPath = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+
+    progress?.report({
+      message: `${i + 1}/${uris.length}  ${relPath}`,
+      increment: 100 / Math.max(1, uris.length),
+    });
+
+    let code: string;
+    try {
+      code = Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf-8");
+    } catch {
+      continue; // unreadable file — skip rather than fail the whole scan
+    }
+    if (code.length > MAX_FILE_CHARS) continue;
+
+    let findings: Finding[] = [];
+    try {
+      findings = analyzeCode(code, relPath);
+    } catch {
+      findings = []; // a parse failure shouldn't abort the project scan
+    }
+
+    for (const f of findings) counts[severityOf(f.cweId)]++;
+    totalFindings += findings.length;
+
+    files.push({
+      path: relPath,
+      uri,
+      findings,
+      score: scoreForFindings(findings),
+      // Only files with findings need their source in the report — this keeps
+      // the exported HTML from carrying the entire clean codebase.
+      code: findings.length > 0 ? code : undefined,
+    });
+  }
+
+  // Worst files first so the report leads with what needs attention.
+  files.sort((a, b) => a.score - b.score || a.path.localeCompare(b.path));
+
+  return {
+    files,
+    score: projectScore(files.map((f) => f.score)),
+    scannedCount: files.length,
+    cleanCount: files.filter((f) => f.findings.length === 0).length,
+    totalFindings,
+    counts,
+    scannedAt: new Date(),
+  };
+}
