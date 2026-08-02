@@ -48,6 +48,18 @@
 - [ ] Verify all files in a folder (one click, sequential, with cancel)
 - [ ] Export findings as Markdown / JSON
 
+## Packaging (needed to hand out an installable extension)
+
+- [ ] **`vsce package` currently fails** — the three grammar packages declare incompatible peer
+  versions of the native `tree-sitter` (`c` wants ^0.22.4, `java` ^0.21.1, `python` ^0.25.0), so
+  npm marks the tree `invalid` and `npm list --production` exits non-zero, aborting vsce.
+  The native `tree-sitter` is never imported — only `web-tree-sitter` (WASM) is used.
+  Fix: copy the three `.wasm` files into `resources/wasm/`, load them from there in
+  `src/scripts/ast/init.ts` (keep a fallback to `node_modules` so dev still works), then package
+  with `--no-dependencies`. Also add `publisher` to package.json (vsce requires it);
+  `repository`/`license` are warnings only.
+  Result: a self-contained ~2 MB .vsix installable via `code --install-extension`.
+
 ## Later
 
 - [ ] Combined analyzer + model evaluation (added detections / removed FPs) on OWASP + Juliet sample — for the paper
