@@ -30,6 +30,10 @@
       {
         "command": "secure-assist.deepScan",
         "title": "Secure Assist: Deep Scan Project"
+      },
+      {
+        "command": "secure-assist.showFixes",
+        "title": "Secure Assist: Show AI Fixes"
       }
     ],
     "configuration": {

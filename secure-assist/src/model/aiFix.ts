@@ -176,6 +176,28 @@ export async function previewAndApplyFix(
     "Apply fix"
   );
   if (choice !== "Apply fix") return false;
+  return applyFixEdit(uri, fix, aiDiagnostics);
+}
+
+/**
+ * Write a fix without asking first.
+ *
+ * For callers that have already shown the change — the fixes panel renders a
+ * diff, so a second confirmation dialog would just be in the way.
+ */
+export async function applyFixEdit(
+  uri: vscode.Uri,
+  fix: ModelFix,
+  aiDiagnostics?: vscode.DiagnosticCollection
+): Promise<boolean> {
+  const document = await vscode.workspace.openTextDocument(uri);
+  const resolved = resolveFix(document, fix);
+  if (!resolved) {
+    vscode.window.showWarningMessage(
+      "Secure Assist: the code changed since the AI scan — re-run the scan."
+    );
+    return false;
+  }
 
   const edit = new vscode.WorkspaceEdit();
   edit.replace(uri, resolved.range, resolved.replacement);

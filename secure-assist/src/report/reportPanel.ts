@@ -11,7 +11,8 @@ import {
 } from "../model/client";
 import { analyzeCode } from "../analyzer/analyze";
 import { correlateFindings } from "../model/correlation";
-import { previewAndApplyFix } from "../model/aiFix";
+import { applyFixEdit } from "../model/aiFix";
+import { renderFixDiff } from "../model/diffView";
 import { getCweInfo } from "../model/cweCatalog";
 import { containsOrigin } from "../model/originMatch";
 
@@ -120,6 +121,9 @@ export class ReportPanel {
         break;
       case "verifyFile":
         await this.verifyFile(msg);
+        break;
+      case "previewFix":
+        this.previewFix(msg);
         break;
       case "fix":
         await this.applyFix(msg);
@@ -279,14 +283,31 @@ export class ReportPanel {
     return results;
   }
 
+  /**
+   * Render the change inline in the report rather than in a modal dialog, so
+   * the diff is reviewed in the same place as the finding it belongs to.
+   */
+  private previewFix(msg: { id: string; fixIndex: number }): void {
+    const entry = this.verified.get(msg.id);
+    const fix = entry?.fixes[msg.fixIndex];
+    if (!fix) return;
+    this.panel.webview.postMessage({
+      type: "fixPreview",
+      id: msg.id,
+      fixIndex: msg.fixIndex,
+      cwe: entry!.cwe,
+      diffHtml: renderFixDiff(fix, true),
+    });
+  }
+
   private async applyFix(msg: { id: string; fixIndex: number }): Promise<void> {
     const entry = this.verified.get(msg.id);
     if (!entry) return;
     const fix = entry.fixes[msg.fixIndex];
     if (!fix) return;
 
-    // Reuses the same preview-then-apply flow as the editor quick fix.
-    const applied = await previewAndApplyFix(entry.uri, fix, entry.cwe);
+    // The report already showed the diff inline, so no second confirmation.
+    const applied = await applyFixEdit(entry.uri, fix);
     if (!applied) return;
 
     // Re-analyze the edited file so the report reflects the new state rather

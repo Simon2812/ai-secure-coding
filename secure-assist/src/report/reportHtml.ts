@@ -3,6 +3,7 @@ import { getCweInfo } from "../model/cweCatalog";
 import { scoreBand, severityOf } from "./score";
 import { buildTree, collapseSingleChildFolders, FolderNode } from "./tree";
 import { ScanRecord, sparklineSvg } from "./history";
+import { DIFF_STYLES } from "../model/diffView";
 
 function escapeHtml(value: string): string {
   return value
@@ -24,7 +25,7 @@ function escapeHtml(value: string): string {
  * Dark is the default; light is applied from the VSCode body class or, for the
  * exported file, the reader's system preference.
  */
-const PALETTE = `
+export const PALETTE = `
 :root {
   color-scheme: light dark;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -236,6 +237,13 @@ details.file { background: var(--surface); }
   margin: 8px 14px 12px; padding-top: 10px;
   border-top: 1px solid var(--border);
 }
+/* Inline fix preview — replaces the old modal dialog. */
+.fix-preview {
+  margin: 10px 0 4px; padding: 12px; border-radius: 6px;
+  border: 1px solid var(--border-strong); background: var(--surface);
+}
+.preview-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+
 .verdict { font-size: 0.75rem; padding: 1px 8px; border-radius: 999px; border: 1px solid; }
 .verdict.ok { color: var(--good); border-color: var(--good); }
 .verdict.applied { color: var(--good); border-color: var(--good); background: rgba(63, 185, 80, 0.12); }
@@ -469,9 +477,22 @@ export function buildReportHtml(
             vscode.postMessage({ type: 'verifyFile', index: idx, file: verify.dataset.file });
             return;
           }
+          // Ask for the diff first; applying happens from the preview below.
           const fix = e.target.closest('button.fix');
           if (fix) {
-            vscode.postMessage({ type: 'fix', id: fix.dataset.id, file: fix.dataset.file, fixIndex: Number(fix.dataset.fixIndex) });
+            vscode.postMessage({ type: 'previewFix', id: fix.dataset.id, fixIndex: Number(fix.dataset.fixIndex) });
+            return;
+          }
+          const confirm = e.target.closest('button.confirm-fix');
+          if (confirm) {
+            confirm.disabled = true;
+            vscode.postMessage({ type: 'fix', id: confirm.dataset.id, fixIndex: Number(confirm.dataset.fixIndex) });
+            return;
+          }
+          const cancel = e.target.closest('button.cancel-fix');
+          if (cancel) {
+            const box = document.getElementById('preview-' + cancel.dataset.id);
+            if (box) box.remove();
             return;
           }
           // Toolbar actions are delegated too, so they work regardless of when
@@ -553,7 +574,26 @@ export function buildReportHtml(
               addFixButtons(div.querySelector('.actions'), v.id, v.fixCount);
               host.appendChild(div);
             });
+          } else if (msg.type === 'fixPreview') {
+            // Insert the diff under the finding, with its own confirm/cancel.
+            const actions = document.getElementById('actions-' + msg.id);
+            if (!actions) return;
+            const existing = document.getElementById('preview-' + msg.id);
+            if (existing) existing.remove();
+            const box = document.createElement('div');
+            box.className = 'fix-preview';
+            box.id = 'preview-' + msg.id;
+            box.innerHTML =
+              msg.diffHtml +
+              '<div class="preview-actions">' +
+                '<button class="confirm-fix primary" data-id="' + msg.id + '" data-fix-index="' + msg.fixIndex + '">Apply</button>' +
+                '<button class="cancel-fix" data-id="' + msg.id + '">Cancel</button>' +
+                '<span class="status">AI fixes are not always correct — review the change.</span>' +
+              '</div>';
+            actions.insertAdjacentElement('afterend', box);
           } else if (msg.type === 'fixApplied') {
+            const box = document.getElementById('preview-' + msg.id);
+            if (box) box.remove();
             // Mark the finding as resolved and refresh the file's code + score
             // so the report reflects the edit instead of the original scan.
             const row = document.querySelector('[data-finding-id="' + msg.id + '"]');
@@ -754,7 +794,7 @@ export function buildReportHtml(
 
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Secure Assist — project report</title><style>${PALETTE}${STYLES}</style></head>
+<head><meta charset="UTF-8"><title>Secure Assist — project report</title><style>${PALETTE}${DIFF_STYLES}${STYLES}</style></head>
 <body>
   <h1>Project security report</h1>
   <div class="sub">${escapeHtml(report.scannedAt.toLocaleString())} · ${report.scannedCount} file${report.scannedCount === 1 ? "" : "s"} scanned${interactive ? "" : " · exported report (static)"}</div>
