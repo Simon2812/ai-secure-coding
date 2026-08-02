@@ -12,6 +12,7 @@ import { analyzeCode } from "../analyzer/analyze";
 import { correlateFindings } from "../model/correlation";
 import { previewAndApplyFix } from "../model/aiFix";
 import { getCweInfo } from "../model/cweCatalog";
+import { containsOrigin } from "../model/originMatch";
 
 /** Fixes returned by a "Verify with AI" request, keyed by the report's row id. */
 type VerifiedFixes = Map<
@@ -167,7 +168,7 @@ export class ReportPanel {
           .map((x) => x.modelIndex);
         const fixes = matchedModelIndexes
           .flatMap((mi) => vulns[mi]?.fixes ?? [])
-          .filter((f) => code.includes(f.origin));
+          .filter((f) => containsOrigin(code, f.origin));
 
         const id = `${msg.index}-${i}`;
         this.verified.set(id, {
@@ -226,7 +227,7 @@ export class ReportPanel {
       if (this.aiOnlyShown.has(id)) return; // already added to the report
       this.aiOnlyShown.add(id);
 
-      const fixes = (vuln.fixes ?? []).filter((f) => code.includes(f.origin));
+      const fixes = (vuln.fixes ?? []).filter((f) => containsOrigin(code, f.origin));
       this.verified.set(id, { uri, fixes, cwe: vuln.cwe, fileIndex, relPath });
 
       results.push({

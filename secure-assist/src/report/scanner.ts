@@ -27,6 +27,8 @@ export interface ScanReport {
   cleanCount: number;
   totalFindings: number;
   counts: { critical: number; medium: number; low: number };
+  /** How many findings of each CWE, most frequent first. */
+  byCwe: { cwe: string; count: number }[];
   scannedAt: Date;
 }
 
@@ -44,6 +46,7 @@ export async function scanWorkspace(
   const uris = await vscode.workspace.findFiles(SCAN_GLOB, EXCLUDE_GLOB);
   const files: FileReport[] = [];
   const counts = { critical: 0, medium: 0, low: 0 };
+  const cweTally = new Map<string, number>();
   let totalFindings = 0;
 
   for (let i = 0; i < uris.length; i++) {
@@ -71,7 +74,10 @@ export async function scanWorkspace(
       findings = []; // a parse failure shouldn't abort the project scan
     }
 
-    for (const f of findings) counts[severityOf(f.cweId)]++;
+    for (const f of findings) {
+      counts[severityOf(f.cweId)]++;
+      cweTally.set(f.cweId, (cweTally.get(f.cweId) ?? 0) + 1);
+    }
     totalFindings += findings.length;
 
     files.push({
@@ -93,6 +99,9 @@ export async function scanWorkspace(
     cleanCount: files.filter((f) => f.findings.length === 0).length,
     totalFindings,
     counts,
+    byCwe: [...cweTally.entries()]
+      .map(([cwe, count]) => ({ cwe, count }))
+      .sort((a, b) => b.count - a.count || a.cwe.localeCompare(b.cwe)),
     scannedAt: new Date(),
   };
 }

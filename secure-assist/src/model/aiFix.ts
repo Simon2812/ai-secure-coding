@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ModelVulnerability, ModelFix } from "./client";
 import { getCweInfo, explainCwe } from "./cweCatalog";
+import { findOriginRange, containsOrigin } from "./originMatch";
 
 // Model results per document URI — populated by the scan command, read by the
 // code-action provider to offer "Apply AI fix" quick fixes.
@@ -79,30 +80,65 @@ export function modelVulnsToDiagnostics(
 /** Command id used by the quick fix to preview-then-apply a model fix. */
 export const APPLY_AI_FIX_COMMAND = "secure-assist.applyAiFix";
 
+/** Leading whitespace of a line. */
+function indentOf(line: string): string {
+  return line.slice(0, line.length - line.trimStart().length);
+}
+
 /**
- * Locate `origin` in the document and build the replacement text, preserving
- * the indentation of the line the fix starts on (so multi-line fixes line up).
+ * Re-indent a multi-line replacement to sit at `indent`.
+ *
+ * The model may return its snippet already indented. Adding the target indent
+ * on top of that would double it, so the snippet's own common indentation is
+ * removed first and the target applied afterwards. The first line is left alone
+ * because it is inserted at an existing position that already has its indent.
+ */
+function reindent(replacement: string, indent: string): string {
+  const lines = replacement.split("\n");
+  if (lines.length === 1) return replacement;
+
+  const rest = lines.slice(1);
+  const indented = rest.filter((l) => l.trim().length > 0);
+  const common = indented.length
+    ? indented.reduce(
+        (shortest, line) => {
+          const current = indentOf(line);
+          return current.length < shortest.length ? current : shortest;
+        },
+        indentOf(indented[0])
+      )
+    : "";
+
+  const normalized = rest.map((line) => {
+    if (line.trim().length === 0) return ""; // don't leave trailing whitespace
+    const stripped = line.startsWith(common) ? line.slice(common.length) : line.trimStart();
+    return indent + stripped;
+  });
+
+  return [lines[0], ...normalized].join("\n");
+}
+
+/**
+ * Locate `origin` in the document and build the replacement text, aligned to
+ * the indentation of the line the fix starts on.
  */
 function resolveFix(
   document: vscode.TextDocument,
   fix: ModelFix
 ): { range: vscode.Range; replacement: string } | undefined {
-  const text = document.getText();
-  const idx = text.indexOf(fix.origin);
-  if (idx < 0) return undefined;
+  // Whitespace-tolerant: the model usually returns the snippet without the
+  // original indentation, so an exact search would miss.
+  const found = findOriginRange(document.getText(), fix.origin);
+  if (!found) return undefined;
 
-  const startPos = document.positionAt(idx);
-  const endPos = document.positionAt(idx + fix.origin.length);
+  const startPos = document.positionAt(found.start);
+  const endPos = document.positionAt(found.end);
+  const indent = indentOf(document.lineAt(startPos.line).text);
 
-  const lineText = document.lineAt(startPos.line).text;
-  const indent = lineText.slice(0, lineText.length - lineText.trimStart().length);
-
-  const replacement = fix.replacement
-    .split("\n")
-    .map((line, i) => (i === 0 ? line : indent + line))
-    .join("\n");
-
-  return { range: new vscode.Range(startPos, endPos), replacement };
+  return {
+    range: new vscode.Range(startPos, endPos),
+    replacement: reindent(fix.replacement, indent),
+  };
 }
 
 /**
@@ -175,7 +211,7 @@ export function pruneStaleAiFindings(
   const text = document.getText();
   const remaining: ModelVulnerability[] = [];
   for (const vuln of vulns) {
-    const fixes = vuln.fixes.filter((f) => text.includes(f.origin));
+    const fixes = vuln.fixes.filter((f) => containsOrigin(text, f.origin));
     if (fixes.length > 0) remaining.push({ ...vuln, fixes });
   }
 

@@ -127,9 +127,56 @@ button {
 }
 button.primary { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
 button:disabled { opacity: 0.5; cursor: default; }
+/* Verification blocked because another request holds the model. */
+button.verify.queued { cursor: not-allowed; opacity: 0.35; }
 .status { font-size: 0.8rem; color: var(--vscode-descriptionForeground); }
-.toolbar { display: flex; gap: 8px; margin-bottom: 20px; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
 .empty { color: var(--vscode-descriptionForeground); padding: 20px 0; }
+
+/* CWE breakdown — collapsible, one row per CWE with a proportional bar */
+details.cwe-panel {
+  border: 1px solid var(--vscode-panel-border); border-radius: 6px;
+  background: var(--vscode-editorWidget-background); margin-bottom: 20px;
+}
+details.cwe-panel > summary { font-weight: 500; }
+details.cwe-panel[open] > summary .folder-icon { transform: rotate(90deg); }
+.cwe-breakdown { padding: 4px 14px 12px; max-width: 720px; }
+.cwe-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 5px 0 5px 10px; border-left: 3px solid var(--vscode-panel-border);
+  font-size: 0.85rem;
+}
+.cwe-row.critical { border-left-color: #f85149; }
+.cwe-row.medium   { border-left-color: #d29922; }
+.cwe-row.low      { border-left-color: #6e7681; }
+.cwe-label { flex: 1; min-width: 0; }
+.cwe-bar {
+  flex: 0 0 120px; height: 6px; border-radius: 3px;
+  background: var(--vscode-panel-border); overflow: hidden;
+}
+.cwe-bar > span { display: block; height: 100%; background: currentColor; opacity: 0.75; }
+.cwe-row.critical .cwe-bar > span { background: #f85149; }
+.cwe-row.medium   .cwe-bar > span { background: #d29922; }
+.cwe-row.low      .cwe-bar > span { background: #6e7681; }
+.cwe-count {
+  flex: 0 0 2.5em; text-align: right;
+  font-variant-numeric: tabular-nums; font-weight: 600;
+}
+
+/* Filter bar */
+.filters {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  padding: 10px 0 14px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+.filters input[type="search"], .filters select {
+  font-family: inherit; font-size: 0.82rem; padding: 4px 8px; border-radius: 3px;
+  border: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-editorWidget-background); color: var(--vscode-foreground);
+}
+.filters input[type="search"] { min-width: 240px; flex: 1; }
+.filters .chk { font-size: 0.82rem; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.filters .spacer { flex: 1; }
 
 /* Folder tree */
 details.folder { background: transparent; border-color: var(--vscode-panel-border); }
@@ -260,9 +307,15 @@ function renderFile(file: FileReport, fileIndex: number, interactive: boolean): 
     .map((_f, i) => renderFinding(file, i, fileIndex, interactive))
     .join("");
 
+  // Data attributes drive client-side filtering without another scan.
+  const cwes = [...new Set(file.findings.map((f) => f.cweId))].join(" ");
+  const sevs = [...new Set(file.findings.map((f) => severityOf(f.cweId)))].join(" ");
+
   // Clean files get the same tools: the model may still find something the
   // static analyzer missed, which is exactly where it adds value.
-  return `<details class="file">
+  return `<details class="file" data-path="${escapeHtml(file.path.toLowerCase())}"
+      data-cwes="${escapeHtml(cwes)}" data-sevs="${escapeHtml(sevs)}"
+      data-count="${count}">
     ${header}
     ${findings}
     <div class="ai-findings" id="aifindings-${fileIndex}"></div>
@@ -322,6 +375,25 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
         const vscode = acquireVsCodeApi();
         // Elapsed-time tickers per file, cleared when the response arrives.
         const timers = {};
+        // The model serves one request at a time on a single GPU, so only one
+        // verification may be in flight; the rest are visibly disabled.
+        let busy = false;
+
+        function setVerifyBusy(state, activeIndex) {
+          busy = state;
+          document.querySelectorAll('button.verify').forEach(btn => {
+            const isActive = btn.dataset.index === activeIndex;
+            btn.disabled = state;
+            if (state && !isActive) {
+              btn.title = 'Waiting for the current AI analysis to finish';
+              btn.classList.add('queued');
+            } else {
+              btn.title = '';
+              btn.classList.remove('queued');
+            }
+          });
+        }
+
         document.addEventListener('click', (e) => {
           const loc = e.target.closest('.loc');
           if (loc) {
@@ -330,8 +402,11 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
           }
           const verify = e.target.closest('button.verify');
           if (verify) {
-            verify.disabled = true;
+            if (busy) return;
             const idx = verify.dataset.index;
+            // One GPU, one inference: block every other verify until this one
+            // returns, so requests can't pile up and compete for VRAM.
+            setVerifyBusy(true, idx);
             const status = document.getElementById('filestatus-' + idx);
             // Inference takes tens of seconds, so tick the elapsed time to make
             // it obvious the request is still in flight rather than stuck.
@@ -374,6 +449,8 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
           const msg = event.data;
           const status = document.getElementById('filestatus-' + msg.index);
           if (timers[msg.index]) { clearInterval(timers[msg.index]); delete timers[msg.index]; }
+          // Any reply to a verification frees the model for the next request.
+          if (msg.type === 'fileVerified' || msg.type === 'verifyFailed') setVerifyBusy(false);
 
           if (msg.type === 'fileVerified') {
             // Only confirmations are reported: the analyzer and the model catch
@@ -458,12 +535,57 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
             }
           } else if (msg.type === 'verifyFailed') {
             if (status) status.textContent = msg.message || 'AI verification failed.';
-            const btn = document.querySelector('button.verify[data-index="' + msg.index + '"]');
-            if (btn) btn.disabled = false;
           }
         });
       </script>`
     : "";
+
+  // Which CWEs actually occur, so the breakdown and the filter only offer
+  // options that will match something.
+  const maxCweCount = report.byCwe.reduce((max, e) => Math.max(max, e.count), 0);
+  const cweBreakdown = report.byCwe.length
+    ? `<details class="cwe-panel">
+        <summary>
+          <span class="folder-icon">▸</span>
+          <span class="folder-name">Findings by CWE</span>
+          <span class="status">${report.byCwe.length} type${report.byCwe.length === 1 ? "" : "s"}</span>
+        </summary>
+        <div class="cwe-breakdown">
+          ${report.byCwe
+            .map((entry) => {
+              const info = getCweInfo(entry.cwe);
+              const label = info ? `${entry.cwe} — ${info.title}` : entry.cwe;
+              const width = maxCweCount ? Math.round((entry.count / maxCweCount) * 100) : 0;
+              return `<div class="cwe-row ${severityOf(entry.cwe)}">
+                <span class="cwe-label">${escapeHtml(label)}</span>
+                <span class="cwe-bar"><span style="width:${width}%"></span></span>
+                <span class="cwe-count">${entry.count}</span>
+              </div>`;
+            })
+            .join("")}
+        </div>
+      </details>`
+    : "";
+
+  const filterBar = `
+    <div class="filters">
+      <input id="q" type="search" placeholder="Filter by file name or CWE..." />
+      <select id="sev">
+        <option value="">All severities</option>
+        <option value="critical">Critical</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <select id="cwe">
+        <option value="">All CWEs</option>
+        ${report.byCwe.map((e) => `<option value="${escapeHtml(e.cwe)}">${escapeHtml(e.cwe)}</option>`).join("")}
+      </select>
+      <label class="chk"><input id="onlyIssues" type="checkbox" /> Only files with findings</label>
+      <span class="spacer"></span>
+      <button id="expandAll">Expand all</button>
+      <button id="collapseAll">Collapse all</button>
+      <span class="status" id="filterCount"></span>
+    </div>`;
 
   const toolbar = interactive
     ? `<div class="toolbar">
@@ -472,16 +594,71 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
        </div>`
     : "";
 
-  // The source viewer is pure DOM work, so it ships in the export as well.
+  // Source viewer, filtering and expand/collapse are pure DOM work, so they
+  // ship in the exported file as well.
   const codeToggleScript = `<script>
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('button.see-code');
-      if (!btn) return;
-      const block = document.getElementById(btn.dataset.target);
-      if (!block) return;
-      const showing = !block.hasAttribute('hidden');
-      if (showing) { block.setAttribute('hidden', ''); btn.textContent = 'See code'; }
-      else { block.removeAttribute('hidden'); btn.textContent = 'Hide code'; }
+      if (btn) {
+        const block = document.getElementById(btn.dataset.target);
+        if (!block) return;
+        const showing = !block.hasAttribute('hidden');
+        if (showing) { block.setAttribute('hidden', ''); btn.textContent = 'See code'; }
+        else { block.removeAttribute('hidden'); btn.textContent = 'Hide code'; }
+        return;
+      }
+      if (e.target.closest('#expandAll') || e.target.closest('#collapseAll')) {
+        const open = !!e.target.closest('#expandAll');
+        document.querySelectorAll('details.folder, details.file').forEach(d => {
+          if (open) d.setAttribute('open', ''); else d.removeAttribute('open');
+        });
+      }
+    });
+
+    const q = document.getElementById('q');
+    const sevSel = document.getElementById('sev');
+    const cweSel = document.getElementById('cwe');
+    const onlyIssues = document.getElementById('onlyIssues');
+    const filterCount = document.getElementById('filterCount');
+
+    function applyFilters() {
+      const text = (q.value || '').trim().toLowerCase();
+      const sev = sevSel.value;
+      const cwe = cweSel.value;
+      const issuesOnly = onlyIssues.checked;
+      let shown = 0;
+
+      document.querySelectorAll('details.file').forEach(file => {
+        const path = file.dataset.path || '';
+        const cwes = file.dataset.cwes || '';
+        const sevs = file.dataset.sevs || '';
+        const count = Number(file.dataset.count || 0);
+
+        // Text matches either the path or any CWE id on the file.
+        const matchesText = !text || path.includes(text) || cwes.toLowerCase().includes(text);
+        const matchesSev = !sev || sevs.split(' ').includes(sev);
+        const matchesCwe = !cwe || cwes.split(' ').includes(cwe);
+        const matchesIssues = !issuesOnly || count > 0;
+        const visible = matchesText && matchesSev && matchesCwe && matchesIssues;
+
+        file.style.display = visible ? '' : 'none';
+        if (visible) shown++;
+      });
+
+      // Hide folders that no longer contain a visible file.
+      document.querySelectorAll('details.folder').forEach(folder => {
+        const any = folder.querySelector('details.file:not([style*="display: none"])');
+        folder.style.display = any ? '' : 'none';
+        if (any && (text || sev || cwe)) folder.setAttribute('open', '');
+      });
+
+      const filtering = text || sev || cwe || issuesOnly;
+      filterCount.textContent = filtering ? shown + ' file' + (shown === 1 ? '' : 's') + ' shown' : '';
+    }
+
+    [q, sevSel, cweSel, onlyIssues].forEach(el => {
+      el.addEventListener('input', applyFilters);
+      el.addEventListener('change', applyFilters);
     });
   </script>`;
 
@@ -507,7 +684,9 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
     <span class="pill">${report.totalFindings} total</span>
   </div>
 
+  ${cweBreakdown}
   ${toolbar}
+  ${filterBar}
   ${body}
   ${codeToggleScript}
   ${script}
