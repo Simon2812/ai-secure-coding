@@ -2,6 +2,7 @@ import { ScanReport, FileReport } from "./scanner";
 import { getCweInfo } from "../model/cweCatalog";
 import { scoreBand, severityOf } from "./score";
 import { buildTree, collapseSingleChildFolders, FolderNode } from "./tree";
+import { ScanRecord, sparklineSvg } from "./history";
 
 function escapeHtml(value: string): string {
   return value
@@ -12,72 +13,114 @@ function escapeHtml(value: string): string {
 }
 
 /**
- * The webview inherits VSCode's theme variables. A file opened in a browser has
- * none of them, so the export supplies concrete fallbacks for the same names.
+ * Self-contained palette.
+ *
+ * The report deliberately does not inherit VSCode's theme variables: those vary
+ * wildly between themes (accent-coloured panel borders, unusual surfaces) and
+ * made the report look different — and often wrong — for every user. Defining
+ * the colours here keeps it identical everywhere and lets the exported file
+ * render the same in a browser.
+ *
+ * Dark is the default; light is applied from the VSCode body class or, for the
+ * exported file, the reader's system preference.
  */
-const STANDALONE_VARS = `
+const PALETTE = `
 :root {
-  --vscode-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --vscode-font-size: 14px;
-  --vscode-foreground: #1f2328;
-  --vscode-editor-background: #ffffff;
-  --vscode-editorWidget-background: #f6f8fa;
-  --vscode-textCodeBlock-background: #f0f2f5;
-  --vscode-descriptionForeground: #656d76;
-  --vscode-panel-border: #d0d7de;
-  --vscode-list-hoverBackground: #eef1f4;
-  --vscode-editor-font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  --vscode-button-background: #1f6feb;
-  --vscode-button-foreground: #ffffff;
-  --vscode-button-secondaryBackground: #eef1f4;
-  --vscode-button-secondaryForeground: #1f2328;
-  --vscode-button-border: #d0d7de;
+  color-scheme: light dark;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --bg: #14161a;
+  --surface: #1b1e24;
+  --surface-2: #22262d;
+  --border: #2c313a;
+  --border-strong: #3b414b;
+  --hover: #232830;
+  --text: #e3e6ea;
+  --text-dim: #98a0aa;
+  --accent: #4f9ef8;
+  --accent-fg: #0b1017;
+  --good: #4ac26b;
+  --warn: #d9a441;
+  --bad: #f0665f;
+  --ai: #a274f0;
 }
-@media (prefers-color-scheme: dark) {
+
+/* Light: VSCode marks the webview body; a browser reports the OS preference. */
+body.vscode-light,
+body.vscode-high-contrast-light {
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --surface-2: #eef0f4;
+  --border: #dce0e6;
+  --border-strong: #c3c9d2;
+  --hover: #f0f2f5;
+  --text: #1c2027;
+  --text-dim: #626a75;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+  --good: #1a7f37;
+  --warn: #9a6700;
+  --bad: #cf222e;
+  --ai: #7c3aed;
+}
+@media (prefers-color-scheme: light) {
   :root {
-    --vscode-foreground: #e6edf3;
-    --vscode-editor-background: #0d1117;
-    --vscode-editorWidget-background: #161b22;
-    --vscode-textCodeBlock-background: #161b22;
-    --vscode-descriptionForeground: #8b949e;
-    --vscode-panel-border: #30363d;
-    --vscode-list-hoverBackground: #1c2128;
-    --vscode-button-secondaryBackground: #21262d;
-    --vscode-button-secondaryForeground: #e6edf3;
-    --vscode-button-border: #30363d;
+    --bg: #ffffff;
+    --surface: #f7f8fa;
+    --surface-2: #eef0f4;
+    --border: #dce0e6;
+    --border-strong: #c3c9d2;
+    --hover: #f0f2f5;
+    --text: #1c2027;
+    --text-dim: #626a75;
+    --accent: #2563eb;
+    --accent-fg: #ffffff;
+    --good: #1a7f37;
+    --warn: #9a6700;
+    --bad: #cf222e;
+    --ai: #7c3aed;
   }
 }
 `;
 
 const STYLES = `
-:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
 body {
-  font-family: var(--vscode-font-family);
-  font-size: var(--vscode-font-size);
-  color: var(--vscode-foreground);
-  background: var(--vscode-editor-background);
+  font-family: var(--font);
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--bg);
   padding: 24px 28px 48px;
   line-height: 1.5;
+  margin: 0;
 }
 h1 { font-size: 1.5rem; font-weight: 500; margin: 0 0 4px; }
-.sub { color: var(--vscode-descriptionForeground); font-size: 0.85rem; margin-bottom: 24px; }
+.sub { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
 .score-row { display: flex; align-items: center; gap: 20px; margin-bottom: 8px; }
 .score { font-size: 3rem; font-weight: 600; line-height: 1; }
-.score.good { color: #3fb950; }
-.score.warning { color: #d29922; }
-.score.critical { color: #f85149; }
-.score-label { color: var(--vscode-descriptionForeground); font-size: 0.85rem; }
+.score.good { color: var(--good); }
+.score.warning { color: var(--warn); }
+.score.critical { color: var(--bad); }
+.score-label { color: var(--text-dim); font-size: 0.85rem; }
+.score-meta { flex: 1; }
+.score-label.delta:empty { display: none; }
+.trend { display: flex; align-items: center; gap: 10px; }
+.trend-label { color: var(--text-dim); font-size: 0.78rem; line-height: 1.4; }
+.up { color: var(--good); font-weight: 600; }
+.down { color: var(--bad); font-weight: 600; }
+.sparkline { display: block; }
 .summary { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 28px; }
 .pill {
-  border: 1px solid var(--vscode-panel-border);
+  border: 1px solid var(--border);
   border-radius: 999px; padding: 4px 12px; font-size: 0.8rem;
 }
-.pill.critical { border-color: #f85149; color: #f85149; }
-.pill.medium   { border-color: #d29922; color: #d29922; }
-.pill.low      { border-color: #6e7681; color: var(--vscode-descriptionForeground); }
+.pill.critical { border-color: var(--bad); color: var(--bad); }
+.pill.medium   { border-color: var(--warn); color: var(--warn); }
+.pill.low      { border-color: var(--text-dim); color: var(--text-dim); }
 details {
-  border: 1px solid var(--vscode-panel-border);
-  border-radius: 6px; margin-bottom: 8px; background: var(--vscode-editorWidget-background);
+  border: 1px solid var(--border);
+  border-radius: 6px; margin-bottom: 8px; background: var(--surface);
 }
 details[open] { padding-bottom: 6px; }
 summary {
@@ -85,79 +128,79 @@ summary {
   align-items: center; gap: 12px; user-select: none;
 }
 summary::-webkit-details-marker { display: none; }
-summary:hover { background: var(--vscode-list-hoverBackground); }
-.file-path { flex: 1; font-family: var(--vscode-editor-font-family); font-size: 0.85rem; }
+summary:hover { background: var(--hover); }
+.file-path { flex: 1; font-family: var(--mono); font-size: 0.85rem; }
 .file-score { font-weight: 600; font-variant-numeric: tabular-nums; }
-.file-score.good { color: #3fb950; }
-.file-score.warning { color: #d29922; }
-.file-score.critical { color: #f85149; }
-.clean { color: #3fb950; font-size: 0.8rem; }
+.file-score.good { color: var(--good); }
+.file-score.warning { color: var(--warn); }
+.file-score.critical { color: var(--bad); }
+.clean { color: var(--good); font-size: 0.8rem; }
 .finding {
   margin: 0 14px 10px; padding: 12px 14px;
-  border-left: 3px solid var(--vscode-panel-border);
-  background: var(--vscode-editor-background); border-radius: 0 4px 4px 0;
+  border-left: 3px solid var(--border);
+  background: var(--bg); border-radius: 0 4px 4px 0;
 }
-.finding.critical { border-left-color: #f85149; }
-.finding.medium   { border-left-color: #d29922; }
-.finding.low      { border-left-color: #6e7681; }
+.finding.critical { border-left-color: var(--bad); }
+.finding.medium   { border-left-color: var(--warn); }
+.finding.low      { border-left-color: var(--text-dim); }
 /* Reported by the model but not by the static analyzer. */
-.finding.ai-only { border-left-color: #a371f7; border-left-style: dashed; }
+.finding.ai-only { border-left-color: var(--ai); border-left-style: dashed; }
 .badge-ai {
   font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
-  color: #a371f7; border: 1px solid #a371f7; border-radius: 999px;
+  color: var(--ai); border: 1px solid var(--ai); border-radius: 999px;
   padding: 1px 8px; white-space: nowrap;
 }
 .finding-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .cwe { font-weight: 600; }
-.loc { color: var(--vscode-descriptionForeground); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
-.loc-static { color: var(--vscode-descriptionForeground); font-size: 0.8rem; }
+.loc { color: var(--text-dim); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+.loc-static { color: var(--text-dim); font-size: 0.8rem; }
 .msg { margin: 6px 0; }
-.rec { color: var(--vscode-descriptionForeground); font-size: 0.85rem; }
+.rec { color: var(--text-dim); font-size: 0.85rem; }
 pre.evidence {
-  font-family: var(--vscode-editor-font-family); font-size: 0.8rem;
-  background: var(--vscode-textCodeBlock-background); padding: 8px 10px;
+  font-family: var(--mono); font-size: 0.8rem;
+  background: var(--surface-2); padding: 8px 10px;
   border-radius: 4px; overflow-x: auto; margin: 8px 0 0;
 }
 .actions { margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 button {
   font-family: inherit; font-size: 0.82rem; padding: 4px 12px; border-radius: 3px;
-  border: 1px solid var(--vscode-button-border, transparent);
-  background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);
+  border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text);
   cursor: pointer;
 }
-button.primary { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
+button.primary { background: var(--accent); color: var(--accent-fg); }
 button:disabled { opacity: 0.5; cursor: default; }
 /* Verification blocked because another request holds the model. */
 button.verify.queued { cursor: not-allowed; opacity: 0.35; }
-.status { font-size: 0.8rem; color: var(--vscode-descriptionForeground); }
+.status { font-size: 0.8rem; color: var(--text-dim); }
 .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
-.empty { color: var(--vscode-descriptionForeground); padding: 20px 0; }
+.empty { color: var(--text-dim); padding: 20px 0; }
 
 /* CWE breakdown — collapsible, one row per CWE with a proportional bar */
 details.cwe-panel {
-  border: 1px solid var(--vscode-panel-border); border-radius: 6px;
-  background: var(--vscode-editorWidget-background); margin-bottom: 20px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); margin-bottom: 20px;
 }
 details.cwe-panel > summary { font-weight: 500; }
 details.cwe-panel[open] > summary .folder-icon { transform: rotate(90deg); }
 .cwe-breakdown { padding: 4px 14px 12px; max-width: 720px; }
 .cwe-row {
   display: flex; align-items: center; gap: 12px;
-  padding: 5px 0 5px 10px; border-left: 3px solid var(--vscode-panel-border);
+  padding: 5px 0 5px 10px; border-left: 3px solid var(--border);
   font-size: 0.85rem;
 }
-.cwe-row.critical { border-left-color: #f85149; }
-.cwe-row.medium   { border-left-color: #d29922; }
-.cwe-row.low      { border-left-color: #6e7681; }
+.cwe-row.critical { border-left-color: var(--bad); }
+.cwe-row.medium   { border-left-color: var(--warn); }
+.cwe-row.low      { border-left-color: var(--text-dim); }
 .cwe-label { flex: 1; min-width: 0; }
 .cwe-bar {
   flex: 0 0 120px; height: 6px; border-radius: 3px;
-  background: var(--vscode-panel-border); overflow: hidden;
+  background: var(--border); overflow: hidden;
 }
 .cwe-bar > span { display: block; height: 100%; background: currentColor; opacity: 0.75; }
-.cwe-row.critical .cwe-bar > span { background: #f85149; }
-.cwe-row.medium   .cwe-bar > span { background: #d29922; }
-.cwe-row.low      .cwe-bar > span { background: #6e7681; }
+.cwe-row.critical .cwe-bar > span { background: var(--bad); }
+.cwe-row.medium   .cwe-bar > span { background: var(--warn); }
+.cwe-row.low      .cwe-bar > span { background: var(--text-dim); }
 .cwe-count {
   flex: 0 0 2.5em; text-align: right;
   font-variant-numeric: tabular-nums; font-weight: 600;
@@ -167,55 +210,55 @@ details.cwe-panel[open] > summary .folder-icon { transform: rotate(90deg); }
 .filters {
   display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
   padding: 10px 0 14px; margin-bottom: 12px;
-  border-bottom: 1px solid var(--vscode-panel-border);
+  border-bottom: 1px solid var(--border);
 }
 .filters input[type="search"], .filters select {
   font-family: inherit; font-size: 0.82rem; padding: 4px 8px; border-radius: 3px;
-  border: 1px solid var(--vscode-panel-border);
-  background: var(--vscode-editorWidget-background); color: var(--vscode-foreground);
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
 }
 .filters input[type="search"] { min-width: 240px; flex: 1; }
 .filters .chk { font-size: 0.82rem; display: flex; align-items: center; gap: 5px; cursor: pointer; }
 .filters .spacer { flex: 1; }
 
 /* Folder tree */
-details.folder { background: transparent; border-color: var(--vscode-panel-border); }
+details.folder { background: transparent; border-color: var(--border); }
 details.folder > summary { font-weight: 500; }
-.folder-icon { display: inline-block; transition: transform 0.12s ease; color: var(--vscode-descriptionForeground); }
+.folder-icon { display: inline-block; transition: transform 0.12s ease; color: var(--text-dim); }
 details.folder[open] > summary .folder-icon { transform: rotate(90deg); }
 .folder-name { flex: 1; }
 .folder-body { padding: 0 10px 6px 22px; }
-details.file { background: var(--vscode-editorWidget-background); }
+details.file { background: var(--surface); }
 
 /* Per-file toolbar */
 .file-tools {
   display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
   margin: 8px 14px 12px; padding-top: 10px;
-  border-top: 1px solid var(--vscode-panel-border);
+  border-top: 1px solid var(--border);
 }
 .verdict { font-size: 0.75rem; padding: 1px 8px; border-radius: 999px; border: 1px solid; }
-.verdict.ok { color: #3fb950; border-color: #3fb950; }
-.verdict.applied { color: #3fb950; border-color: #3fb950; background: rgba(63, 185, 80, 0.12); }
+.verdict.ok { color: var(--good); border-color: var(--good); }
+.verdict.applied { color: var(--good); border-color: var(--good); background: rgba(63, 185, 80, 0.12); }
 .verdict:empty { display: none; }
 /* A finding whose fix has been applied stays visible but reads as resolved. */
-.finding.fixed { opacity: 0.6; border-left-color: #3fb950 !important; }
+.finding.fixed { opacity: 0.6; border-left-color: var(--good) !important; }
 .finding.fixed .cwe { text-decoration: line-through; }
 .ai-findings:empty { display: none; }
 
 /* Inline source viewer */
 button.see-code { font-size: 0.78rem; }
 .code-block {
-  margin: 0 14px 12px; border: 1px solid var(--vscode-panel-border); border-radius: 4px;
-  background: var(--vscode-textCodeBlock-background); overflow-x: auto;
-  font-family: var(--vscode-editor-font-family); font-size: 0.78rem; line-height: 1.5;
+  margin: 0 14px 12px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface-2); overflow-x: auto;
+  font-family: var(--mono); font-size: 0.78rem; line-height: 1.5;
   max-height: 460px; overflow-y: auto;
 }
 .code-line { display: flex; white-space: pre; }
-.code-line.flagged { background: rgba(248, 81, 73, 0.14); border-left: 3px solid #f85149; }
+.code-line.flagged { background: rgba(248, 81, 73, 0.14); border-left: 3px solid var(--bad); }
 .code-line:not(.flagged) { border-left: 3px solid transparent; }
 .ln {
   flex: 0 0 3.2em; text-align: right; padding: 0 10px 0 6px;
-  color: var(--vscode-descriptionForeground); user-select: none;
+  color: var(--text-dim); user-select: none;
 }
 .lc { flex: 1; padding-right: 12px; }
 `;
@@ -359,7 +402,11 @@ function renderFolder(
  * `interactive` controls whether the Verify/Fix buttons and the VSCode message
  * bridge are included — the exported HTML file is a static, read-only copy.
  */
-export function buildReportHtml(report: ScanReport, interactive: boolean): string {
+export function buildReportHtml(
+  report: ScanReport,
+  interactive: boolean,
+  history: ScanRecord[] = []
+): string {
   const band = scoreBand(report.score);
 
   const body = report.files.length === 0
@@ -378,6 +425,9 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
         // The model serves one request at a time on a single GPU, so only one
         // verification may be in flight; the rest are visibly disabled.
         let busy = false;
+        // Score when this report was rendered, for the session's before/after.
+        const initialProjectScore = ${report.score};
+        const band = (s) => (s >= 80 ? 'good' : s >= 50 ? 'warning' : 'critical');
 
         function setVerifyBusy(state, activeIndex) {
           busy = state;
@@ -471,7 +521,11 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
             (msg.results || []).forEach((r) => {
               const verdict = document.getElementById('verdict-' + r.id);
               if (verdict) {
-                verdict.textContent = 'AI confirmed';
+                // The model sometimes reports the same flaw at the line that
+                // creates it rather than the line that uses it — say so.
+                verdict.textContent = r.atLine
+                  ? 'AI confirmed (at line ' + r.atLine + ')'
+                  : 'AI confirmed';
                 verdict.className = 'verdict ok';
               }
               const actions = document.getElementById('actions-' + r.id);
@@ -530,8 +584,28 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
             const scoreEl = summary ? summary.querySelector('.file-score') : null;
             if (scoreEl) {
               scoreEl.textContent = msg.score;
-              scoreEl.className = 'file-score ' +
-                (msg.score >= 80 ? 'good' : msg.score >= 50 ? 'warning' : 'critical');
+              scoreEl.className = 'file-score ' + band(msg.score);
+            }
+
+            // Project score moves as findings are resolved, so show where this
+            // session started alongside where it is now.
+            if (typeof msg.projectScore === 'number') {
+              const proj = document.getElementById('projectScore');
+              if (proj) {
+                proj.textContent = msg.projectScore;
+                proj.className = 'score ' + band(msg.projectScore);
+              }
+              const delta = document.getElementById('sessionDelta');
+              if (delta && msg.projectScore !== initialProjectScore) {
+                const diff = msg.projectScore - initialProjectScore;
+                delta.innerHTML = 'this session: ' + initialProjectScore + ' → ' +
+                  '<span class="' + (diff > 0 ? 'up' : 'down') + '">' + msg.projectScore +
+                  ' (' + (diff > 0 ? '+' : '') + diff + ')</span>';
+              }
+              const clean = document.getElementById('cleanLabel');
+              if (clean && typeof msg.cleanCount === 'number' && typeof msg.scannedCount === 'number') {
+                clean.textContent = msg.cleanCount + ' of ' + msg.scannedCount + ' files clean';
+              }
             }
           } else if (msg.type === 'verifyFailed') {
             if (status) status.textContent = msg.message || 'AI verification failed.';
@@ -542,6 +616,22 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
 
   // Which CWEs actually occur, so the breakdown and the filter only offer
   // options that will match something.
+  // Trend across previous scans of this workspace. The current scan is already
+  // the last entry in `history`, so the one before it is the comparison point.
+  const previous = history.length >= 2 ? history[history.length - 2] : undefined;
+  const change = previous ? report.score - previous.score : 0;
+  const trend = history.length >= 2
+    ? `<div class="trend">
+        ${sparklineSvg(history.map((h) => h.score))}
+        <div class="trend-label">
+          ${change === 0
+            ? "no change since last scan"
+            : `<span class="${change > 0 ? "up" : "down"}">${change > 0 ? "▲" : "▼"} ${Math.abs(change)}</span> since last scan`}
+          <br />${history.length} scans recorded
+        </div>
+      </div>`
+    : "";
+
   const maxCweCount = report.byCwe.reduce((max, e) => Math.max(max, e.count), 0);
   const cweBreakdown = report.byCwe.length
     ? `<details class="cwe-panel">
@@ -664,17 +754,19 @@ export function buildReportHtml(report: ScanReport, interactive: boolean): strin
 
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Secure Assist — project report</title><style>${interactive ? "" : STANDALONE_VARS}${STYLES}</style></head>
+<head><meta charset="UTF-8"><title>Secure Assist — project report</title><style>${PALETTE}${STYLES}</style></head>
 <body>
   <h1>Project security report</h1>
   <div class="sub">${escapeHtml(report.scannedAt.toLocaleString())} · ${report.scannedCount} file${report.scannedCount === 1 ? "" : "s"} scanned${interactive ? "" : " · exported report (static)"}</div>
 
   <div class="score-row">
-    <div class="score ${band}">${report.score}</div>
-    <div>
+    <div class="score ${band}" id="projectScore">${report.score}</div>
+    <div class="score-meta">
       <div class="score-label">project score (out of 100)</div>
-      <div class="score-label">${report.cleanCount} of ${report.scannedCount} files clean</div>
+      <div class="score-label" id="cleanLabel">${report.cleanCount} of ${report.scannedCount} files clean</div>
+      <div class="score-label delta" id="sessionDelta"></div>
     </div>
+    ${trend}
   </div>
 
   <div class="summary">

@@ -7,7 +7,14 @@ const NEARBY_LINE_DISTANCE = 2;
 
 export type MatchReason =
   | "same_cwe_and_overlapping_line"
-  | "same_cwe_and_nearby_line";
+  | "same_cwe_and_nearby_line"
+  /**
+   * Same CWE in the same file, but at a different place. The two tools often
+   * point at different ends of one flaw — the analyzer at the sink where it
+   * becomes exploitable, the model at the construction that causes it — so
+   * this still means "the model saw this issue", not "the model found another".
+   */
+  | "same_cwe_elsewhere_in_file";
 
 export interface Intersection {
   staticIndex: number;
@@ -63,6 +70,7 @@ export function correlateFindings(
   const confirmedStatic = new Set<number>();
   const confirmedModel = new Set<number>();
 
+  // Pass 1 — the confident match: same CWE at (or beside) the same line.
   staticFindings.forEach((staticFinding, staticIndex) => {
     modelFindings.forEach((modelFinding, modelIndex) => {
       const reason = matchReason(staticFinding, modelFinding);
@@ -76,6 +84,28 @@ export function correlateFindings(
       confirmedStatic.add(staticIndex);
       confirmedModel.add(modelIndex);
     });
+  });
+
+  // Pass 2 — same CWE elsewhere in the file. The tools disagree about *where* a
+  // flaw lives (sink vs. the code that builds the unsafe value), so an unmatched
+  // pair sharing a CWE is treated as the same issue rather than a new one.
+  // Paired one-to-one so N static findings aren't all claimed by one model hit.
+  staticFindings.forEach((staticFinding, staticIndex) => {
+    if (confirmedStatic.has(staticIndex)) return;
+
+    const modelIndex = modelFindings.findIndex(
+      (m, i) => !confirmedModel.has(i) && m.cwe === staticFinding.cweId
+    );
+    if (modelIndex < 0) return;
+
+    intersections.push({
+      staticIndex,
+      modelIndex,
+      cwe: staticFinding.cweId,
+      reason: "same_cwe_elsewhere_in_file",
+    });
+    confirmedStatic.add(staticIndex);
+    confirmedModel.add(modelIndex);
   });
 
   return { intersections, confirmedStatic, confirmedModel };

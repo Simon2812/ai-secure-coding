@@ -33,6 +33,21 @@ export interface ScanReport {
 }
 
 /**
+ * Read a file as the user currently sees it.
+ *
+ * Applied fixes live in the open document until it is saved, so reading from
+ * disk would re-scan the pre-fix text and undo the improvement in the report.
+ * Open documents therefore take precedence over the file on disk.
+ */
+async function readCurrentContent(uri: vscode.Uri): Promise<string> {
+  const open = vscode.workspace.textDocuments.find(
+    (doc) => doc.uri.toString() === uri.toString()
+  );
+  if (open) return open.getText();
+  return Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf-8");
+}
+
+/**
  * Run the static analyzer over every supported file in the workspace.
  *
  * Only the static analyzer runs here — it is fast and deterministic, so a
@@ -61,7 +76,7 @@ export async function scanWorkspace(
 
     let code: string;
     try {
-      code = Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf-8");
+      code = await readCurrentContent(uri);
     } catch {
       continue; // unreadable file — skip rather than fail the whole scan
     }

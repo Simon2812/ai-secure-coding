@@ -17,16 +17,38 @@
   dataset labels weak hashes as CWE-328, keep weak *cipher* (DES/RC4) as CWE-327 only, and re-run
   real50 / fresh50 / OWASP hash+crypto to confirm detection isn't lost.
 
+## Known limitations (documented, not scheduled)
+
+- **Java validation guards are matched by variable *name*, file-wide — not by data flow.**
+  `applyJavaValidationGuards` (`ast/java.ts`) walks the whole file and removes any guarded
+  identifier from a global taint set. Consequences, both reproducible:
+  1. A guard on a same-named variable in an *unrelated* method suppresses a real finding.
+     Verified: `buildPath(String name)` unguarded + `auditLabel(String name)` guarded
+     ⇒ CWE-22 silently suppressed.
+  2. The guard is accepted on shape alone (`matches()` + `throw`); the pattern is not checked
+     for restrictiveness, so `name.matches(".*")` also suppresses.
+  Not fixed deliberately: scoping guards to the enclosing method closes the false negative but
+  reintroduces false positives on code that *was* correctly fixed in a helper (e.g. the
+  FileService.java case), so it trades one error class for another. Same family as the
+  cross-function SQL taint pollution fixed earlier via `buildLocalValueMap`.
+
 ## Model / IDE integration (branch: ASC-68-model-ide-integration)
 
 - [x] Wire the extension to POST `{ code, analysis: static_findings }` to `http://localhost:8000/analyze`
 - [x] Map returned `vulnerabilities[]` (cwe + fixes + start_line/end_line) to VSCode diagnostics
 - [x] Wire "Apply Fix" using each fix's `origin` / `replacement`
-- [ ] Make the model endpoint URL configurable (VSCode setting)
+- [x] Make the model endpoint URL configurable (`secureAssist.modelEndpoint`)
+
+## Deep scan report (branch: ASC-69-deep-scan-report)
+
+- [x] Deep Scan + Report (webview, folder tree, per-file scores, Verify→Fix, Export HTML)
+- [x] Live mode (static analyzer on change, debounced; model on demand)
+- [x] Score history + before/after session delta
+- [x] Filters, CWE breakdown, self-contained theme
+- [ ] Verify all files in a folder (one click, sequential, with cancel)
+- [ ] Export findings as Markdown / JSON
 
 ## Later
 
 - [ ] Combined analyzer + model evaluation (added detections / removed FPs) on OWASP + Juliet sample — for the paper
-- [ ] Deep Scan + Report (webview, per-file scores, Verify→Fix, Export HTML)
-- [ ] Live mode (static on change; model on new finding)
 - [ ] `evaluator.py` hard-depends on `secure-assist/` being present — consider making the analyzer path optional so the API runs standalone

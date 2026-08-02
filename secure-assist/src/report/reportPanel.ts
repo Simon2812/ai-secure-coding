@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { ScanReport, scanWorkspace } from "./scanner";
 import { buildReportHtml, renderCodeRows } from "./reportHtml";
-import { scoreForFindings } from "./score";
+import { scoreForFindings, projectScore } from "./score";
+import { loadHistory, recordScan, ScanRecord } from "./history";
 import {
   analyzeWithModel,
   getModelEndpoint,
@@ -30,23 +31,39 @@ export class ReportPanel {
   private readonly aiOnlyShown = new Set<string>();
   private disposables: vscode.Disposable[] = [];
   private report: ScanReport;
+  private readonly context: vscode.ExtensionContext;
+  /** Scan history for this workspace, current scan included. */
+  private history: ScanRecord[] = [];
 
-  private constructor(panel: vscode.WebviewPanel, report: ScanReport, output: vscode.OutputChannel) {
+  private constructor(
+    panel: vscode.WebviewPanel,
+    report: ScanReport,
+    output: vscode.OutputChannel,
+    context: vscode.ExtensionContext,
+    history: ScanRecord[]
+  ) {
     this.panel = panel;
     this.report = report;
     this.output = output;
+    this.context = context;
+    this.history = history;
 
     this.render();
     this.panel.webview.onDidReceiveMessage((msg) => this.onMessage(msg), null, this.disposables);
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
 
-  static async show(output: vscode.OutputChannel): Promise<void> {
+  static async show(
+    output: vscode.OutputChannel,
+    context: vscode.ExtensionContext
+  ): Promise<void> {
     const report = await ReportPanel.runScan();
     if (!report) return;
+    const history = await ReportPanel.remember(context, report);
 
     if (ReportPanel.current) {
       ReportPanel.current.report = report;
+      ReportPanel.current.history = history;
       ReportPanel.current.verified.clear();
       ReportPanel.current.aiOnlyShown.clear();
       ReportPanel.current.render();
@@ -60,7 +77,20 @@ export class ReportPanel {
       vscode.ViewColumn.One,
       { enableScripts: true, retainContextWhenHidden: true }
     );
-    ReportPanel.current = new ReportPanel(panel, report, output);
+    ReportPanel.current = new ReportPanel(panel, report, output, context, history);
+  }
+
+  /** Persist this scan so the report can show a trend across sessions. */
+  private static async remember(
+    context: vscode.ExtensionContext,
+    report: ScanReport
+  ): Promise<ScanRecord[]> {
+    return recordScan(context, {
+      at: report.scannedAt.getTime(),
+      score: report.score,
+      findings: report.totalFindings,
+      files: report.scannedCount,
+    });
   }
 
   /** Scan the workspace behind a cancellable progress notification. */
@@ -80,7 +110,7 @@ export class ReportPanel {
   }
 
   private render(): void {
-    this.panel.webview.html = buildReportHtml(this.report, true);
+    this.panel.webview.html = buildReportHtml(this.report, true, this.history);
   }
 
   private async onMessage(msg: any): Promise<void> {
@@ -101,6 +131,7 @@ export class ReportPanel {
         const report = await ReportPanel.runScan();
         if (report) {
           this.report = report;
+          this.history = await ReportPanel.remember(this.context, report);
           this.verified.clear();
           this.aiOnlyShown.clear();
           this.render();
@@ -163,12 +194,15 @@ export class ReportPanel {
         if (!correlation.confirmedStatic.has(i)) return [];
 
         // Take fixes only from the model findings that matched *this* one.
-        const matchedModelIndexes = correlation.intersections
-          .filter((x) => x.staticIndex === i)
-          .map((x) => x.modelIndex);
-        const fixes = matchedModelIndexes
-          .flatMap((mi) => vulns[mi]?.fixes ?? [])
+        const matches = correlation.intersections.filter((x) => x.staticIndex === i);
+        const fixes = matches
+          .flatMap((x) => vulns[x.modelIndex]?.fixes ?? [])
           .filter((f) => containsOrigin(code, f.origin));
+
+        // When the model located the same issue somewhere else in the file, say
+        // where — the two tools legitimately disagree about a flaw's "location".
+        const elsewhere = matches.find((x) => x.reason === "same_cwe_elsewhere_in_file");
+        const atLine = elsewhere ? vulns[elsewhere.modelIndex]?.start_line : undefined;
 
         const id = `${msg.index}-${i}`;
         this.verified.set(id, {
@@ -178,7 +212,7 @@ export class ReportPanel {
           fileIndex: msg.index,
           relPath: msg.file,
         });
-        return [{ id, fixCount: fixes.length }];
+        return [{ id, fixCount: fixes.length, atLine }];
       });
 
       const aiOnly = this.collectAiOnly(uri, msg.file, code, staticFindings, vulns, msg.index);
@@ -269,9 +303,15 @@ export class ReportPanel {
       stored.score = score;
       stored.code = code;
     }
+    // Recompute the project-level figures so the header reflects the fix.
+    this.report.score = projectScore(this.report.files.map((f) => f.score));
+    this.report.cleanCount = this.report.files.filter((f) => f.findings.length === 0).length;
+    this.report.totalFindings = this.report.files.reduce((n, f) => n + f.findings.length, 0);
 
     this.output.appendLine(
-      `[report] fix applied to ${entry.relPath} — now ${findings.length} finding(s), score ${score}`
+      `[report] fix applied to ${entry.relPath} — now ${findings.length} finding(s), ` +
+        `file ${score}, project ${this.report.score}` +
+        (doc.isDirty ? "  (unsaved — save the file to keep the change)" : "")
     );
 
     this.panel.webview.postMessage({
@@ -280,6 +320,9 @@ export class ReportPanel {
       fileIndex: entry.fileIndex,
       score,
       findingCount: findings.length,
+      projectScore: this.report.score,
+      cleanCount: this.report.cleanCount,
+      scannedCount: this.report.scannedCount,
       codeRows: renderCodeRows(code, findings.map((f) => f.line)),
     });
   }
@@ -293,7 +336,7 @@ export class ReportPanel {
 
     const target = vscode.Uri.joinPath(folder.uri, "security-report.html");
     try {
-      const html = buildReportHtml(this.report, false);
+      const html = buildReportHtml(this.report, false, this.history);
       await vscode.workspace.fs.writeFile(target, Buffer.from(html, "utf-8"));
       this.output.appendLine(`[report] exported to ${target.fsPath}`);
     } catch (err: any) {

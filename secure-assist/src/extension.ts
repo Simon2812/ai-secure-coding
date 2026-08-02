@@ -252,7 +252,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Deep scan: static analysis over the whole workspace, rendered as a report.
   const deepScanCmd = vscode.commands.registerCommand("secure-assist.deepScan", async () => {
-    await ReportPanel.show(output);
+    await ReportPanel.show(output, context);
   });
 
   const deepScanButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
