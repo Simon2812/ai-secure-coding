@@ -1,4 +1,4 @@
-import { initAstAnalyzer, astAnalyzeCode } from './ast/astAnalyzer';
+import { initAstAnalyzer, astAnalyzeCode } from '../../analyzer/ast/astAnalyzer';
 import * as fs from 'fs';
 
 // expectCwes: empty = SAFE (expect no findings), otherwise expect ALL listed CWEs detected

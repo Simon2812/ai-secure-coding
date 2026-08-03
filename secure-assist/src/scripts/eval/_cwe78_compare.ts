@@ -1,6 +1,6 @@
-import { initAstAnalyzer, astAnalyzeCode } from './ast/astAnalyzer';
-import { findCommandInjection } from '../analyzer/rules/commandInjection';
-import { detectLanguage } from '../analyzer/utils';
+import { initAstAnalyzer, astAnalyzeCode } from '../../analyzer/ast/astAnalyzer';
+import { findCommandInjection } from '../../analyzer/rules/commandInjection';
+import { detectLanguage } from '../../analyzer/utils';
 import * as fs from 'fs';
 
 function regexCwe78(code: string, filePath: string) {

@@ -2,16 +2,16 @@
  * Compare regex vs AST analyzer on all fresh test files.
  * Prints per-file results and a summary confusion-matrix table.
  */
-import { initAstAnalyzer, astAnalyzeCode } from './ast/astAnalyzer';
-import { findSqlInjection }        from '../analyzer/rules/sqlInjection';
-import { findHardcodedCredentials } from '../analyzer/rules/hardcodedCredentials';
-import { findCommandInjection }    from '../analyzer/rules/commandInjection';
-import { findPathTraversal }       from '../analyzer/rules/pathTraversal';
-import { findWeakCrypto }          from '../analyzer/rules/weakCrypto';
-import { findIntegerOverflow }     from '../analyzer/rules/integerOverflow';
-import { findOutOfBoundsWrite }    from '../analyzer/rules/outOfBoundsWrite';
-import { findUseAfterFree }        from '../analyzer/rules/useAfterFree';
-import { detectLanguage }          from '../analyzer/utils';
+import { initAstAnalyzer, astAnalyzeCode } from '../../analyzer/ast/astAnalyzer';
+import { findSqlInjection }        from '../../analyzer/rules/sqlInjection';
+import { findHardcodedCredentials } from '../../analyzer/rules/hardcodedCredentials';
+import { findCommandInjection }    from '../../analyzer/rules/commandInjection';
+import { findPathTraversal }       from '../../analyzer/rules/pathTraversal';
+import { findWeakCrypto }          from '../../analyzer/rules/weakCrypto';
+import { findIntegerOverflow }     from '../../analyzer/rules/integerOverflow';
+import { findOutOfBoundsWrite }    from '../../analyzer/rules/outOfBoundsWrite';
+import { findUseAfterFree }        from '../../analyzer/rules/useAfterFree';
+import { detectLanguage }          from '../../analyzer/utils';
 import * as fs from 'fs';
 
 function regexAnalyzeCode(code: string, filePath: string) {

@@ -1,4 +1,4 @@
-import { initTreeSitter, CLang, newParser } from './ast/init';
+import { initTreeSitter, CLang, newParser } from '../../analyzer/ast/init';
 
 async function main() {
   await initTreeSitter();

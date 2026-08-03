@@ -1,6 +1,6 @@
-import { initAstAnalyzer } from './ast/astAnalyzer';
-import { walkAll } from './ast/taint';
-import { initTreeSitter, JavaLang, newParser } from './ast/init';
+import { initAstAnalyzer } from '../../analyzer/ast/astAnalyzer';
+import { walkAll } from '../../analyzer/ast/taint';
+import { initTreeSitter, JavaLang, newParser } from '../../analyzer/ast/init';
 import type { Node } from 'web-tree-sitter';
 import * as fs from 'fs';
 

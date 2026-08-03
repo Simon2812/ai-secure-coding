@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
 
 const STORAGE_KEY = "secureAssist.scanHistory";
+const ACTIVITY_KEY = "secureAssist.activity";
 const MAX_ENTRIES = 50;
+const MAX_ACTIVITY = 200;
 
 /** One completed project scan, kept so the report can show a trend. */
 export interface ScanRecord {
@@ -32,6 +34,40 @@ export async function recordScan(
 
 export async function clearHistory(context: vscode.ExtensionContext): Promise<void> {
   await context.workspaceState.update(STORAGE_KEY, []);
+}
+
+/**
+ * Something the developer did to the project, kept so the report can show what
+ * has happened rather than only the current state.
+ */
+export interface ActivityEvent {
+  at: number;
+  kind: "scan" | "fix" | "dismiss" | "restore";
+  /** Workspace-relative path, where the event concerns one file. */
+  file?: string;
+  cwe?: string;
+  /** Short human-readable detail, e.g. the score after a scan. */
+  detail?: string;
+}
+
+export function loadActivity(context: vscode.ExtensionContext): ActivityEvent[] {
+  const stored = context.workspaceState.get<ActivityEvent[]>(ACTIVITY_KEY);
+  return Array.isArray(stored) ? stored : [];
+}
+
+export async function recordActivity(
+  context: vscode.ExtensionContext,
+  event: Omit<ActivityEvent, "at">
+): Promise<ActivityEvent[]> {
+  const activity = [...loadActivity(context), { ...event, at: Date.now() }].slice(
+    -MAX_ACTIVITY
+  );
+  await context.workspaceState.update(ACTIVITY_KEY, activity);
+  return activity;
+}
+
+export async function clearActivity(context: vscode.ExtensionContext): Promise<void> {
+  await context.workspaceState.update(ACTIVITY_KEY, []);
 }
 
 /**

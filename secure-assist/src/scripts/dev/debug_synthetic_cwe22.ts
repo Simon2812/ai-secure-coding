@@ -1,4 +1,4 @@
-import { initAstAnalyzer, astAnalyzeCode } from './ast/astAnalyzer';
+import { initAstAnalyzer, astAnalyzeCode } from '../../analyzer/ast/astAnalyzer';
 import * as fs from 'fs';
 
 const REPO = 'C:/Users/drozh/asc-main-dataset/dataset/synthetic/CWE-22/java';

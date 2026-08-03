@@ -1,6 +1,6 @@
-import { initAstAnalyzer, astAnalyzeCode } from './ast/astAnalyzer';
-import { findSqlInjection } from '../analyzer/rules/sqlInjection';
-import { detectLanguage } from '../analyzer/utils';
+import { initAstAnalyzer, astAnalyzeCode } from '../../analyzer/ast/astAnalyzer';
+import { findSqlInjection } from '../../analyzer/rules/sqlInjection';
+import { detectLanguage } from '../../analyzer/utils';
 import * as fs from 'fs';
 
 function regexCwe89(code: string, filePath: string) {

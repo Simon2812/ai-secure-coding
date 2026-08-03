@@ -2,7 +2,8 @@ import { ScanReport, FileReport } from "./scanner";
 import { getCweInfo } from "../model/cweCatalog";
 import { scoreBand, severityOf } from "./score";
 import { buildTree, collapseSingleChildFolders, FolderNode } from "./tree";
-import { ScanRecord, sparklineSvg } from "./history";
+import { ScanRecord, ActivityEvent, sparklineSvg } from "./history";
+import { Suppression } from "./suppressions";
 import { DIFF_STYLES } from "../model/diffView";
 
 function escapeHtml(value: string): string {
@@ -206,6 +207,51 @@ details.cwe-panel[open] > summary .folder-icon { transform: rotate(90deg); }
   flex: 0 0 2.5em; text-align: right;
   font-variant-numeric: tabular-nums; font-weight: 600;
 }
+
+/* Collapsible side panels: activity log and dismissed findings */
+details.side-panel {
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); margin-bottom: 12px;
+}
+details.side-panel > summary { font-weight: 500; }
+details.side-panel[open] > summary .folder-icon { transform: rotate(90deg); }
+.side-body { padding: 4px 14px 12px; }
+
+.fp-file {
+  font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim);
+  margin: 10px 0 4px;
+}
+.fp-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 5px 0 5px 10px; border-left: 2px solid var(--border);
+  font-size: 0.8rem;
+}
+.fp-row.restored { opacity: 0.5; }
+.fp-cwe { font-weight: 600; flex: 0 0 auto; }
+.fp-code {
+  flex: 1; min-width: 0; font-family: var(--mono); font-size: 0.75rem;
+  color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fp-when { color: var(--text-dim); font-size: 0.72rem; }
+button.restore { font-size: 0.74rem; padding: 2px 10px; }
+.fp-note { color: var(--text-dim); font-size: 0.76rem; margin: 12px 0 0; }
+
+.act-row {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 4px 0 4px 10px; border-left: 2px solid var(--border); font-size: 0.8rem;
+}
+.act-row.fix { border-left-color: var(--good); }
+.act-row.dismiss { border-left-color: var(--text-dim); }
+.act-row.restore { border-left-color: var(--warn); }
+.act-row.scan { border-left-color: var(--accent); }
+.act-icon { flex: 0 0 1em; text-align: center; color: var(--text-dim); }
+.act-kind {
+  flex: 0 0 4.5em; text-transform: uppercase; font-size: 0.68rem;
+  letter-spacing: 0.05em; color: var(--text-dim);
+}
+.act-what { flex: 1 1 240px; min-width: 0; }
+.act-detail { color: var(--text-dim); font-size: 0.76rem; }
+.act-when { color: var(--text-dim); font-size: 0.72rem; margin-left: auto; }
 
 /* Filter bar */
 .filters {
@@ -450,7 +496,8 @@ function renderFolder(
 export function buildReportHtml(
   report: ScanReport,
   interactive: boolean,
-  history: ScanRecord[] = []
+  history: ScanRecord[] = [],
+  extras: { activity?: ActivityEvent[]; suppressions?: Suppression[] } = {}
 ): string {
   const band = scoreBand(report.score);
 
@@ -530,6 +577,20 @@ export function buildReportHtml(
           if (cancel) {
             const box = document.getElementById('preview-' + cancel.dataset.id);
             if (box) box.remove();
+            return;
+          }
+          const restore = e.target.closest('button.restore');
+          if (restore) {
+            const row = restore.closest('.fp-row');
+            restore.disabled = true;
+            vscode.postMessage({
+              type: 'restore',
+              file: row.dataset.file,
+              cwe: row.dataset.cwe,
+              code: row.dataset.code,
+            });
+            row.classList.add('restored');
+            restore.textContent = 'Restored';
             return;
           }
           const dismiss = e.target.closest('button.dismiss');
@@ -775,6 +836,81 @@ export function buildReportHtml(
       </details>`
     : "";
 
+  // Dismissed findings, grouped by file, each restorable.
+  const suppressions = extras.suppressions ?? [];
+  const byFile = new Map<string, Suppression[]>();
+  for (const s of suppressions) {
+    const list = byFile.get(s.file) ?? [];
+    list.push(s);
+    byFile.set(s.file, list);
+  }
+
+  const dismissedPanel = suppressions.length
+    ? `<details class="side-panel">
+        <summary>
+          <span class="folder-icon">▸</span>
+          <span class="folder-name">Dismissed as false positive</span>
+          <span class="status">${suppressions.length}</span>
+        </summary>
+        <div class="side-body">
+          ${[...byFile.entries()]
+            .map(
+              ([file, items]) => `
+            <div class="fp-file">${escapeHtml(file)}</div>
+            ${items
+              .map(
+                (s) => `
+              <div class="fp-row" data-file="${escapeHtml(s.file)}" data-cwe="${escapeHtml(s.cwe)}" data-code="${escapeHtml(s.code)}">
+                <span class="fp-cwe">${escapeHtml(s.cwe)}</span>
+                <code class="fp-code">${escapeHtml(s.code.length > 90 ? s.code.slice(0, 90) + "…" : s.code)}</code>
+                <span class="fp-when">${new Date(s.at).toLocaleDateString()}</span>
+                ${interactive ? `<button class="restore">Restore</button>` : ""}
+              </div>`
+              )
+              .join("")}`
+            )
+            .join("")}
+          ${interactive
+            ? `<p class="fp-note">Restoring lets the analyzer report this code again on the next scan.</p>`
+            : ""}
+        </div>
+      </details>`
+    : "";
+
+  // What has been done to this project, newest first.
+  const activity = [...(extras.activity ?? [])].reverse();
+  const activityIcon: Record<ActivityEvent["kind"], string> = {
+    scan: "◆",
+    fix: "✓",
+    dismiss: "✕",
+    restore: "↺",
+  };
+  const activityPanel = activity.length
+    ? `<details class="side-panel">
+        <summary>
+          <span class="folder-icon">▸</span>
+          <span class="folder-name">Activity</span>
+          <span class="status">${activity.length} event${activity.length === 1 ? "" : "s"}</span>
+        </summary>
+        <div class="side-body">
+          ${activity
+            .map(
+              (e) => `
+            <div class="act-row ${e.kind}">
+              <span class="act-icon">${activityIcon[e.kind] ?? "•"}</span>
+              <span class="act-kind">${e.kind}</span>
+              <span class="act-what">${escapeHtml(
+                [e.cwe, e.file].filter(Boolean).join(" in ") || "project"
+              )}</span>
+              <span class="act-detail">${escapeHtml(e.detail ?? "")}</span>
+              <span class="act-when">${new Date(e.at).toLocaleString()}</span>
+            </div>`
+            )
+            .join("")}
+        </div>
+      </details>`
+    : "";
+
   const filterBar = `
     <div class="filters">
       <input id="q" type="search" placeholder="Filter by file name or CWE..." />
@@ -895,6 +1031,8 @@ export function buildReportHtml(
   </div>
 
   ${cweBreakdown}
+  ${activityPanel}
+  ${dismissedPanel}
   ${toolbar}
   ${filterBar}
   ${body}

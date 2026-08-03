@@ -1,4 +1,4 @@
-import { initAstAnalyzer, astAnalyzeCode } from './ast/astAnalyzer';
+import { initAstAnalyzer, astAnalyzeCode } from '../../analyzer/ast/astAnalyzer';
 import * as fs from 'fs';
 
 // source: "real" = pulled verbatim/near-verbatim from a real open-source repo or CVE advisory

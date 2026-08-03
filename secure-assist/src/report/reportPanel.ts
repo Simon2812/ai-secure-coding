@@ -2,8 +2,15 @@ import * as vscode from "vscode";
 import { ScanReport, scanWorkspace } from "./scanner";
 import { buildReportHtml, renderCodeRows } from "./reportHtml";
 import { scoreForFindings, projectScore } from "./score";
-import { loadHistory, recordScan, ScanRecord } from "./history";
-import { suppress, lineTextAt } from "./suppressions";
+import {
+  loadHistory,
+  recordScan,
+  ScanRecord,
+  ActivityEvent,
+  loadActivity,
+  recordActivity,
+} from "./history";
+import { suppress, unsuppress, lineTextAt, listSuppressions, Suppression } from "./suppressions";
 import {
   analyzeWithModel,
   getModelEndpoint,
@@ -43,6 +50,8 @@ export class ReportPanel {
   private readonly context: vscode.ExtensionContext;
   /** Scan history for this workspace, current scan included. */
   private history: ScanRecord[] = [];
+  /** Scans, fixes and dismissals, newest last. */
+  private activity: ActivityEvent[] = [];
 
   private constructor(
     panel: vscode.WebviewPanel,
@@ -56,6 +65,7 @@ export class ReportPanel {
     this.output = output;
     this.context = context;
     this.history = history;
+    this.activity = loadActivity(context);
 
     this.render();
     this.panel.webview.onDidReceiveMessage((msg) => this.onMessage(msg), null, this.disposables);
@@ -94,6 +104,10 @@ export class ReportPanel {
     context: vscode.ExtensionContext,
     report: ScanReport
   ): Promise<ScanRecord[]> {
+    await recordActivity(context, {
+      kind: "scan",
+      detail: `score ${report.score} · ${report.totalFindings} findings in ${report.scannedCount} files`,
+    });
     return recordScan(context, {
       at: report.scannedAt.getTime(),
       score: report.score,
@@ -119,7 +133,10 @@ export class ReportPanel {
   }
 
   private render(): void {
-    this.panel.webview.html = buildReportHtml(this.report, true, this.history);
+    this.panel.webview.html = buildReportHtml(this.report, true, this.history, {
+      activity: this.activity,
+      suppressions: listSuppressions(),
+    });
   }
 
   private async onMessage(msg: any): Promise<void> {
@@ -132,6 +149,9 @@ export class ReportPanel {
         break;
       case "dismiss":
         await this.dismissFinding(msg);
+        break;
+      case "restore":
+        await this.restoreFinding(msg);
         break;
       case "previewFix":
         this.previewFix(msg);
@@ -329,6 +349,12 @@ export class ReportPanel {
     if (!stored?.code) return;
 
     await suppress(msg.file, msg.cwe, lineTextAt(stored.code, msg.line), msg.line);
+    this.activity = await recordActivity(this.context, {
+      kind: "dismiss",
+      file: msg.file,
+      cwe: msg.cwe,
+      detail: `line ${msg.line}`,
+    });
     this.output.appendLine(`[fp] dismissed ${msg.cwe} at ${msg.file}:${msg.line}`);
 
     stored.findings = stored.findings.filter(
@@ -347,6 +373,26 @@ export class ReportPanel {
       scannedCount: this.report.scannedCount,
       file: msg.file,
     });
+  }
+
+  /**
+   * Undo a false-positive dismissal. The finding is not re-inserted into the
+   * current report — it reappears on the next scan, when the analyzer looks at
+   * that code again.
+   */
+  private async restoreFinding(msg: {
+    file: string;
+    cwe: string;
+    code: string;
+  }): Promise<void> {
+    await unsuppress(msg.file, msg.cwe, msg.code);
+    this.activity = await recordActivity(this.context, {
+      kind: "restore",
+      file: msg.file,
+      cwe: msg.cwe,
+    });
+    this.output.appendLine(`[fp] restored ${msg.cwe} in ${msg.file}`);
+    this.panel.webview.postMessage({ type: "restored", file: msg.file, cwe: msg.cwe });
   }
 
   /**
@@ -395,6 +441,13 @@ export class ReportPanel {
     this.report.cleanCount = this.report.files.filter((f) => f.findings.length === 0).length;
     this.report.totalFindings = this.report.files.reduce((n, f) => n + f.findings.length, 0);
 
+    this.activity = await recordActivity(this.context, {
+      kind: "fix",
+      file: entry.relPath,
+      cwe: entry.cwe,
+      detail: `file score ${score} · project ${this.report.score}`,
+    });
+
     this.output.appendLine(
       `[report] fix applied to ${entry.relPath} — now ${findings.length} finding(s), ` +
         `file ${score}, project ${this.report.score}` +
@@ -423,7 +476,10 @@ export class ReportPanel {
 
     const target = vscode.Uri.joinPath(folder.uri, "security-report.html");
     try {
-      const html = buildReportHtml(this.report, false, this.history);
+      const html = buildReportHtml(this.report, false, this.history, {
+        activity: this.activity,
+        suppressions: listSuppressions(),
+      });
       await vscode.workspace.fs.writeFile(target, Buffer.from(html, "utf-8"));
       this.output.appendLine(`[report] exported to ${target.fsPath}`);
     } catch (err: any) {

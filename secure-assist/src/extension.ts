@@ -24,6 +24,7 @@ import {
   lineTextAt,
 } from "./report/suppressions";
 import { groundVulnerabilities } from "./model/originMatch";
+import { recordActivity } from "./report/history";
 import { FixPanel } from "./model/fixPanel";
 import { AskAgentProvider, askAboutFinding, ASK_AGENT_COMMAND } from "./agent/askAgent";
 import { AgentPanel } from "./agent/agentPanel";
@@ -346,6 +347,12 @@ export async function activate(context: vscode.ExtensionContext) {
       const snippet = lineTextAt(code, line, endLine ?? line);
 
       await suppress(relPath, cwe, snippet, line);
+      await recordActivity(context, {
+        kind: "dismiss",
+        file: relPath,
+        cwe,
+        detail: `line ${line}`,
+      });
       output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} — ${snippet.trim()}`);
 
       // Refresh both diagnostic sets so the squiggle disappears immediately.
