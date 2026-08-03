@@ -34,6 +34,10 @@
       {
         "command": "secure-assist.showFixes",
         "title": "Secure Assist: Show AI Fixes"
+      },
+      {
+        "command": "secure-assist.askQuestion",
+        "title": "Secure Assist: Ask the Security Assistant"
       }
     ],
     "configuration": {
@@ -43,6 +47,16 @@
           "type": "string",
           "default": "http://localhost:8000",
           "description": "Base URL of the Secure Assist model server (Docker)."
+        },
+        "secureAssist.agentApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "API key for the security assistant (Anthropic). Stored in your user settings — do not commit it to the repository."
+        },
+        "secureAssist.agentModel": {
+          "type": "string",
+          "default": "claude-sonnet-5",
+          "description": "Model used by the security assistant."
         }
       }
     }

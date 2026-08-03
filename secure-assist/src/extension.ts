@@ -17,6 +17,8 @@ import { loadCweCatalog, explainCwe } from "./model/cweCatalog";
 import { correlateFindings } from "./model/correlation";
 import { ReportPanel } from "./report/reportPanel";
 import { FixPanel } from "./model/fixPanel";
+import { AskAgentProvider, askAboutFinding, ASK_AGENT_COMMAND } from "./agent/askAgent";
+import { AgentPanel } from "./agent/agentPanel";
 
 // Analysis is on by default — the user should get findings without having to
 // discover a "start tracking" command first.
@@ -307,6 +309,30 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Teacher agent: explains a finding conversationally. Backed by an external
+  // API rather than the fine-tuned model, which only emits fix JSON.
+  const askAgentCmd = vscode.commands.registerCommand(
+    ASK_AGENT_COMMAND,
+    async (
+      uri: vscode.Uri,
+      cwe: string,
+      line?: number,
+      fix?: { origin: string; replacement: string }
+    ) => {
+      await askAboutFinding(uri, cwe, line, output, fix);
+    }
+  );
+
+  const openAgentCmd = vscode.commands.registerCommand("secure-assist.askQuestion", () => {
+    AgentPanel.open(output);
+  });
+
+  const askAgentProvider = vscode.languages.registerCodeActionsProvider(
+    { scheme: "file" },
+    new AskAgentProvider(),
+    { providedCodeActionKinds: AskAgentProvider.kinds }
+  );
+
   // Quick-fix provider: "Apply AI fix" on lines the model flagged.
   const aiFixProvider = vscode.languages.registerCodeActionsProvider(
     { scheme: "file" },
@@ -323,6 +349,9 @@ export async function activate(context: vscode.ExtensionContext) {
     applyAiFixCmd,
     deepScanCmd,
     showFixesCmd,
+    askAgentCmd,
+    openAgentCmd,
+    askAgentProvider,
     editorSub,
     scanButton,
     deepScanButton,
