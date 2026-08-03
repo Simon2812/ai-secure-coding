@@ -356,6 +356,8 @@ export class ReportPanel {
       detail: `line ${msg.line}`,
     });
     this.output.appendLine(`[fp] dismissed ${msg.cwe} at ${msg.file}:${msg.line}`);
+    // Keep the per-file status-bar counter in step with dismissals made here.
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
 
     stored.findings = stored.findings.filter(
       (f) => !(f.cweId === msg.cwe && f.line === msg.line)
@@ -386,6 +388,7 @@ export class ReportPanel {
     code: string;
   }): Promise<void> {
     await unsuppress(msg.file, msg.cwe, msg.code);
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
     this.activity = await recordActivity(this.context, {
       kind: "restore",
       file: msg.file,

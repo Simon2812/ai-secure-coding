@@ -22,7 +22,9 @@ import {
   filterSuppressedVulns,
   suppress,
   lineTextAt,
+  listSuppressions,
 } from "./report/suppressions";
+import { DismissedPanel } from "./report/dismissedPanel";
 import { groundVulnerabilities } from "./model/originMatch";
 import { recordActivity } from "./report/history";
 import { FixPanel } from "./model/fixPanel";
@@ -313,7 +315,10 @@ export async function activate(context: vscode.ExtensionContext) {
     fixesButton.show();
   };
 
-  const editorSub = vscode.window.onDidChangeActiveTextEditor(() => refreshFixesButton());
+  const editorSub = vscode.window.onDidChangeActiveTextEditor(() => {
+    refreshFixesButton();
+    refreshDismissedButton();
+  });
 
   // Deep scan: static analysis over the whole workspace, rendered as a report.
   const deepScanCmd = vscode.commands.registerCommand("secure-assist.deepScan", async () => {
@@ -334,6 +339,54 @@ export async function activate(context: vscode.ExtensionContext) {
       await previewAndApplyFix(uri, fix, cwe, aiDiagnostics);
     }
   );
+
+  // Per-file view of what has been dismissed here, with restore. The project
+  // report covers the whole workspace; this is for the file being edited.
+  const dismissedButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+  dismissedButton.command = "secure-assist.showDismissed";
+  dismissedButton.tooltip = "Secure Assist: findings dismissed in this file";
+
+  /** Re-analyse a file so a restored finding reappears immediately. */
+  const reanalyse = async (uri: vscode.Uri) => {
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const rel = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+    const text = doc.getText();
+    updateDiagnostics(diagnostics, doc, filterSuppressed(analyzeCode(text, rel), rel, text));
+    refreshDismissedButton();
+  };
+
+  const showDismissedCmd = vscode.commands.registerCommand(
+    "secure-assist.showDismissed",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      DismissedPanel.show(editor.document.uri, reanalyse);
+    }
+  );
+
+  // Not declared in package.json, so it stays out of the command palette: it
+  // exists only so the report webview can refresh the status bar after a
+  // dismissal, without holding a reference to it.
+  const refreshStatusCmd = vscode.commands.registerCommand(
+    "secure-assist.internal.refreshStatusBar",
+    () => refreshDismissedButton()
+  );
+
+  function refreshDismissedButton(): void {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      dismissedButton.hide();
+      return;
+    }
+    const rel = vscode.workspace.asRelativePath(editor.document.uri, false).replace(/\\/g, "/");
+    const count = listSuppressions().filter((s) => s.file === rel).length;
+    if (count === 0) {
+      dismissedButton.hide();
+      return;
+    }
+    dismissedButton.text = `$(circle-slash) ${count} dismissed`;
+    dismissedButton.show();
+  }
 
   // Dismiss a finding as a false positive. Keyed on the text of the flagged
   // line, so it stays dismissed if the code moves but returns if the code
@@ -363,6 +416,7 @@ export async function activate(context: vscode.ExtensionContext) {
         modelVulnsToDiagnostics(doc, filterSuppressedVulns(getModelResults(uri), relPath, code))
       );
 
+      refreshDismissedButton();
       vscode.window.showInformationMessage(
         `Secure Assist: ${cwe} dismissed for this code. It will not be reported again unless the line changes.`
       );
@@ -412,6 +466,9 @@ export async function activate(context: vscode.ExtensionContext) {
     askAgentCmd,
     openAgentCmd,
     dismissCmd,
+    showDismissedCmd,
+    refreshStatusCmd,
+    dismissedButton,
     askAgentProvider,
     editorSub,
     scanButton,
@@ -422,6 +479,10 @@ export async function activate(context: vscode.ExtensionContext) {
     diagnostics,
     aiDiagnostics
   );
+
+  // Dismissals are persisted, so the status bar must reflect them on startup
+  // rather than only after the first editor switch.
+  refreshDismissedButton();
 }
 
 export function deactivate() {}

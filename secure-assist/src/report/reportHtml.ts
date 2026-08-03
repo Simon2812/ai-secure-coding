@@ -246,7 +246,7 @@ button.restore { font-size: 0.74rem; padding: 2px 10px; }
 .act-row.scan { border-left-color: var(--accent); }
 .act-icon { flex: 0 0 1em; text-align: center; color: var(--text-dim); }
 .act-kind {
-  flex: 0 0 4.5em; text-transform: uppercase; font-size: 0.68rem;
+  flex: 0 0 7em; text-transform: uppercase; font-size: 0.68rem;
   letter-spacing: 0.05em; color: var(--text-dim);
 }
 .act-what { flex: 1 1 240px; min-width: 0; }
@@ -590,7 +590,7 @@ export function buildReportHtml(
               code: row.dataset.code,
             });
             row.classList.add('restored');
-            restore.textContent = 'Restored';
+            restore.textContent = 'Suppression removed';
             return;
           }
           const dismiss = e.target.closest('button.dismiss');
@@ -864,14 +864,14 @@ export function buildReportHtml(
                 <span class="fp-cwe">${escapeHtml(s.cwe)}</span>
                 <code class="fp-code">${escapeHtml(s.code.length > 90 ? s.code.slice(0, 90) + "…" : s.code)}</code>
                 <span class="fp-when">${new Date(s.at).toLocaleDateString()}</span>
-                ${interactive ? `<button class="restore">Restore</button>` : ""}
+                ${interactive ? `<button class="restore">Remove suppression</button>` : ""}
               </div>`
               )
               .join("")}`
             )
             .join("")}
           ${interactive
-            ? `<p class="fp-note">Restoring lets the analyzer report this code again on the next scan.</p>`
+            ? `<p class="fp-note">Removing a suppression does not create a finding. It only stops this code being filtered out, so the analyzer can report it again on the next scan if it still considers it a problem.</p>`
             : ""}
         </div>
       </details>`
@@ -884,6 +884,14 @@ export function buildReportHtml(
     fix: "✓",
     dismiss: "✕",
     restore: "↺",
+  };
+  // The stored kind is kept as-is so older entries still resolve; only the
+  // label shown to the reader is reworded.
+  const activityLabel: Record<ActivityEvent["kind"], string> = {
+    scan: "scan",
+    fix: "fix",
+    dismiss: "suppressed",
+    restore: "unsuppressed",
   };
   const activityPanel = activity.length
     ? `<details class="side-panel">
@@ -898,7 +906,7 @@ export function buildReportHtml(
               (e) => `
             <div class="act-row ${e.kind}">
               <span class="act-icon">${activityIcon[e.kind] ?? "•"}</span>
-              <span class="act-kind">${e.kind}</span>
+              <span class="act-kind">${activityLabel[e.kind] ?? e.kind}</span>
               <span class="act-what">${escapeHtml(
                 [e.cwe, e.file].filter(Boolean).join(" in ") || "project"
               )}</span>

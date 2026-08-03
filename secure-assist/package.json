@@ -42,6 +42,10 @@
       {
         "command": "secure-assist.reportFalsePositive",
         "title": "Secure Assist: Report Finding as False Positive"
+      },
+      {
+        "command": "secure-assist.showDismissed",
+        "title": "Secure Assist: Show Dismissed Findings in This File"
       }
     ],
     "configuration": {
