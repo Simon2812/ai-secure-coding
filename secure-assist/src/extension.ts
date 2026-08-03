@@ -16,6 +16,14 @@ import { ModelFix } from "./model/client";
 import { loadCweCatalog, explainCwe } from "./model/cweCatalog";
 import { correlateFindings } from "./model/correlation";
 import { ReportPanel } from "./report/reportPanel";
+import {
+  initSuppressions,
+  filterSuppressed,
+  filterSuppressedVulns,
+  suppress,
+  lineTextAt,
+} from "./report/suppressions";
+import { groundVulnerabilities } from "./model/originMatch";
 import { FixPanel } from "./model/fixPanel";
 import { AskAgentProvider, askAboutFinding, ASK_AGENT_COMMAND } from "./agent/askAgent";
 import { AgentPanel } from "./agent/agentPanel";
@@ -39,6 +47,8 @@ export async function activate(context: vscode.ExtensionContext) {
   await initAstAnalyzer();
   // Shared CWE metadata (same catalog the CLI uses) for enriched findings.
   loadCweCatalog(context);
+  // Dismissed false positives, persisted per workspace.
+  initSuppressions(context);
 
   const output = vscode.window.createOutputChannel("Secure Assist");
   const diagnostics = createDiagnosticCollection();
@@ -98,7 +108,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     fileStore.set(relPath, content);
 
-    const findings = analyzeCode(content, relPath);
+    // Findings the developer dismissed as false positives never come back.
+    const findings = filterSuppressed(analyzeCode(content, relPath), relPath, content);
     updateDiagnostics(diagnostics, doc, findings);
 
     const key = doc.uri.toString();
@@ -162,7 +173,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const doc = editor.document;
     const relPath = vscode.workspace.asRelativePath(doc.uri, false).replace(/\\/g, "/");
     const code = doc.getText();
-    const staticFindings = analyzeCode(code, relPath);
+    const staticFindings = filterSuppressed(analyzeCode(code, relPath), relPath, code);
 
     // Surface our channel so results are visible without hunting the dropdown.
     output.show(true);
@@ -182,7 +193,21 @@ export async function activate(context: vscode.ExtensionContext) {
         progress.report({ message: "running model…" });
         try {
           const result = await analyzeWithModel(code, staticFindings, getModelEndpoint(), token);
-          const vulns = result.vulnerabilities ?? [];
+
+          // Discard findings the model could not tie to real code — usually a
+          // remembered fix pattern rather than something it read in this file.
+          const { grounded, discarded } = groundVulnerabilities(
+            result.vulnerabilities ?? [],
+            code
+          );
+          for (const d of discarded) {
+            output.appendLine(
+              `[AI] ignored ${d.cwe}: its origin does not appear in this file ` +
+                `(${(d.fixes?.[0]?.origin ?? "no fix").split("\n")[0].trim()})`
+            );
+          }
+
+          const vulns = filterSuppressedVulns(grounded, relPath, code);
 
           // Cross-check the two sources so we can mark issues that both agree on.
           const correlation = correlateFindings(staticFindings, vulns);
@@ -309,6 +334,34 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Dismiss a finding as a false positive. Keyed on the text of the flagged
+  // line, so it stays dismissed if the code moves but returns if the code
+  // itself changes.
+  const dismissCmd = vscode.commands.registerCommand(
+    "secure-assist.reportFalsePositive",
+    async (uri: vscode.Uri, cwe: string, line: number, endLine?: number) => {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const relPath = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+      const code = doc.getText();
+      const snippet = lineTextAt(code, line, endLine ?? line);
+
+      await suppress(relPath, cwe, snippet, line);
+      output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} — ${snippet.trim()}`);
+
+      // Refresh both diagnostic sets so the squiggle disappears immediately.
+      const refreshed = filterSuppressed(analyzeCode(code, relPath), relPath, code);
+      updateDiagnostics(diagnostics, doc, refreshed);
+      aiDiagnostics.set(
+        uri,
+        modelVulnsToDiagnostics(doc, filterSuppressedVulns(getModelResults(uri), relPath, code))
+      );
+
+      vscode.window.showInformationMessage(
+        `Secure Assist: ${cwe} dismissed for this code. It will not be reported again unless the line changes.`
+      );
+    }
+  );
+
   // Teacher agent: explains a finding conversationally. Backed by an external
   // API rather than the fine-tuned model, which only emits fix JSON.
   const askAgentCmd = vscode.commands.registerCommand(
@@ -351,6 +404,7 @@ export async function activate(context: vscode.ExtensionContext) {
     showFixesCmd,
     askAgentCmd,
     openAgentCmd,
+    dismissCmd,
     askAgentProvider,
     editorSub,
     scanButton,

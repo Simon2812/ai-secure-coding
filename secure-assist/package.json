@@ -38,6 +38,10 @@
       {
         "command": "secure-assist.askQuestion",
         "title": "Secure Assist: Ask the Security Assistant"
+      },
+      {
+        "command": "secure-assist.reportFalsePositive",
+        "title": "Secure Assist: Report Finding as False Positive"
       }
     ],
     "configuration": {

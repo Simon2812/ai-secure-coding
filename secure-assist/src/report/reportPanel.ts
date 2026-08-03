@@ -3,6 +3,7 @@ import { ScanReport, scanWorkspace } from "./scanner";
 import { buildReportHtml, renderCodeRows } from "./reportHtml";
 import { scoreForFindings, projectScore } from "./score";
 import { loadHistory, recordScan, ScanRecord } from "./history";
+import { suppress, lineTextAt } from "./suppressions";
 import {
   analyzeWithModel,
   getModelEndpoint,
@@ -14,7 +15,14 @@ import { correlateFindings } from "../model/correlation";
 import { applyFixEdit } from "../model/aiFix";
 import { renderFixDiff } from "../model/diffView";
 import { getCweInfo } from "../model/cweCatalog";
-import { containsOrigin } from "../model/originMatch";
+import { containsOrigin, groundVulnerabilities } from "../model/originMatch";
+
+/** Inclusive list of line numbers between two bounds. */
+function range(from: number, to: number): number[] {
+  const out: number[] = [];
+  for (let i = from; i <= Math.max(from, to); i++) out.push(i);
+  return out;
+}
 
 /** Fixes returned by a "Verify with AI" request, keyed by the report's row id. */
 type VerifiedFixes = Map<
@@ -122,6 +130,9 @@ export class ReportPanel {
       case "verifyFile":
         await this.verifyFile(msg);
         break;
+      case "dismiss":
+        await this.dismissFinding(msg);
+        break;
       case "previewFix":
         this.previewFix(msg);
         break;
@@ -186,7 +197,18 @@ export class ReportPanel {
       const code = doc.getText();
       const staticFindings = analyzeCode(code, msg.file);
       const result = await analyzeWithModel(code, staticFindings, getModelEndpoint());
-      const vulns = result.vulnerabilities ?? [];
+
+      // Drop findings the model could not tie to code actually in this file.
+      const { grounded, discarded } = groundVulnerabilities(
+        result.vulnerabilities ?? [],
+        code
+      );
+      for (const d of discarded) {
+        this.output.appendLine(
+          `[report] ignored ${d.cwe} in ${msg.file}: origin not present in the file`
+        );
+      }
+      const vulns = grounded;
 
       const correlation = correlateFindings(staticFindings, vulns);
 
@@ -226,11 +248,22 @@ export class ReportPanel {
           `${aiOnly.length} AI-only`
       );
 
+      // Re-render the file's source so lines the model flagged get their own
+      // colour alongside the static analyzer's.
+      const aiLines = vulns
+        .flatMap((v) =>
+          v.start_line == null
+            ? []
+            : range(v.start_line, v.end_line ?? v.start_line)
+        );
+
       this.panel.webview.postMessage({
         type: "fileVerified",
         index: msg.index,
         results,
         aiOnly,
+        codeRows: renderCodeRows(code, staticFindings.map((f) => f.line), aiLines),
+        aiLineCount: new Set(aiLines).size,
       });
     } catch (err: any) {
       this.panel.webview.postMessage({
@@ -281,6 +314,39 @@ export class ReportPanel {
     });
 
     return results;
+  }
+
+  /**
+   * Record a finding as a false positive and drop it from the in-memory report
+   * so the scores reflect the dismissal without needing a re-scan.
+   */
+  private async dismissFinding(msg: {
+    file: string;
+    cwe: string;
+    line: number;
+  }): Promise<void> {
+    const stored = this.report.files.find((f) => f.path === msg.file);
+    if (!stored?.code) return;
+
+    await suppress(msg.file, msg.cwe, lineTextAt(stored.code, msg.line), msg.line);
+    this.output.appendLine(`[fp] dismissed ${msg.cwe} at ${msg.file}:${msg.line}`);
+
+    stored.findings = stored.findings.filter(
+      (f) => !(f.cweId === msg.cwe && f.line === msg.line)
+    );
+    stored.score = scoreForFindings(stored.findings);
+    this.report.score = projectScore(this.report.files.map((f) => f.score));
+    this.report.cleanCount = this.report.files.filter((f) => f.findings.length === 0).length;
+    this.report.totalFindings = this.report.files.reduce((n, f) => n + f.findings.length, 0);
+
+    this.panel.webview.postMessage({
+      type: "dismissed",
+      score: stored.score,
+      projectScore: this.report.score,
+      cleanCount: this.report.cleanCount,
+      scannedCount: this.report.scannedCount,
+      file: msg.file,
+    });
   }
 
   /**

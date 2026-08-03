@@ -251,6 +251,10 @@ details.file { background: var(--surface); }
 /* A finding whose fix has been applied stays visible but reads as resolved. */
 .finding.fixed { opacity: 0.6; border-left-color: var(--good) !important; }
 .finding.fixed .cwe { text-decoration: line-through; }
+/* Dismissed as a false positive — kept visible so the decision is auditable. */
+.finding.dismissed { opacity: 0.45; border-left-style: dotted; }
+.finding.dismissed .cwe { text-decoration: line-through; }
+button.dismiss { font-size: 0.76rem; }
 .ai-findings:empty { display: none; }
 
 /* Inline source viewer */
@@ -261,9 +265,25 @@ button.see-code { font-size: 0.78rem; }
   font-family: var(--mono); font-size: 0.78rem; line-height: 1.5;
   max-height: 460px; overflow-y: auto;
 }
-.code-line { display: flex; white-space: pre; }
-.code-line.flagged { background: rgba(248, 81, 73, 0.14); border-left: 3px solid var(--bad); }
-.code-line:not(.flagged) { border-left: 3px solid transparent; }
+.code-line { display: flex; white-space: pre; border-left: 3px solid transparent; }
+/* Static analyzer finding. */
+.code-line.flagged { background: rgba(240, 102, 95, 0.14); border-left-color: var(--bad); }
+/* Model finding — its own colour so the two sources stay distinguishable. */
+.code-line.ai-flagged { background: rgba(162, 116, 240, 0.16); border-left-color: var(--ai); }
+/* Flagged by both: red bar, blended tint. */
+.code-line.flagged.ai-flagged {
+  background: rgba(200, 110, 165, 0.16);
+  border-left-color: var(--bad);
+  box-shadow: inset -3px 0 0 var(--ai);
+}
+.code-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin: 0 14px 6px; font-size: 0.72rem; color: var(--text-dim);
+}
+.code-legend span { display: flex; align-items: center; gap: 5px; }
+.code-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.code-legend i.s { background: var(--bad); }
+.code-legend i.a { background: var(--ai); }
 .ln {
   flex: 0 0 3.2em; text-align: right; padding: 0 10px 0 6px;
   color: var(--text-dim); user-select: none;
@@ -299,7 +319,11 @@ function renderFinding(
     <div class="msg">${escapeHtml(f.message)}</div>
     ${info?.recommendation ? `<div class="rec">${escapeHtml(info.recommendation)}</div>` : ""}
     ${f.evidence ? `<pre class="evidence">${escapeHtml(f.evidence)}</pre>` : ""}
-    <div class="actions" id="actions-${id}"></div>
+    <div class="actions" id="actions-${id}">
+      ${interactive
+        ? `<button class="dismiss" data-file="${escapeHtml(file.path)}" data-cwe="${escapeHtml(f.cweId)}" data-line="${f.line}" title="Never report this exact code again">Not a vulnerability</button>`
+        : ""}
+    </div>
   </div>`;
 }
 
@@ -325,13 +349,26 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
  * Source lines with line numbers, flagged lines highlighted.
  * Exported so the panel can re-render a file's code after a fix is applied.
  */
-export function renderCodeRows(code: string, flaggedLines: Iterable<number>): string {
+export function renderCodeRows(
+  code: string,
+  flaggedLines: Iterable<number>,
+  aiLines: Iterable<number> = []
+): string {
   const flagged = new Set(flaggedLines);
+  const ai = new Set(aiLines);
   return code
     .split("\n")
     .map((line, i) => {
       const n = i + 1;
-      const cls = flagged.has(n) ? "code-line flagged" : "code-line";
+      // A line both tools flagged keeps the static (red) marker and adds the
+      // AI one, so agreement is visible rather than one colour hiding the other.
+      const cls = [
+        "code-line",
+        flagged.has(n) ? "flagged" : "",
+        ai.has(n) ? "ai-flagged" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
       return `<div class="${cls}"><span class="ln">${n}</span><span class="lc">${escapeHtml(line) || "&nbsp;"}</span></div>`;
     })
     .join("");
@@ -495,6 +532,19 @@ export function buildReportHtml(
             if (box) box.remove();
             return;
           }
+          const dismiss = e.target.closest('button.dismiss');
+          if (dismiss) {
+            dismiss.disabled = true;
+            vscode.postMessage({
+              type: 'dismiss',
+              file: dismiss.dataset.file,
+              cwe: dismiss.dataset.cwe,
+              line: Number(dismiss.dataset.line),
+            });
+            const row = dismiss.closest('.finding');
+            if (row) { row.classList.add('dismissed'); }
+            return;
+          }
           // Toolbar actions are delegated too, so they work regardless of when
           // the script runs relative to the buttons being parsed.
           if (e.target.closest('#export')) {
@@ -552,6 +602,23 @@ export function buildReportHtml(
               const actions = document.getElementById('actions-' + r.id);
               if (actions && r.fixCount > 0) addFixButtons(actions, r.id, r.fixCount);
             });
+
+            // Repaint the source so the model's lines show in their own colour,
+            // and explain the two colours now that both are present.
+            if (msg.codeRows) {
+              const block = document.getElementById('code-' + msg.index);
+              if (block) block.innerHTML = msg.codeRows;
+              const tools = document.querySelector('#code-' + msg.index).previousElementSibling;
+              if (msg.aiLineCount > 0 && tools && !document.getElementById('legend-' + msg.index)) {
+                const legend = document.createElement('div');
+                legend.className = 'code-legend';
+                legend.id = 'legend-' + msg.index;
+                legend.innerHTML =
+                  '<span><i class="s"></i>static analyzer</span>' +
+                  '<span><i class="a"></i>AI</span>';
+                tools.insertAdjacentElement('afterend', legend);
+              }
+            }
 
             // Findings only the model reported.
             const host = document.getElementById('aifindings-' + msg.index);
@@ -647,6 +714,17 @@ export function buildReportHtml(
                 clean.textContent = msg.cleanCount + ' of ' + msg.scannedCount + ' files clean';
               }
             }
+          } else if (msg.type === 'dismissed') {
+            // Scores move as soon as a finding is dismissed, no re-scan needed.
+            const proj = document.getElementById('projectScore');
+            if (proj) { proj.textContent = msg.projectScore; proj.className = 'score ' + band(msg.projectScore); }
+            const clean = document.getElementById('cleanLabel');
+            if (clean) clean.textContent = msg.cleanCount + ' of ' + msg.scannedCount + ' files clean';
+            document.querySelectorAll('details.file').forEach(f => {
+              if (f.dataset.path !== (msg.file || '').toLowerCase()) return;
+              const el = f.querySelector('summary .file-score');
+              if (el) { el.textContent = msg.score; el.className = 'file-score ' + band(msg.score); }
+            });
           } else if (msg.type === 'verifyFailed') {
             if (status) status.textContent = msg.message || 'AI verification failed.';
           }

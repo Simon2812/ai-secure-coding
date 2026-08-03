@@ -70,16 +70,29 @@ export class AskAgentProvider implements vscode.CodeActionProvider {
       if (!cwe || seen.has(cwe)) continue;
       seen.add(cwe);
 
-      const action = new vscode.CodeAction(
+      const line = diag.range.start.line + 1;
+
+      const explain = new vscode.CodeAction(
         `Secure Assist: explain ${cwe} with AI`,
         vscode.CodeActionKind.QuickFix
       );
-      action.command = {
+      explain.command = {
         command: ASK_AGENT_COMMAND,
         title: "Explain with AI",
-        arguments: [document.uri, cwe, diag.range.start.line + 1],
+        arguments: [document.uri, cwe, line],
       };
-      actions.push(action);
+      actions.push(explain);
+
+      const dismiss = new vscode.CodeAction(
+        `Secure Assist: report ${cwe} as a false positive`,
+        vscode.CodeActionKind.QuickFix
+      );
+      dismiss.command = {
+        command: "secure-assist.reportFalsePositive",
+        title: "Report as false positive",
+        arguments: [document.uri, cwe, line, diag.range.end.line + 1],
+      };
+      actions.push(dismiss);
     }
     return actions;
   }
