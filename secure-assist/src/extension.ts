@@ -9,11 +9,14 @@ import {
   modelVulnsToDiagnostics,
   previewAndApplyFix,
   pruneStaleAiFindings,
+  getModelResults,
   APPLY_AI_FIX_COMMAND,
 } from "./model/aiFix";
 import { ModelFix } from "./model/client";
 import { loadCweCatalog, explainCwe } from "./model/cweCatalog";
 import { correlateFindings } from "./model/correlation";
+import { ReportPanel } from "./report/reportPanel";
+import { FixPanel } from "./model/fixPanel";
 
 // Analysis is on by default — the user should get findings without having to
 // discover a "start tracking" command first.
@@ -225,6 +228,8 @@ export async function activate(context: vscode.ExtensionContext) {
             }
           }
 
+          refreshFixesButton();
+
           const bothCount = correlation.confirmedModel.size;
           vscode.window.showInformationMessage(
             `Secure Assist: AI found ${vulns.length} issue(s) in ${secs}s ` +
@@ -249,6 +254,50 @@ export async function activate(context: vscode.ExtensionContext) {
   scanButton.command = "secure-assist.scanWithAI";
   scanButton.show();
 
+  // Opens the AI fixes panel for the active file. Surfaced only once a scan has
+  // produced fixes, so the button is never a no-op.
+  const fixesButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 101);
+  fixesButton.command = "secure-assist.showFixes";
+  fixesButton.tooltip = "Secure Assist: review and apply the AI's suggested fixes";
+
+  const showFixesCmd = vscode.commands.registerCommand("secure-assist.showFixes", () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) return;
+    FixPanel.show(editor.document.uri, aiDiagnostics, output);
+  });
+
+  /** Show the fixes button only when the active file has fixes to offer. */
+  const refreshFixesButton = () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      fixesButton.hide();
+      return;
+    }
+    const count = getModelResults(editor.document.uri).reduce(
+      (n, v) => n + (v.fixes?.length ?? 0),
+      0
+    );
+    if (count === 0) {
+      fixesButton.hide();
+      return;
+    }
+    fixesButton.text = `$(zap) ${count} AI fix${count === 1 ? "" : "es"}`;
+    fixesButton.show();
+  };
+
+  const editorSub = vscode.window.onDidChangeActiveTextEditor(() => refreshFixesButton());
+
+  // Deep scan: static analysis over the whole workspace, rendered as a report.
+  const deepScanCmd = vscode.commands.registerCommand("secure-assist.deepScan", async () => {
+    await ReportPanel.show(output, context);
+  });
+
+  const deepScanButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+  deepScanButton.text = "$(search) Deep Scan Project";
+  deepScanButton.tooltip = "Secure Assist: scan every source file and open the security report";
+  deepScanButton.command = "secure-assist.deepScan";
+  deepScanButton.show();
+
   // Backing command for the quick fix — shows the proposed change, then applies
   // it only on confirmation (model fixes are not always correct).
   const applyAiFixCmd = vscode.commands.registerCommand(
@@ -272,7 +321,12 @@ export async function activate(context: vscode.ExtensionContext) {
     changeSub,
     scanAiCmd,
     applyAiFixCmd,
+    deepScanCmd,
+    showFixesCmd,
+    editorSub,
     scanButton,
+    deepScanButton,
+    fixesButton,
     aiFixProvider,
     output,
     diagnostics,
