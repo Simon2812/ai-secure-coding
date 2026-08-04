@@ -10,7 +10,15 @@ import {
   loadActivity,
   recordActivity,
 } from "./history";
-import { suppress, unsuppress, lineTextAt, listSuppressions, Suppression } from "./suppressions";
+import {
+  suppress,
+  unsuppress,
+  lineTextAt,
+  listSuppressions,
+  confirmSuppression,
+  Suppression,
+} from "./suppressions";
+import { askAboutFinding } from "../agent/askAgent";
 import {
   analyzeWithModel,
   getModelEndpoint,
@@ -348,7 +356,18 @@ export class ReportPanel {
     const stored = this.report.files.find((f) => f.path === msg.file);
     if (!stored?.code) return;
 
-    await suppress(msg.file, msg.cwe, lineTextAt(stored.code, msg.line), msg.line);
+    const snippet = lineTextAt(stored.code, msg.line);
+    const choice = await confirmSuppression(msg.cwe, snippet);
+    if (choice !== "suppress") {
+      // Re-enable the button and undo the row's dimmed state.
+      this.panel.webview.postMessage({ type: "dismissCancelled", id: `${msg.file}:${msg.line}` });
+      if (choice === "explain") {
+        await askAboutFinding(stored.uri, msg.cwe, msg.line, this.output);
+      }
+      return;
+    }
+
+    await suppress(msg.file, msg.cwe, snippet, msg.line);
     this.activity = await recordActivity(this.context, {
       kind: "dismiss",
       file: msg.file,

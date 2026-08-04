@@ -46,6 +46,10 @@
       {
         "command": "secure-assist.showDismissed",
         "title": "Secure Assist: Show Dismissed Findings in This File"
+      },
+      {
+        "command": "secure-assist.settings",
+        "title": "Secure Assist: Settings"
       }
     ],
     "configuration": {
@@ -65,6 +69,19 @@
           "type": "string",
           "default": "claude-sonnet-5",
           "description": "Model used by the security assistant."
+        },
+        "secureAssist.enabledCwes": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Which weaknesses are reported. A CWE set to `false` is excluded from findings **and** from the project score. Easiest to edit from **Secure Assist: Settings**.",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "secureAssist.liveMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Re-run the static analyzer as you type. When off, files are analysed on save only."
         }
       }
     }

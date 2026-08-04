@@ -6,6 +6,7 @@ import { findOriginRange } from "./originMatch";
 import { PALETTE } from "../report/reportHtml";
 import { renderFixDiff, DIFF_STYLES } from "./diffView";
 import { askAboutFinding } from "../agent/askAgent";
+import { recordActivity } from "../report/history";
 
 function escapeHtml(value: string): string {
   return value
@@ -35,6 +36,7 @@ export class FixPanel {
   private readonly panel: vscode.WebviewPanel;
   private readonly aiDiagnostics: vscode.DiagnosticCollection;
   private readonly output: vscode.OutputChannel;
+  private readonly context: vscode.ExtensionContext;
   private uri: vscode.Uri;
   private items: PanelItem[] = [];
   private disposables: vscode.Disposable[] = [];
@@ -43,12 +45,14 @@ export class FixPanel {
     panel: vscode.WebviewPanel,
     uri: vscode.Uri,
     aiDiagnostics: vscode.DiagnosticCollection,
-    output: vscode.OutputChannel
+    output: vscode.OutputChannel,
+    context: vscode.ExtensionContext
   ) {
     this.panel = panel;
     this.uri = uri;
     this.aiDiagnostics = aiDiagnostics;
     this.output = output;
+    this.context = context;
 
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
@@ -57,7 +61,8 @@ export class FixPanel {
   static show(
     uri: vscode.Uri,
     aiDiagnostics: vscode.DiagnosticCollection,
-    output: vscode.OutputChannel
+    output: vscode.OutputChannel,
+    context: vscode.ExtensionContext
   ): void {
     if (FixPanel.current) {
       FixPanel.current.uri = uri;
@@ -71,7 +76,7 @@ export class FixPanel {
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       { enableScripts: true, retainContextWhenHidden: true }
     );
-    FixPanel.current = new FixPanel(panel, uri, aiDiagnostics, output);
+    FixPanel.current = new FixPanel(panel, uri, aiDiagnostics, output, context);
     FixPanel.current.refresh();
   }
 
@@ -227,6 +232,12 @@ export class FixPanel {
     const applied = await applyFixEdit(this.uri, fix, this.aiDiagnostics);
     if (applied) {
       this.output.appendLine(`[fixes] applied ${item!.vuln.cwe} fix in ${this.uri.fsPath}`);
+      await recordActivity(this.context, {
+        kind: "fix",
+        file: vscode.workspace.asRelativePath(this.uri, false).replace(/\\/g, "/"),
+        cwe: item!.vuln.cwe,
+        detail: "applied from the fixes panel",
+      });
       this.panel.webview.postMessage({ type: "applied", id: msg.id });
     } else {
       this.panel.webview.postMessage({

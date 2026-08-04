@@ -66,6 +66,44 @@ export async function suppress(
   await context.workspaceState.update(STORAGE_KEY, next);
 }
 
+/** What the user chose when asked to confirm a suppression. */
+export type SuppressChoice = "suppress" | "explain" | "cancel";
+
+/**
+ * Confirm before silencing a finding.
+ *
+ * Suppression is not a fix: the code is unchanged, only the reporting stops.
+ * Because a mistaken dismissal hides a real vulnerability indefinitely, the
+ * consequence is stated plainly and asking the assistant first is offered as
+ * an alternative to guessing.
+ */
+export async function confirmSuppression(
+  cwe: string,
+  snippet: string
+): Promise<SuppressChoice> {
+  const line = snippet.trim().split("\n")[0];
+  const preview = line.length > 80 ? `${line.slice(0, 80)}…` : line;
+
+  const choice = await vscode.window.showWarningMessage(
+    `Stop reporting ${cwe} for this code?`,
+    {
+      modal: true,
+      detail:
+        `${preview}\n\n` +
+        "This does not change the code. If the finding is real, the vulnerability " +
+        "stays in your project and will not be reported again — unless you edit " +
+        "this line or remove the suppression in Settings.\n\n" +
+        "If you are not sure whether it is a false positive, ask the assistant first.",
+    },
+    "Suppress",
+    "Ask the assistant"
+  );
+
+  if (choice === "Suppress") return "suppress";
+  if (choice === "Ask the assistant") return "explain";
+  return "cancel";
+}
+
 export async function unsuppress(file: string, cwe: string, code: string): Promise<void> {
   if (!context) return;
   const target = keyOf(file, cwe, code);

@@ -595,7 +595,9 @@ export function buildReportHtml(
           }
           const dismiss = e.target.closest('button.dismiss');
           if (dismiss) {
+            // Optimistic, but reverted if the confirmation is declined.
             dismiss.disabled = true;
+            dismiss.dataset.pending = dismiss.dataset.file + ':' + dismiss.dataset.line;
             vscode.postMessage({
               type: 'dismiss',
               file: dismiss.dataset.file,
@@ -774,6 +776,14 @@ export function buildReportHtml(
               if (clean && typeof msg.cleanCount === 'number' && typeof msg.scannedCount === 'number') {
                 clean.textContent = msg.cleanCount + ' of ' + msg.scannedCount + ' files clean';
               }
+            }
+          } else if (msg.type === 'dismissCancelled') {
+            const btn = document.querySelector('button.dismiss[data-pending="' + msg.id + '"]');
+            if (btn) {
+              btn.disabled = false;
+              delete btn.dataset.pending;
+              const row = btn.closest('.finding');
+              if (row) row.classList.remove('dismissed');
             }
           } else if (msg.type === 'dismissed') {
             // Scores move as soon as a finding is dismissed, no re-scan needed.
