@@ -7,6 +7,9 @@ export interface ChatMessage {
   content: string;
 }
 
+/** Why the conversation was opened, which changes the question asked. */
+export type Intent = "explain" | "suppress";
+
 /** The finding the conversation is about, used to build the opening context. */
 export interface FindingContext {
   cwe: string;
@@ -17,6 +20,7 @@ export interface FindingContext {
   line?: number;
   snippet: string;
   suggestedFix?: { origin: string; replacement: string };
+  intent?: Intent;
 }
 
 export type Level = "simple" | "technical";
@@ -40,7 +44,7 @@ function config<T>(key: string, fallback: T): T {
  * the prompt pushes for reasoning about the user's actual code instead of the
  * generic CWE description they could have read in the catalog.
  */
-function systemPrompt(level: Level): string {
+function systemPrompt(level: Level, intent: Intent = "explain"): string {
   const depth =
     level === "simple"
       ? "Explain in plain language for a developer who is not a security specialist. " +
@@ -70,8 +74,28 @@ function systemPrompt(level: Level): string {
     "- Offer concerns as your own reading: \"my concern with this as written is...\", not \"this is broken\".",
     "- Never soften a real defect into vagueness. If it would fail to compile, crash, or leave the vulnerability open, say so clearly and explain exactly why — a developer who applies a broken patch is worse off than one who was told plainly.",
     "- Where you can, suggest what would make it work rather than only naming the problem.",
+    ...(intent === "suppress" ? SUPPRESS_GUIDANCE : []),
   ].join("\n");
 }
+
+/**
+ * Extra instructions when the developer is deciding whether to silence a
+ * finding.
+ *
+ * The risk here is agreement: the question arrives already framed as "I want to
+ * suppress this", and a model that follows that framing will help hide a real
+ * vulnerability. The verdict must therefore come from the code, and must be
+ * stated even when it contradicts what the developer is about to do.
+ */
+const SUPPRESS_GUIDANCE = [
+  "",
+  "The developer is deciding whether to permanently stop reporting this finding.",
+  "- Answer the question they actually have: is this a false positive, or is it real?",
+  "- Open with a direct verdict — 'this looks like a false positive' or 'this is a real vulnerability' — then justify it from the code.",
+  "- Do not agree simply because they intend to suppress it. If it is real, say so plainly and explain what an attacker would do.",
+  "- If it genuinely is a false positive, say that too, and name the specific reason the analyzer was wrong (a guard it did not recognise, a constant it could not evaluate, a sanitiser it does not know).",
+  "- If you cannot tell from the code shown, say what additional context would settle it rather than guessing.",
+];
 
 /** The opening message: the finding, its code, and any proposed fix. */
 export function buildContextMessage(ctx: FindingContext): string {
@@ -95,7 +119,14 @@ export function buildContextMessage(ctx: FindingContext): string {
     );
   }
 
-  parts.push("", "Explain this issue to me.");
+  parts.push(
+    "",
+    ctx.intent === "suppress"
+      ? "I am about to suppress this finding, which would stop it being reported " +
+          "for this code from now on. Is it a false positive, or is this a real " +
+          "vulnerability I should fix instead?"
+      : "Explain this issue to me."
+  );
   return parts.join("\n");
 }
 
@@ -109,7 +140,8 @@ export function streamReply(
   messages: ChatMessage[],
   level: Level,
   onDelta: (text: string) => void,
-  token?: vscode.CancellationToken
+  token?: vscode.CancellationToken,
+  intent: Intent = "explain"
 ): Promise<string> {
   const apiKey = config<string>("agentApiKey", "").trim();
   if (!apiKey) return Promise.reject(new MissingApiKeyError());
@@ -118,7 +150,7 @@ export function streamReply(
   const body = JSON.stringify({
     model,
     max_tokens: 1024,
-    system: systemPrompt(level),
+    system: systemPrompt(level, intent),
     stream: true,
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
   });

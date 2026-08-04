@@ -362,7 +362,7 @@ export class ReportPanel {
       // Re-enable the button and undo the row's dimmed state.
       this.panel.webview.postMessage({ type: "dismissCancelled", id: `${msg.file}:${msg.line}` });
       if (choice === "explain") {
-        await askAboutFinding(stored.uri, msg.cwe, msg.line, this.output);
+        await askAboutFinding(stored.uri, msg.cwe, msg.line, this.output, undefined, "suppress");
       }
       return;
     }

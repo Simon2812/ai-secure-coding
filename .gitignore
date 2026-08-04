@@ -23,3 +23,5 @@ env/
 
 *.log
 *.tmp
+
+PROJECT_STATE.md

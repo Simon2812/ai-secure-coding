@@ -443,7 +443,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const choice = await confirmSuppression(cwe, snippet);
       if (choice === "cancel") return;
       if (choice === "explain") {
-        await askAboutFinding(uri, cwe, line, output);
+        await askAboutFinding(uri, cwe, line, output, undefined, "suppress");
         return;
       }
 
@@ -491,6 +491,14 @@ export async function activate(context: vscode.ExtensionContext) {
     AgentPanel.open(output);
   });
 
+  // Always available: a question that is not tied to a finding — "is this fix
+  // correct?", "why is this pattern unsafe?" — with the open file as context.
+  const askButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 96);
+  askButton.text = "$(comment-discussion) Ask";
+  askButton.tooltip = "Secure Assist: ask the security assistant about this file";
+  askButton.command = "secure-assist.askQuestion";
+  askButton.show();
+
   const askAgentProvider = vscode.languages.registerCodeActionsProvider(
     { scheme: "file" },
     new AskAgentProvider(),
@@ -520,6 +528,7 @@ export async function activate(context: vscode.ExtensionContext) {
     refreshStatusCmd,
     settingsCmd,
     settingsButton,
+    askButton,
     dismissedButton,
     askAgentProvider,
     editorSub,

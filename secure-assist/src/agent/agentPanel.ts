@@ -3,6 +3,7 @@ import {
   ChatMessage,
   FindingContext,
   Level,
+  Intent,
   MissingApiKeyError,
   buildContextMessage,
   streamReply,
@@ -27,10 +28,23 @@ function escapeHtml(value: string): string {
 export class AgentPanel {
   private static current: AgentPanel | undefined;
 
+  /**
+   * The conversation, kept on the class rather than the instance: closing the
+   * panel should not lose the thread, because the usual flow is to ask about a
+   * finding, close the panel to edit the code, then come back and ask whether
+   * the change was right.
+   */
+  private static messages: ChatMessage[] = [];
+  /** What was displayed for each turn — the sent text includes file context. */
+  private static transcript: { role: "user" | "assistant"; text: string }[] = [];
+
   private readonly panel: vscode.WebviewPanel;
   private readonly output: vscode.OutputChannel;
-  private messages: ChatMessage[] = [];
   private level: Level = "simple";
+  /** Why the conversation was opened; shapes the system prompt. */
+  private intent: Intent = "explain";
+  /** File contents attached to the next question, then cleared. */
+  private pendingContext: string | undefined;
   private busy = false;
   private disposables: vscode.Disposable[] = [];
 
@@ -38,6 +52,11 @@ export class AgentPanel {
     this.panel = panel;
     this.output = output;
     this.panel.webview.html = this.html();
+    // The panel may have been closed and reopened mid-conversation; put the
+    // transcript back so the thread is visible, not just retained internally.
+    if (AgentPanel.transcript.length > 0) {
+      this.post({ type: "replay", turns: AgentPanel.transcript });
+    }
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
@@ -45,16 +64,51 @@ export class AgentPanel {
   /** Open the panel and start a conversation about a specific finding. */
   static async explain(ctx: FindingContext, output: vscode.OutputChannel): Promise<void> {
     const panel = AgentPanel.reveal(output);
-    panel.messages = [];
-    panel.post({ type: "reset", title: `${ctx.cwe}${ctx.title ? ` — ${ctx.title}` : ""}` });
+    panel.intent = ctx.intent ?? "explain";
+    panel.post({ type: "title", title: `${ctx.cwe}${ctx.title ? ` — ${ctx.title}` : ""}` });
     await panel.send(buildContextMessage(ctx), {
-      display: `Explain the ${ctx.cwe} finding in ${ctx.file}.`,
+      display:
+        ctx.intent === "suppress"
+          ? `Is this ${ctx.cwe} finding in ${ctx.file} safe to suppress?`
+          : `Explain the ${ctx.cwe} finding in ${ctx.file}.`,
     });
   }
 
-  /** Open the panel without a finding, for a free-form question. */
+  /**
+   * Open the panel for a free-form question.
+   *
+   * The active file is attached but not sent yet: it is prepended to whatever
+   * the developer asks first, so a question like "is this fix correct?" has the
+   * code to reason about without a finding to hang the conversation on.
+   */
   static open(output: vscode.OutputChannel): void {
-    AgentPanel.reveal(output);
+    const panel = AgentPanel.reveal(output);
+    panel.intent = "explain";
+
+    const editor = vscode.window.activeTextEditor;
+    if (editor && editor.document.uri.scheme === "file") {
+      const file = vscode.workspace
+        .asRelativePath(editor.document.uri, false)
+        .replace(/\\/g, "/");
+      const code = editor.document.getText();
+      // Keep a large file from dominating the request.
+      const trimmed =
+        code.length > 12000 ? `${code.slice(0, 12000)}\n… (truncated)` : code;
+
+      panel.pendingContext = [
+        `For reference, here is the file I am working in (${file}):`,
+        "",
+        "```",
+        trimmed,
+        "```",
+        "",
+      ].join("\n");
+
+      panel.post({ type: "title", title: `context: ${file}` });
+    } else {
+      panel.pendingContext = undefined;
+      panel.post({ type: "title", title: "no file attached" });
+    }
   }
 
   private static reveal(output: vscode.OutputChannel): AgentPanel {
@@ -86,20 +140,32 @@ export class AgentPanel {
     if (this.busy) return;
     this.busy = true;
 
-    this.messages.push({ role: "user", content });
-    this.post({ type: "user", text: opts?.display ?? content });
+    // A free-form conversation carries the open file into its first question.
+    const withContext = this.pendingContext ? this.pendingContext + content : content;
+    this.pendingContext = undefined;
+
+    const shown = opts?.display ?? content;
+    AgentPanel.messages.push({ role: "user", content: withContext });
+    AgentPanel.transcript.push({ role: "user", text: shown });
+    this.post({ type: "user", text: shown });
     this.post({ type: "start" });
 
     let reply = "";
     try {
-      reply = await streamReply(this.messages, this.level, (delta) => {
-        this.post({ type: "delta", text: delta });
-      });
-      this.messages.push({ role: "assistant", content: reply });
+      reply = await streamReply(
+        AgentPanel.messages,
+        this.level,
+        (delta) => this.post({ type: "delta", text: delta }),
+        undefined,
+        this.intent
+      );
+      AgentPanel.messages.push({ role: "assistant", content: reply });
+      AgentPanel.transcript.push({ role: "assistant", text: reply });
       this.post({ type: "end" });
     } catch (err: any) {
       // Drop the unanswered turn so a retry doesn't resend it twice.
-      this.messages.pop();
+      AgentPanel.messages.pop();
+      AgentPanel.transcript.pop();
       const message =
         err instanceof MissingApiKeyError
           ? err.message
@@ -128,7 +194,8 @@ export class AgentPanel {
         );
         break;
       case "clear":
-        this.messages = [];
+        AgentPanel.messages = [];
+        AgentPanel.transcript = [];
         this.post({ type: "reset", title: "" });
         break;
     }
@@ -199,6 +266,14 @@ export class AgentPanel {
       if (msg.type === 'reset') {
         log.innerHTML = '';
         document.getElementById('subject').textContent = msg.title || '';
+      } else if (msg.type === 'title') {
+        // Opening the panel again retitles it without discarding the thread.
+        document.getElementById('subject').textContent = msg.title || '';
+      } else if (msg.type === 'replay') {
+        log.innerHTML = '';
+        for (const turn of msg.turns || []) {
+          bubble(turn.role === 'user' ? 'user' : 'bot', turn.text);
+        }
       } else if (msg.type === 'user') {
         bubble('user', msg.text);
       } else if (msg.type === 'start') {

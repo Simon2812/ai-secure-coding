@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { AgentPanel } from "./agentPanel";
-import { FindingContext } from "./agentClient";
+import { FindingContext, Intent } from "./agentClient";
 import { getCweInfo } from "../model/cweCatalog";
 
 /** Lines of context sent around the finding — enough to reason about, small enough to stay cheap. */
@@ -19,7 +19,8 @@ export async function askAboutFinding(
   cwe: string,
   line: number | undefined,
   output: vscode.OutputChannel,
-  suggestedFix?: { origin: string; replacement: string }
+  suggestedFix?: { origin: string; replacement: string },
+  intent: Intent = "explain"
 ): Promise<void> {
   const doc = await vscode.workspace.openTextDocument(uri);
   const info = getCweInfo(cwe);
@@ -40,6 +41,7 @@ export async function askAboutFinding(
     line,
     snippet,
     suggestedFix,
+    intent,
   };
 
   await AgentPanel.explain(ctx, output);
