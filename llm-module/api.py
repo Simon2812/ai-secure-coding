@@ -31,7 +31,10 @@ class VulnerabilityModel(BaseModel):
     """
 
     cwe: str
-    fixes: List[FixModel]
+    # Defaulted rather than required: a detection the model could not write a
+    # fix for is still worth returning, and an unexpected shape should degrade
+    # to "no fix" instead of failing validation for the whole response.
+    fixes: List[FixModel] = []
     start_line: Optional[int] = None
     end_line: Optional[int] = None
 
@@ -51,6 +54,82 @@ class AnalyzeResponse(BaseModel):
     """
 
     vulnerabilities: List[VulnerabilityModel]
+
+
+"""
+Keys the model has been observed to use in place of "cwe".
+
+The checkpoint is deterministic but not perfectly consistent about its
+schema; it sometimes labels the identifier "id". Left unmapped, response
+validation rejects the whole reply and a correct detection is returned to
+the caller as a 500.
+"""
+CWE_KEY_ALIASES = (
+    "cwe",
+    "id",
+    "cwe_id",
+    "cweId",
+)
+
+
+def normalize_cwe_key(
+    vulnerability: dict,
+):
+    """
+    Move whichever alias the model used into "cwe".
+    Returns None when no identifier is present at all.
+    """
+
+    for key in CWE_KEY_ALIASES:
+        value = vulnerability.get(key)
+
+        if isinstance(value, str) and value.strip():
+            normalized = dict(vulnerability)
+
+            for alias in CWE_KEY_ALIASES:
+                normalized.pop(alias, None)
+
+            normalized["cwe"] = value.strip()
+
+            return normalized
+
+    return None
+
+
+def normalize_fix_shape(
+    vulnerability: dict,
+):
+    """
+    Lift a flattened fix into the nested "fixes" list.
+
+    The model sometimes emits the replacement inline on the vulnerability
+    itself ({"cwe": ..., "origin": ..., "replacement": ...}) rather than
+    nested under "fixes". Both carry the same information, but only the
+    nested form validates, so the flat form is reshaped rather than lost.
+    """
+
+    if isinstance(vulnerability.get("fixes"), list):
+        return vulnerability
+
+    origin = vulnerability.get("origin")
+    replacement = vulnerability.get("replacement")
+
+    normalized = dict(vulnerability)
+    normalized.pop("origin", None)
+    normalized.pop("replacement", None)
+
+    if isinstance(origin, str) and isinstance(replacement, str):
+        normalized["fixes"] = [
+            {
+                "origin": origin,
+                "replacement": replacement,
+            }
+        ]
+    else:
+        # A detection with no usable fix is still a detection.
+        normalized["fixes"] = []
+
+    return normalized
 
 
 def add_origin_line_ranges(
@@ -78,6 +157,19 @@ def add_origin_line_ranges(
     for vulnerability in vulnerabilities:
         if not isinstance(vulnerability, dict):
             continue
+
+        vulnerability = normalize_cwe_key(
+            vulnerability
+        )
+
+        # An entry with no usable identifier is dropped rather than
+        # failing the whole response.
+        if vulnerability is None:
+            continue
+
+        vulnerability = normalize_fix_shape(
+            vulnerability
+        )
 
         fixes = vulnerability.get(
             "fixes",
