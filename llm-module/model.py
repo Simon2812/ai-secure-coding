@@ -46,10 +46,25 @@ class SecureCodingModel:
         self.tokenizer = None
 
         # Deterministic JSON generation.
+        #
+        # max_new_tokens caps the reply. A file with many findings needs one
+        # JSON object per finding, each carrying an origin and a replacement,
+        # so 768 runs out at roughly eight findings and the reply is cut
+        # mid-structure. Raising the cap costs nothing on short replies —
+        # generation still stops at the end-of-sequence token.
         self.generation_config = {
             "do_sample": False,
-            "max_new_tokens": 768,
+            "max_new_tokens": 2048,
         }
+
+        # Longest prompt the model is given at inference, in tokens.
+        #
+        # Deliberately separate from training_config["max_length"]: that value
+        # is the sequence length used for fine-tuning, and reusing it here
+        # silently truncated any file longer than about 250 lines of Java, so
+        # findings past the cut could not be seen. Qwen2.5-Coder supports a
+        # 32k context natively, well beyond this.
+        self.inference_max_input = 8192
 
         # Experiment configuration (tunable between runs).
         self.training_config = {
@@ -262,8 +277,17 @@ class SecureCodingModel:
             input_text,
             return_tensors="pt",
             truncation=True,
-            max_length=self.training_config["max_length"],
+            max_length=self.inference_max_input,
         )
+
+        # Truncation here means the tail of the file was never analysed, which
+        # is invisible in the reply. Say so rather than silently under-report.
+        if inputs["input_ids"].shape[1] >= self.inference_max_input:
+            print(
+                "[warn] prompt hit the "
+                f"{self.inference_max_input}-token limit; "
+                "the end of this file was not analysed"
+            )
 
         # Align tensors with model device.
         device = next(self.model.parameters()).device
@@ -715,15 +739,149 @@ class SecureCodingModel:
         return "".join(repaired)
 
 
+    def _escape_stray_quotes(self, text):
+        """
+        Escape quotes the model left unescaped inside a string.
+
+        Java and C code is full of string literals, and the model sometimes
+        writes one into a JSON value without escaping it — an empty string
+        emitted as "" rather than \\"\\". Everything after that point is
+        misread, so a single missing backslash can cost every finding in the
+        reply.
+
+        A closing quote is only genuine where the grammar allows one: a key
+        ends before a colon, a value ends before a comma or a closing brace
+        or bracket. A quote anywhere else inside a string is content, and is
+        escaped here. Key and value positions are tracked separately because
+        the two have different terminators.
+        """
+
+        out = []
+        index = 0
+        length = len(text)
+
+        in_string = False
+        is_key = False
+        expecting_value = False
+
+        while index < length:
+            char = text[index]
+
+            if not in_string:
+                if char == '"':
+                    in_string = True
+                    is_key = not expecting_value
+                elif char == ":":
+                    expecting_value = True
+                elif char in ",{[":
+                    expecting_value = False
+
+                out.append(char)
+                index += 1
+                continue
+
+            # Inside a string.
+            if char == "\\" and index + 1 < length:
+                out.append(char)
+                out.append(text[index + 1])
+                index += 2
+                continue
+
+            if char == '"':
+                lookahead = index + 1
+                while lookahead < length and text[lookahead] in " \t\r\n":
+                    lookahead += 1
+
+                following = text[lookahead] if lookahead < length else ""
+                terminator = ":" if is_key else ",}]"
+
+                if following in terminator and following != "":
+                    in_string = False
+                    out.append(char)
+                else:
+                    # Content, not a terminator: the model forgot the escape.
+                    out.append('\\"')
+
+                index += 1
+                continue
+
+            out.append(char)
+            index += 1
+
+        return "".join(out)
+
+
+    def _salvage_truncated_json(self, text):
+        """
+        Recover the longest prefix of a malformed reply that still parses.
+
+        Two things go wrong with generated JSON. A long reply is cut at
+        max_new_tokens, mid-object. And the model sometimes writes a quote
+        inside a string without escaping it — a Java empty-string literal
+        emitted as "" rather than \\"\\" — which corrupts the reply from that
+        point on. Either way the entries before the damage are valid, and
+        discarding them loses real detections.
+
+        Structural balance alone is not enough to find the cut: an unescaped
+        quote flips the in-string state, so brace counting drifts and happily
+        "balances" past the corruption. Each candidate cut is therefore
+        actually parsed, and the longest one that decodes wins.
+
+        Returns None when no prefix parses.
+        """
+
+        decoder = json.JSONDecoder()
+
+        depth = 0
+        in_string = False
+        escaped = False
+        candidates = []
+
+        for index, char in enumerate(text):
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == '"':
+                    in_string = False
+                continue
+
+            if char == '"':
+                in_string = True
+            elif char in "{[":
+                depth += 1
+            elif char in "}]":
+                depth -= 1
+                if depth < 0:
+                    break
+                # A closed object sitting directly inside the outer
+                # object's array is a complete entry we could keep.
+                if depth == 2:
+                    candidates.append(index)
+
+        # Longest first: prefer keeping as many entries as possible.
+        for cut in reversed(candidates):
+            candidate_text = text[: cut + 1] + "]}"
+
+            try:
+                decoder.raw_decode(candidate_text)
+                return candidate_text
+            except json.JSONDecodeError:
+                continue
+
+        return None
+
+
     def extract_json(self, text):
         start = text.find("{")
-    
+
         if start == -1:
             raise ValueError("No JSON found.")
-    
+
         decoder = json.JSONDecoder()
         json_text = text[start:]
-    
+
         try:
             obj, _ = decoder.raw_decode(json_text)
             return obj
@@ -736,6 +894,42 @@ class SecureCodingModel:
                 obj, _ = decoder.raw_decode(repaired_text)
                 return obj
             except json.JSONDecodeError as repaired_error:
+                # A stray unescaped quote corrupts everything after it, so
+                # try repairing those before falling back to discarding the
+                # damaged tail.
+                escaped_text = self._escape_stray_quotes(
+                    repaired_text
+                )
+
+                try:
+                    obj, _ = decoder.raw_decode(escaped_text)
+
+                    print(
+                        "[warn] reply contained unescaped quotes; "
+                        "repaired them"
+                    )
+
+                    return obj
+                except json.JSONDecodeError:
+                    pass
+
+                salvaged_text = self._salvage_truncated_json(
+                    escaped_text
+                )
+
+                if salvaged_text is not None:
+                    try:
+                        obj, _ = decoder.raw_decode(salvaged_text)
+
+                        print(
+                            "[warn] reply was truncated; "
+                            "recovered the complete prefix"
+                        )
+
+                        return obj
+                    except json.JSONDecodeError:
+                        pass
+
                 raise ValueError(
                     f"Invalid JSON: {repaired_error}"
                 ) from error

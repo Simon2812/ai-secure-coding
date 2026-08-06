@@ -4,6 +4,7 @@ import { scoreBand, severityOf } from "./score";
 import { buildTree, collapseSingleChildFolders, FolderNode } from "./tree";
 import { ScanRecord, ActivityEvent, sparklineSvg } from "./history";
 import { Suppression } from "./suppressions";
+import { appliedFixesFor } from "../model/appliedFixes";
 import { DIFF_STYLES } from "../model/diffView";
 
 function escapeHtml(value: string): string {
@@ -109,6 +110,13 @@ h1 { font-size: 1.5rem; font-weight: 500; margin: 0 0 4px; }
 .score-label.delta:empty { display: none; }
 .trend { display: flex; align-items: center; gap: 10px; }
 .trend-label { color: var(--text-dim); font-size: 0.78rem; line-height: 1.4; }
+button.linkish {
+  display: block; margin-top: 4px; padding: 0;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-dim); font-size: 0.74rem; text-decoration: underline;
+  font-family: inherit;
+}
+button.linkish:hover { color: var(--bad); }
 .up { color: var(--good); font-weight: 600; }
 .down { color: var(--bad); font-weight: 600; }
 .sparkline { display: block; }
@@ -176,6 +184,16 @@ button:disabled { opacity: 0.5; cursor: default; }
 button.verify.queued { cursor: not-allowed; opacity: 0.35; }
 .status { font-size: 0.8rem; color: var(--text-dim); }
 .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.applied-fixes {
+  margin: 0 14px 10px; padding: 8px 12px;
+  border-left: 3px solid var(--good); background: var(--bg);
+  border-radius: 0 4px 4px 0;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  font-size: 0.8rem; color: var(--text-dim);
+}
+.applied-head { font-weight: 600; color: var(--good); }
+.applied-item { display: inline-flex; align-items: center; gap: 6px; }
+.applied-item button.revert { padding: 2px 8px; font-size: 0.75rem; }
 .empty { color: var(--text-dim); padding: 20px 0; }
 
 /* CWE breakdown — collapsible, one row per CWE with a proportional bar */
@@ -397,8 +415,27 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
     ? `<button class="open-file" data-file="${escapeHtml(file.path)}" data-line="${firstLine}">Open file</button>`
     : "";
 
-  if (!verify && !code && !openFile) return "";
-  return `<div class="file-tools">${code}${openFile}${verify}</div>`;
+  // Fixes already written to this file, so a change can be undone from the
+  // report rather than only from the fixes panel. Reverting restores the code
+  // and puts the finding back into the counts.
+  const applied = interactive ? appliedFixesFor(file.path) : [];
+  const revertRows = applied.length
+    ? `<div class="applied-fixes">
+        <span class="applied-head">${applied.length} applied fix${applied.length === 1 ? "" : "es"}</span>
+        ${applied
+          .map(
+            (entry, i) => `
+          <span class="applied-item">
+            ${escapeHtml(entry.cwe)} · line ${entry.line}
+            <button class="revert" data-file="${escapeHtml(file.path)}" data-idx="${i}">Revert</button>
+          </span>`
+          )
+          .join("")}
+      </div>`
+    : "";
+
+  if (!verify && !code && !openFile && !revertRows) return "";
+  return `<div class="file-tools">${code}${openFile}${verify}</div>${revertRows}`;
 }
 
 /**
@@ -550,6 +587,27 @@ export function buildReportHtml(
           const loc = e.target.closest('.loc');
           if (loc) {
             vscode.postMessage({ type: 'open', file: loc.dataset.file, line: Number(loc.dataset.line) });
+            return;
+          }
+          if (e.target.closest('#clearHistory')) {
+            vscode.postMessage({ type: 'clearHistory' });
+            return;
+          }
+          if (e.target.closest('#clearActivity')) {
+            e.preventDefault();  // don't toggle the <details> we sit inside
+            e.stopPropagation();
+            vscode.postMessage({ type: 'clearActivity' });
+            return;
+          }
+          const revert = e.target.closest('button.revert');
+          if (revert) {
+            revert.disabled = true;
+            revert.textContent = 'reverting...';
+            vscode.postMessage({
+              type: 'revertFix',
+              file: revert.dataset.file,
+              idx: Number(revert.dataset.idx),
+            });
             return;
           }
           const openFile = e.target.closest('button.open-file');
@@ -723,6 +781,37 @@ export function buildReportHtml(
               addFixButtons(div.querySelector('.actions'), v.id, v.fixCount);
               host.appendChild(div);
             });
+          } else if (msg.type === 'existingAi') {
+            // AI findings the extension already held when this report was
+            // built — from an editor scan, or a verify before a re-render.
+            // The file's index is read off its own verify button.
+            (msg.files || []).forEach((entry) => {
+              const btn = document.querySelector(
+                'button.verify[data-file="' + (entry.path || '').replace(/"/g, '\\\\"') + '"]'
+              );
+              if (!btn) return;
+              const host = document.getElementById('aifindings-' + btn.dataset.index);
+              if (!host) return;
+
+              (entry.aiOnly || []).forEach((v) => {
+                if (host.querySelector('[data-finding-id="' + v.id + '"]')) return;
+                const div = document.createElement('div');
+                div.className = 'finding ai-only';
+                div.setAttribute('data-finding-id', v.id);
+                div.innerHTML =
+                  '<div class="finding-head">' +
+                    '<span class="badge-ai">Detected by AI</span>' +
+                    '<span class="cwe"></span>' +
+                    '<span class="loc-static"></span>' +
+                  '</div>' +
+                  '<div class="msg">Found by a previous AI scan. The static analyzer did not report it.</div>' +
+                  '<div class="actions"></div>';
+                div.querySelector('.cwe').textContent = v.title ? v.cwe + ' - ' + v.title : v.cwe;
+                div.querySelector('.loc-static').textContent = v.line ? 'line ' + v.line : '';
+                addFixButtons(div.querySelector('.actions'), v.id, v.fixCount);
+                host.appendChild(div);
+              });
+            });
           } else if (msg.type === 'fixPreview') {
             // Insert the diff under the finding, with its own confirm/cancel.
             const actions = document.getElementById('actions-' + msg.id);
@@ -836,6 +925,7 @@ export function buildReportHtml(
             ? "no change since last scan"
             : `<span class="${change > 0 ? "up" : "down"}">${change > 0 ? "▲" : "▼"} ${Math.abs(change)}</span> since last scan`}
           <br />${history.length} scans recorded
+          ${interactive ? `<button id="clearHistory" class="linkish">Clear history</button>` : ""}
         </div>
       </div>`
     : "";
@@ -928,6 +1018,7 @@ export function buildReportHtml(
           <span class="folder-icon">▸</span>
           <span class="folder-name">Activity</span>
           <span class="status">${activity.length} event${activity.length === 1 ? "" : "s"}</span>
+          ${interactive ? `<button id="clearActivity" class="linkish">Clear</button>` : ""}
         </summary>
         <div class="side-body">
           ${activity

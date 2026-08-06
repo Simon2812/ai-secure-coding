@@ -64,6 +64,46 @@ function buildNormalizedText(text: string): NormalizedText {
     i += 1;
   }
 
+  return collapseSpacesAroundPunctuation({ normalized: parts.join(""), spans });
+}
+
+/** Identifier characters — a space between two of these is significant. */
+const WORD = /[A-Za-z0-9_$]/;
+
+/**
+ * Drop spaces that sit next to punctuation.
+ *
+ * Collapsing whitespace runs to a single space is not enough on its own,
+ * because the model reflows wrapped statements. Where the file has
+ *
+ *     return statement.executeUpdate(
+ *             "UPDATE invoices SET ..." + id);
+ *
+ * the model returns it on one line, so the file normalizes to
+ * `executeUpdate( "UPDATE` and the model to `executeUpdate("UPDATE` — one
+ * space against none, and the match fails on code that is plainly the same.
+ *
+ * A space is only meaningful when it separates two identifier characters
+ * (`else if`, `int x`). Next to a bracket, operator, comma or quote it carries
+ * no meaning in any of the three languages, so it is removed from both sides
+ * of the comparison.
+ */
+function collapseSpacesAroundPunctuation(text: NormalizedText): NormalizedText {
+  const chars = text.normalized;
+  const parts: string[] = [];
+  const spans: Array<[number, number]> = [];
+
+  for (let i = 0; i < chars.length; i++) {
+    if (chars[i] === " ") {
+      const before = parts.length ? parts[parts.length - 1] : "";
+      const after = chars[i + 1] ?? "";
+      // Keep it only when it genuinely separates two identifiers.
+      if (!(WORD.test(before) && WORD.test(after))) continue;
+    }
+    parts.push(chars[i]);
+    spans.push(text.spans[i]);
+  }
+
   return { normalized: parts.join(""), spans };
 }
 

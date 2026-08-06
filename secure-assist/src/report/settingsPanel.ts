@@ -15,6 +15,7 @@ import { listSuppressions, unsuppress, clearSuppressions, Suppression } from "./
 import { getCweInfo } from "../model/cweCatalog";
 import { getModelEndpoint } from "../model/client";
 import { clearHistory, clearActivity, loadActivity } from "./history";
+import { clearAllModelResults } from "../model/aiFix";
 import { PALETTE } from "./reportHtml";
 
 function escapeHtml(value: string): string {
@@ -241,6 +242,7 @@ export class SettingsPanel {
     <div class="sec-head">
       <h2>Activity</h2>
       <div class="sec-actions">
+        <button id="clear-ai" class="ghost danger">Clear AI findings</button>
         <button id="clear-hist" class="ghost danger">Clear scan history</button>
         <button id="clear-act" class="ghost danger">Clear activity log</button>
       </div>
@@ -276,6 +278,7 @@ export class SettingsPanel {
       }
       else if (btn.id === 'clear-sup')  vscode.postMessage({ type: 'clearSuppressions' });
       else if (btn.id === 'prune-sup')  vscode.postMessage({ type: 'pruneSuppressions' });
+      else if (btn.id === 'clear-ai')   vscode.postMessage({ type: 'clearAiFindings' });
       else if (btn.id === 'clear-hist') vscode.postMessage({ type: 'clearHistory' });
       else if (btn.id === 'clear-act')  vscode.postMessage({ type: 'clearActivity' });
       else if (btn.classList.contains('unsuppress')) {
@@ -366,6 +369,27 @@ export class SettingsPanel {
         this.panel.webview.postMessage({
           type: "dataMsg",
           text: `Removed ${stale.length} suppression${stale.length === 1 ? "" : "s"} for files that no longer exist.`,
+        });
+        break;
+      }
+      case "clearAiFindings": {
+        const ok = await vscode.window.showWarningMessage(
+          "Discard every AI finding saved in this workspace?",
+          {
+            modal: true,
+            detail:
+              "Findings produced by \"Scan with AI\" and \"Verify with AI\" are " +
+              "removed, along with their suggested fixes. Static analyzer findings " +
+              "are not affected. Recovering them means running the AI scan again.",
+          },
+          "Discard"
+        );
+        if (ok !== "Discard") return;
+        await clearAllModelResults();
+        await vscode.commands.executeCommand("secure-assist.internal.refreshAiDiagnostics");
+        this.panel.webview.postMessage({
+          type: "dataMsg",
+          text: "AI findings discarded.",
         });
         break;
       }

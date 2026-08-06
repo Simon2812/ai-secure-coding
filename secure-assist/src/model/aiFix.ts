@@ -2,21 +2,129 @@ import * as vscode from "vscode";
 import { ModelVulnerability, ModelFix } from "./client";
 import { getCweInfo, explainCwe } from "./cweCatalog";
 import { findOriginRange, containsOrigin } from "./originMatch";
+import { recordAppliedFix } from "./appliedFixes";
 
 // Model results per document URI — populated by the scan command, read by the
 // code-action provider to offer "Apply AI fix" quick fixes.
 const modelResults = new Map<string, ModelVulnerability[]>();
 
+const STORAGE_KEY = "secureAssist.modelResults";
+let context: vscode.ExtensionContext | undefined;
+
+/**
+ * Persisted shape.
+ *
+ * Keyed by workspace-relative path rather than absolute URI so the results
+ * survive the folder being opened from a different path — a checkout on
+ * another machine, or a drive letter that changed.
+ */
+interface StoredResults {
+  [relativePath: string]: ModelVulnerability[];
+}
+
+/**
+ * Restore model findings saved by a previous session.
+ *
+ * An AI scan can cover a whole workspace and costs real time, so losing it on
+ * window close is not acceptable. Findings are re-grounded against the file as
+ * it is now: anything whose `origin` no longer appears has been edited away, so
+ * it is dropped rather than shown against code that no longer exists.
+ */
+export async function initModelResults(ctx: vscode.ExtensionContext): Promise<void> {
+  context = ctx;
+  modelResults.clear();
+
+  const stored = ctx.workspaceState.get<StoredResults>(STORAGE_KEY) ?? {};
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders?.length) return;
+
+  let restored = 0;
+  let stale = 0;
+
+  for (const [relative, vulns] of Object.entries(stored)) {
+    const uri = vscode.Uri.joinPath(folders[0].uri, relative);
+
+    let code: string;
+    try {
+      code = Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf8");
+    } catch {
+      stale += vulns.length; // file gone since the scan
+      continue;
+    }
+
+    const live = vulns.filter((v) =>
+      (v.fixes ?? []).some((f) => containsOrigin(code, f.origin))
+    );
+
+    stale += vulns.length - live.length;
+    if (live.length === 0) continue;
+
+    modelResults.set(uri.toString(), sortByLine(live));
+    restored += live.length;
+  }
+
+  if (restored || stale) {
+    console.log(
+      `[secure-assist] restored ${restored} AI finding(s)` +
+        (stale ? `, dropped ${stale} whose code has changed` : "")
+    );
+  }
+
+  // Write back so entries dropped as stale are not re-checked next time.
+  await persist();
+}
+
+/** Save the current results, converting URIs back to relative paths. */
+async function persist(): Promise<void> {
+  if (!context) return;
+
+  const out: StoredResults = {};
+  for (const [key, vulns] of modelResults) {
+    if (vulns.length === 0) continue;
+    const relative = vscode.workspace
+      .asRelativePath(vscode.Uri.parse(key), false)
+      .replace(/\\/g, "/");
+    out[relative] = vulns;
+  }
+
+  await context.workspaceState.update(STORAGE_KEY, out);
+}
+
 export function setModelResults(uri: vscode.Uri, vulns: ModelVulnerability[]): void {
-  modelResults.set(uri.toString(), vulns);
+  // Kept in line order. Findings arrive in whatever order the model listed
+  // them, and a reverted fix is appended when its finding is restored — both
+  // of which would otherwise show out of sequence against the file.
+  modelResults.set(uri.toString(), sortByLine(vulns));
+  void persist();
+}
+
+/** Order findings by where they appear in the file; unplaced ones last. */
+function sortByLine(vulns: ModelVulnerability[]): ModelVulnerability[] {
+  return [...vulns].sort((a, b) => {
+    const left = a.start_line ?? Number.MAX_SAFE_INTEGER;
+    const right = b.start_line ?? Number.MAX_SAFE_INTEGER;
+    return left - right;
+  });
 }
 
 export function clearModelResults(uri: vscode.Uri): void {
   modelResults.delete(uri.toString());
+  void persist();
 }
 
 export function getModelResults(uri: vscode.Uri): ModelVulnerability[] {
   return modelResults.get(uri.toString()) ?? [];
+}
+
+/** Files that currently carry restored or freshly scanned AI findings. */
+export function filesWithModelResults(): vscode.Uri[] {
+  return [...modelResults.keys()].map((key) => vscode.Uri.parse(key));
+}
+
+/** Forget every AI finding in this workspace. */
+export async function clearAllModelResults(): Promise<void> {
+  modelResults.clear();
+  await persist();
 }
 
 /**
@@ -35,6 +143,7 @@ function removeAppliedFix(uri: vscode.Uri, applied: ModelFix): void {
     if (fixes.length > 0) remaining.push({ ...vuln, fixes });
   }
   modelResults.set(uri.toString(), remaining);
+  void persist();
 }
 
 /**
@@ -176,7 +285,7 @@ export async function previewAndApplyFix(
     "Apply fix"
   );
   if (choice !== "Apply fix") return false;
-  return applyFixEdit(uri, fix, aiDiagnostics);
+  return applyFixEdit(uri, fix, aiDiagnostics, cwe);
 }
 
 /**
@@ -188,7 +297,8 @@ export async function previewAndApplyFix(
 export async function applyFixEdit(
   uri: vscode.Uri,
   fix: ModelFix,
-  aiDiagnostics?: vscode.DiagnosticCollection
+  aiDiagnostics?: vscode.DiagnosticCollection,
+  cwe = "unknown"
 ): Promise<boolean> {
   const document = await vscode.workspace.openTextDocument(uri);
   const resolved = resolveFix(document, fix);
@@ -199,6 +309,12 @@ export async function applyFixEdit(
     return false;
   }
 
+  // Capture both sides before the edit: the replacement was re-indented to
+  // match this file, so it cannot be reconstructed from the model's raw fix
+  // afterwards, and reverting needs the exact text on disk.
+  const originalText = document.getText(resolved.range);
+  const startLine = resolved.range.start.line + 1;
+
   const edit = new vscode.WorkspaceEdit();
   edit.replace(uri, resolved.range, resolved.replacement);
   const applied = await vscode.workspace.applyEdit(edit);
@@ -206,6 +322,16 @@ export async function applyFixEdit(
     vscode.window.showErrorMessage("Secure Assist: could not apply the fix.");
     return false;
   }
+
+  await recordAppliedFix({
+    file: vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/"),
+    cwe,
+    originalText,
+    insertedText: resolved.replacement,
+    fix,
+    line: startLine,
+    at: Date.now(),
+  });
 
   // The finding no longer applies to the edited code — drop it and refresh the
   // squiggles so a stale AI marker doesn't linger on the fixed line.

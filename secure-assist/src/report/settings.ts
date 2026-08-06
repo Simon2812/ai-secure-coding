@@ -65,11 +65,44 @@ export function filterDisabledCwes(findings: Finding[]): Finding[] {
   return findings.filter((f) => map[f.cweId] !== false);
 }
 
-/** Same, for model findings. */
+/**
+ * Normalise whatever the model called a CWE into "CWE-<n>".
+ *
+ * The model is not constrained to any fixed vocabulary and has been seen to
+ * return "CWE-89", "89", and "CWE-89: SQL Injection" for the same thing.
+ */
+export function normaliseCwe(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const match = value.match(/(\d{1,4})/);
+  return match ? `CWE-${match[1]}` : undefined;
+}
+
+const COVERED = new Set<string>(ALL_CWES);
+
+/** Is this one of the weaknesses the product claims to detect? */
+export function isCoveredCwe(cwe: string | undefined): boolean {
+  return cwe !== undefined && COVERED.has(cwe);
+}
+
+/**
+ * Same, for model findings — with one extra rule.
+ *
+ * The static analyzer can only emit CWEs from ALL_CWES by construction, but
+ * the model is a general code model underneath and will happily report
+ * anything it recognises: buffer overflows, null dereferences, XSS. Reporting
+ * those would claim coverage the analyzer does not have, cannot corroborate,
+ * and is not evaluated on, so they are dropped here rather than shown.
+ *
+ * This mirrors the benchmark harness, which scores the model only on the
+ * covered CWEs — the tool should ship the same rule it is measured under.
+ */
 export function filterDisabledCweVulns<T extends { cwe: string }>(vulns: T[]): T[] {
   const map = enabledMap();
-  if (Object.keys(map).length === 0) return vulns;
-  return vulns.filter((v) => map[v.cwe] !== false);
+  return vulns.filter((v) => {
+    const cwe = normaliseCwe(v.cwe);
+    if (!isCoveredCwe(cwe)) return false;
+    return map[cwe as string] !== false;
+  });
 }
 
 /** Whether the analyzer re-runs as the file is edited. */

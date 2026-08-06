@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { ModelFix, ModelVulnerability } from "./client";
 import { getCweInfo } from "./cweCatalog";
-import { getModelResults, applyFixEdit } from "./aiFix";
+import { getModelResults, setModelResults, applyFixEdit, modelVulnsToDiagnostics } from "./aiFix";
+import { appliedFixesFor, revertAppliedFix } from "./appliedFixes";
 import { findOriginRange } from "./originMatch";
 import { PALETTE } from "../report/reportHtml";
 import { renderFixDiff, DIFF_STYLES } from "./diffView";
@@ -39,6 +40,8 @@ export class FixPanel {
   private readonly context: vscode.ExtensionContext;
   private uri: vscode.Uri;
   private items: PanelItem[] = [];
+  /** Findings whose suggested fix no longer matches the file on disk. */
+  private skipped = 0;
   private disposables: vscode.Disposable[] = [];
 
   private constructor(
@@ -85,13 +88,20 @@ export class FixPanel {
     const doc = await vscode.workspace.openTextDocument(this.uri);
     const code = doc.getText();
 
-    this.items = getModelResults(this.uri)
-      .map((vuln, index) => ({
-        index,
-        vuln,
-        fixes: (vuln.fixes ?? []).filter((f) => findOriginRange(code, f.origin)),
-      }))
-      .filter((item) => item.fixes.length > 0);
+    const all = getModelResults(this.uri).map((vuln, index) => ({
+      index,
+      vuln,
+      fixes: (vuln.fixes ?? []).filter((f) => findOriginRange(code, f.origin)),
+    }));
+
+    this.items = all.filter((item) => item.fixes.length > 0);
+
+    // Findings the model reported a fix for that no longer matches the file —
+    // usually because the code was edited since the scan. Reported rather than
+    // dropped silently, so the count here matches the status bar.
+    this.skipped = all.filter(
+      (item) => item.fixes.length === 0 && (item.vuln.fixes ?? []).length > 0
+    ).length;
 
     this.panel.title = `AI Fixes — ${this.uri.path.split("/").pop()}`;
     this.panel.webview.html = this.html(doc);
@@ -137,19 +147,53 @@ export class FixPanel {
           .join("")
       : `<p class="empty">No AI fixes available for this file. Run "Scan with AI" first.</p>`;
 
+    // Fixes already written to this file. Kept visible so a change can be
+    // undone here rather than through the editor's undo stack, which is lost
+    // when the file closes and would leave the finding counts wrong.
+    const applied = appliedFixesFor(fileName);
+    const appliedBlock = applied.length
+      ? `<section class="applied">
+          <h2>Applied fixes</h2>
+          <p class="sub">${applied.length} change${applied.length === 1 ? "" : "s"} written to this file. Reverting restores the original code and puts the finding back.</p>
+          ${applied
+            .map((entry, i) => {
+              const info = getCweInfo(entry.cwe);
+              const title = info ? `${entry.cwe} — ${info.title}` : entry.cwe;
+              return `
+              <div class="applied-row">
+                <span class="cwe">${escapeHtml(title)}</span>
+                <span class="loc" data-line="${entry.line}">line ${entry.line}</span>
+                <span class="when">${new Date(entry.at).toLocaleString()}</span>
+                <button class="revert" data-idx="${i}">Revert</button>
+                <span class="state" id="rstate-${i}"></span>
+              </div>`;
+            })
+            .join("")}
+        </section>`
+      : "";
+
     return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><style>${PALETTE}${DIFF_STYLES}${STYLES}</style></head>
 <body>
   <h1>AI suggested fixes</h1>
-  <p class="sub">${escapeHtml(fileName)} · ${this.items.length} finding${this.items.length === 1 ? "" : "s"} with a suggested fix</p>
+  <p class="sub">${escapeHtml(fileName)} · ${this.items.length} finding${this.items.length === 1 ? "" : "s"} with a suggested fix${this.skipped ? `, ${this.skipped} skipped` : ""}</p>
+  ${this.skipped ? `<p class="warn">${this.skipped} suggested fix${this.skipped === 1 ? "" : "es"} could not be shown: the code it was written against is no longer in the file. Re-run "Scan with AI" to refresh them.</p>` : ""}
   <p class="warn">AI-generated fixes are not always correct. Read the change before applying it.</p>
   ${this.items.length ? `<div class="viewbar">
     <button id="v-split" class="seg active">Before / after</button><button id="v-unified" class="seg">Unified</button>
   </div>` : ""}
   ${body}
+  ${appliedBlock}
   <script>
     const vscode = acquireVsCodeApi();
     document.addEventListener('click', (e) => {
+      const revert = e.target.closest('button.revert');
+      if (revert) {
+        revert.disabled = true;
+        document.getElementById('rstate-' + revert.dataset.idx).textContent = 'reverting...';
+        vscode.postMessage({ type: 'revert', idx: Number(revert.dataset.idx) });
+        return;
+      }
       const apply = e.target.closest('button.apply');
       if (apply) {
         apply.disabled = true;
@@ -188,7 +232,53 @@ export class FixPanel {
 </body></html>`;
   }
 
+  /**
+   * Undo an applied fix: restore the original code and put the finding back.
+   *
+   * Both halves matter. Restoring only the code would leave the finding
+   * missing from the counts and the squiggles, so the file would look clean
+   * while containing the vulnerability again.
+   */
+  private async revert(index: number): Promise<void> {
+    const relPath = vscode.workspace.asRelativePath(this.uri, false).replace(/\\/g, "/");
+    const entry = appliedFixesFor(relPath)[index];
+    if (!entry) return;
+
+    const restored = await revertAppliedFix(entry, this.uri);
+    if (!restored) {
+      vscode.window.showWarningMessage(
+        "Secure Assist: could not revert — the code has been edited since the fix was applied."
+      );
+      await this.refresh();
+      return;
+    }
+
+    // Put the finding back so counts, squiggles and the panel agree again.
+    setModelResults(this.uri, [...getModelResults(this.uri), restored]);
+
+    const doc = await vscode.workspace.openTextDocument(this.uri);
+    this.aiDiagnostics.set(
+      this.uri,
+      modelVulnsToDiagnostics(doc, getModelResults(this.uri))
+    );
+
+    await recordActivity(this.context, {
+      kind: "restore",
+      file: relPath,
+      cwe: entry.cwe,
+      detail: `reverted AI fix at line ${entry.line}`,
+    });
+
+    this.output.appendLine(`[fixes] reverted ${entry.cwe} fix in ${relPath}`);
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
+    await this.refresh();
+  }
+
   private async onMessage(msg: any): Promise<void> {
+    if (msg?.type === "revert") {
+      await this.revert(msg.idx);
+      return;
+    }
     if (msg?.type === "reveal") {
       const doc = await vscode.workspace.openTextDocument(this.uri);
       const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -229,7 +319,7 @@ export class FixPanel {
 
     // The diff above is the preview, so the change is written without a second
     // confirmation dialog.
-    const applied = await applyFixEdit(this.uri, fix, this.aiDiagnostics);
+    const applied = await applyFixEdit(this.uri, fix, this.aiDiagnostics, item!.vuln.cwe);
     if (applied) {
       this.output.appendLine(`[fixes] applied ${item!.vuln.cwe} fix in ${this.uri.fsPath}`);
       await recordActivity(this.context, {
@@ -239,6 +329,9 @@ export class FixPanel {
         detail: "applied from the fixes panel",
       });
       this.panel.webview.postMessage({ type: "applied", id: msg.id });
+      // Re-render so the change moves into "Applied fixes" with its Revert
+      // button. The message above only updates the button that was clicked.
+      await this.refresh();
     } else {
       this.panel.webview.postMessage({
         type: "applyFailed",
@@ -268,6 +361,18 @@ h1 { font-size: 1.3rem; font-weight: 500; margin: 0 0 4px; }
   border-radius: 6px; padding: 7px 11px; margin: 0 0 20px; background: transparent;
 }
 .empty { color: var(--text-dim); }
+section.applied {
+  margin-top: 26px; padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+section.applied h2 { font-size: 0.95rem; margin: 0 0 4px; }
+.applied-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+.applied-row .when { color: var(--text-dim); font-size: 0.74rem; }
+.applied-row .revert { margin-left: auto; }
 section.finding {
   border: 1px solid var(--border); border-radius: 8px;
   background: var(--surface); padding: 14px 16px; margin-bottom: 14px;

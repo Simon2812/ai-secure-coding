@@ -10,6 +10,9 @@ import {
   previewAndApplyFix,
   pruneStaleAiFindings,
   getModelResults,
+  initModelResults,
+  filesWithModelResults,
+  clearAllModelResults,
   APPLY_AI_FIX_COMMAND,
 } from "./model/aiFix";
 import { ModelFix } from "./model/client";
@@ -26,7 +29,8 @@ import {
   confirmSuppression,
 } from "./report/suppressions";
 import { DismissedPanel } from "./report/dismissedPanel";
-import { groundVulnerabilities } from "./model/originMatch";
+import { groundVulnerabilities, findOriginRange } from "./model/originMatch";
+import { initAppliedFixes } from "./model/appliedFixes";
 import { recordActivity } from "./report/history";
 import { filterDisabledCwes, filterDisabledCweVulns, isLiveModeEnabled } from "./report/settings";
 import { SettingsPanel } from "./report/settingsPanel";
@@ -55,10 +59,32 @@ export async function activate(context: vscode.ExtensionContext) {
   loadCweCatalog(context);
   // Dismissed false positives, persisted per workspace.
   initSuppressions(context);
+  // Applied AI fixes, so they can be reverted in a later session.
+  initAppliedFixes(context);
 
   const output = vscode.window.createOutputChannel("Secure Assist");
   const diagnostics = createDiagnosticCollection();
   const aiDiagnostics = vscode.languages.createDiagnosticCollection("secure-assist-ai");
+
+  // AI findings from previous sessions. A workspace-wide AI scan is slow and
+  // costs GPU time, so it is restored rather than thrown away on window close.
+  // Findings whose code has since changed are dropped during the restore.
+  await initModelResults(context);
+  for (const uri of filesWithModelResults()) {
+    try {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const rel = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+      aiDiagnostics.set(
+        uri,
+        modelVulnsToDiagnostics(
+          doc,
+          filterSuppressedVulns(getModelResults(uri), rel, doc.getText())
+        )
+      );
+    } catch {
+      /* file unreadable now — its findings were already dropped on restore */
+    }
+  }
   const startCmd = vscode.commands.registerCommand("secure-assist.startTracking", () => {
     isTracking = true;
     output.show(true);
@@ -316,10 +342,15 @@ export async function activate(context: vscode.ExtensionContext) {
       fixesButton.hide();
       return;
     }
-    const count = getModelResults(editor.document.uri).reduce(
-      (n, v) => n + (v.fixes?.length ?? 0),
-      0
-    );
+    // Count what the panel will actually show: findings that still have at
+    // least one fix whose original text can be located in the file. Counting
+    // raw fix objects promised more than the panel could deliver, because a
+    // fix whose origin no longer matches is filtered out when it opens.
+    const code = editor.document.getText();
+    const count = getModelResults(editor.document.uri).filter((v) =>
+      (v.fixes ?? []).some((f) => findOriginRange(code, f.origin))
+    ).length;
+
     if (count === 0) {
       fixesButton.hide();
       return;
@@ -418,6 +449,16 @@ export async function activate(context: vscode.ExtensionContext) {
   const refreshHistoryCmd = vscode.commands.registerCommand(
     "secure-assist.internal.refreshReportHistory",
     () => ReportPanel.reloadHistory(context)
+  );
+
+  // Clearing AI findings has to take their squiggles with it, otherwise the
+  // editor keeps showing findings the extension no longer holds.
+  const refreshAiCmd = vscode.commands.registerCommand(
+    "secure-assist.internal.refreshAiDiagnostics",
+    () => {
+      aiDiagnostics.clear();
+      refreshFixesButton();
+    }
   );
 
   function refreshDismissedButton(): void {
@@ -534,6 +575,7 @@ export async function activate(context: vscode.ExtensionContext) {
     showDismissedCmd,
     refreshStatusCmd,
     refreshHistoryCmd,
+    refreshAiCmd,
     settingsCmd,
     settingsButton,
     askButton,
@@ -549,9 +591,11 @@ export async function activate(context: vscode.ExtensionContext) {
     aiDiagnostics
   );
 
-  // Dismissals are persisted, so the status bar must reflect them on startup
-  // rather than only after the first editor switch.
+  // Dismissals and AI findings are both persisted, so the status bar must
+  // reflect them on startup rather than only after the first editor switch —
+  // no editor-change event fires for a document that is already open.
   refreshDismissedButton();
+  refreshFixesButton();
 }
 
 export function deactivate() {}

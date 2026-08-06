@@ -5,9 +5,11 @@ import { scoreForFindings, projectScore } from "./score";
 import {
   loadHistory,
   recordScan,
+  clearHistory,
   ScanRecord,
   ActivityEvent,
   loadActivity,
+  clearActivity,
   recordActivity,
 } from "./history";
 import {
@@ -27,10 +29,12 @@ import {
 } from "../model/client";
 import { analyzeCode } from "../analyzer/analyze";
 import { correlateFindings } from "../model/correlation";
-import { applyFixEdit } from "../model/aiFix";
+import { applyFixEdit, getModelResults, setModelResults } from "../model/aiFix";
+import { appliedFixesFor, revertAppliedFix } from "../model/appliedFixes";
 import { renderFixDiff } from "../model/diffView";
 import { getCweInfo } from "../model/cweCatalog";
 import { containsOrigin, groundVulnerabilities } from "../model/originMatch";
+import { filterDisabledCwes, filterDisabledCweVulns } from "./settings";
 
 /** Inclusive list of line numbers between two bounds. */
 function range(from: number, to: number): number[] {
@@ -160,6 +164,68 @@ export class ReportPanel {
       activity: this.activity,
       suppressions: listSuppressions(),
     });
+    // The webview is rebuilt from scratch, so the injected AI findings are
+    // gone and have to be pushed back in. The "already shown" guard is reset
+    // for the same reason — it tracks what is in the current DOM.
+    this.aiOnlyShown.clear();
+    void this.showExistingAiFindings();
+  }
+
+  /**
+   * Surface AI findings this workspace already has.
+   *
+   * "Scan with AI" in the editor and "Verify with AI" here write to the same
+   * store, but the report is built from a static scan and would otherwise
+   * show none of it — forcing the user to verify a file they had already
+   * scanned. Findings the static analyzer also reported are left out, since
+   * those rows are already on screen.
+   */
+  private async showExistingAiFindings(): Promise<void> {
+    const payload: { path: string; aiOnly: unknown[] }[] = [];
+
+    for (const file of this.report.files) {
+      const stored = getModelResults(file.uri);
+      if (stored.length === 0) continue;
+
+      const correlation = correlateFindings(file.findings, stored);
+      const aiOnly: unknown[] = [];
+
+      stored.forEach((vuln, index) => {
+        if (correlation.confirmedModel.has(index)) return;
+
+        // Same id scheme the verify path uses, and the same index into the
+        // stored results — so a later verify recognises these as already
+        // shown instead of adding a second copy.
+        const id = `ai-${file.path}-${index}`;
+        if (this.aiOnlyShown.has(id)) return;
+        this.aiOnlyShown.add(id);
+
+        const fixes = (vuln.fixes ?? []).filter((f) =>
+          containsOrigin(file.code ?? "", f.origin)
+        );
+        this.verified.set(id, {
+          uri: file.uri,
+          fixes,
+          cwe: vuln.cwe,
+          fileIndex: "",
+          relPath: file.path,
+        });
+
+        aiOnly.push({
+          id,
+          cwe: vuln.cwe,
+          title: getCweInfo(vuln.cwe)?.title ?? "",
+          line: vuln.start_line,
+          fixCount: fixes.length,
+        });
+      });
+
+      if (aiOnly.length) payload.push({ path: file.path, aiOnly });
+    }
+
+    if (payload.length) {
+      this.panel.webview.postMessage({ type: "existingAi", files: payload });
+    }
   }
 
   private async onMessage(msg: any): Promise<void> {
@@ -169,6 +235,16 @@ export class ReportPanel {
         break;
       case "openFile":
         await this.openFileInWorkspace(msg.file, msg.line);
+        break;
+      case "clearHistory":
+        await this.clearScanHistory();
+        break;
+      case "clearActivityLog":
+      case "clearActivity":
+        await this.clearActivityLog();
+        break;
+      case "revertFix":
+        await this.revertFix(msg.file, msg.idx);
         break;
       case "verifyFile":
         await this.verifyFile(msg);
@@ -214,6 +290,112 @@ export class ReportPanel {
     const pos = new vscode.Position(Math.max(0, line - 1), 0);
     editor.selection = new vscode.Selection(pos, pos);
     editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
+  }
+
+  /** Delete the activity log — scans, fixes, suppressions and reverts. */
+  private async clearActivityLog(): Promise<void> {
+    const ok = await vscode.window.showWarningMessage(
+      "Clear the activity log for this workspace?",
+      {
+        modal: true,
+        detail:
+          "The record of scans, applied fixes, suppressions and reverts is deleted. " +
+          "Findings, scores and scan history are not affected. This cannot be undone.",
+      },
+      "Clear log"
+    );
+    if (ok !== "Clear log") return;
+
+    await clearActivity(this.context);
+    this.activity = [];
+    this.render();
+  }
+
+  /**
+   * Undo an applied fix from the report.
+   *
+   * The file is re-analysed afterwards so the score, the finding list and the
+   * counts reflect the restored code — reverting the text alone would leave
+   * the report claiming a file is cleaner than it is.
+   */
+  private async revertFix(relPath: string, index: number): Promise<void> {
+    const uri = this.fileUri(relPath);
+    const entry = appliedFixesFor(relPath)[index];
+    if (!uri || !entry) return;
+
+    const restored = await revertAppliedFix(entry, uri);
+    if (!restored) {
+      vscode.window.showWarningMessage(
+        `Secure Assist: could not revert the ${entry.cwe} fix in ${relPath} — the code has been edited since.`
+      );
+      this.render();
+      return;
+    }
+
+    setModelResults(uri, [...getModelResults(uri), restored]);
+
+    // Re-analyse so the report's findings and score match the file again.
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const code = doc.getText();
+    const findings = filterDisabledCwes(analyzeCode(code, relPath));
+    const file = this.report.files.find((f) => f.path === relPath);
+    if (file) {
+      file.findings = findings;
+      file.code = code;
+      file.score = scoreForFindings(findings);
+    }
+    this.report.totalFindings = this.report.files.reduce(
+      (n, f) => n + f.findings.length,
+      0
+    );
+    this.report.score = projectScore(this.report.files.map((f) => f.score));
+
+    await recordActivity(this.context, {
+      kind: "restore",
+      file: relPath,
+      cwe: entry.cwe,
+      detail: `reverted AI fix at line ${entry.line}`,
+    });
+    this.activity = loadActivity(this.context);
+
+    this.output.appendLine(`[report] reverted ${entry.cwe} fix in ${relPath}`);
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
+    this.render();
+  }
+
+  /**
+   * Delete the recorded scan history for this workspace.
+   *
+   * The current report stays on screen — this removes the record of previous
+   * scans that drives the trend line and the scan counter, not the findings
+   * being displayed.
+   */
+  private async clearScanHistory(): Promise<void> {
+    const ok = await vscode.window.showWarningMessage(
+      "Clear the scan history for this workspace?",
+      {
+        modal: true,
+        detail:
+          "The recorded scans, their scores and the trend line are deleted, and " +
+          "the scan counter resets to zero. The findings currently shown are not " +
+          "affected. This cannot be undone.",
+      },
+      "Clear history"
+    );
+    if (ok !== "Clear history") return;
+
+    await clearHistory(this.context);
+
+    // Keep the scan on screen as the new baseline. Clearing to nothing means
+    // the trend needs two further scans before it reappears, which reads as
+    // the graph having been destroyed rather than reset.
+    this.history = await recordScan(this.context, {
+      at: this.report.scannedAt.getTime(),
+      score: this.report.score,
+      findings: this.report.totalFindings,
+      files: this.report.scannedCount,
+    });
+    this.render();
   }
 
   /**
@@ -273,7 +455,7 @@ export class ReportPanel {
     try {
       const doc = await vscode.workspace.openTextDocument(uri);
       const code = doc.getText();
-      const staticFindings = analyzeCode(code, msg.file);
+      const staticFindings = filterDisabledCwes(analyzeCode(code, msg.file));
       const result = await analyzeWithModel(code, staticFindings, getModelEndpoint());
 
       // Drop findings the model could not tie to code actually in this file.
@@ -286,7 +468,29 @@ export class ReportPanel {
           `[report] ignored ${d.cwe} in ${msg.file}: origin not present in the file`
         );
       }
-      const vulns = grounded;
+
+      // The model is a general code model and reports weaknesses outside the
+      // ten this tool covers. Showing those would claim coverage the analyzer
+      // does not have and cannot corroborate, so they are dropped here.
+      // Line order, so AI-only findings read down the file like the static
+      // ones rather than in whatever order the model happened to list them.
+      const vulns = filterDisabledCweVulns(grounded).sort(
+        (a, b) =>
+          (a.start_line ?? Number.MAX_SAFE_INTEGER) -
+          (b.start_line ?? Number.MAX_SAFE_INTEGER)
+      );
+      // Share the results with the rest of the extension. Without this a
+      // verification done here is invisible to the editor squiggles, the
+      // status bar and the fixes panel, and the user has to scan the same
+      // file a second time to get them.
+      setModelResults(uri, vulns);
+
+      const outOfScope = grounded.length - vulns.length;
+      if (outOfScope > 0) {
+        this.output.appendLine(
+          `[report] ignored ${outOfScope} model finding${outOfScope === 1 ? "" : "s"} in ${msg.file}: CWE outside the supported set`
+        );
+      }
 
       const correlation = correlateFindings(staticFindings, vulns);
 
@@ -491,7 +695,7 @@ export class ReportPanel {
     if (!fix) return;
 
     // The report already showed the diff inline, so no second confirmation.
-    const applied = await applyFixEdit(entry.uri, fix);
+    const applied = await applyFixEdit(entry.uri, fix, undefined, entry.cwe);
     if (!applied) return;
 
     // Re-analyze the edited file so the report reflects the new state rather
