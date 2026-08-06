@@ -1,5 +1,5 @@
 import fs from "fs";
-import { initAstAnalyzer } from "../scripts/ast/astAnalyzer";
+import { initAstAnalyzer } from "./ast/astAnalyzer";
 import { analyzeCode } from "./analyze";
 
 /**

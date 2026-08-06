@@ -2,7 +2,23 @@ import * as vscode from "vscode";
 import { ScanReport, scanWorkspace } from "./scanner";
 import { buildReportHtml, renderCodeRows } from "./reportHtml";
 import { scoreForFindings, projectScore } from "./score";
-import { loadHistory, recordScan, ScanRecord } from "./history";
+import {
+  loadHistory,
+  recordScan,
+  ScanRecord,
+  ActivityEvent,
+  loadActivity,
+  recordActivity,
+} from "./history";
+import {
+  suppress,
+  unsuppress,
+  lineTextAt,
+  listSuppressions,
+  confirmSuppression,
+  Suppression,
+} from "./suppressions";
+import { askAboutFinding } from "../agent/askAgent";
 import {
   analyzeWithModel,
   getModelEndpoint,
@@ -14,7 +30,14 @@ import { correlateFindings } from "../model/correlation";
 import { applyFixEdit } from "../model/aiFix";
 import { renderFixDiff } from "../model/diffView";
 import { getCweInfo } from "../model/cweCatalog";
-import { containsOrigin } from "../model/originMatch";
+import { containsOrigin, groundVulnerabilities } from "../model/originMatch";
+
+/** Inclusive list of line numbers between two bounds. */
+function range(from: number, to: number): number[] {
+  const out: number[] = [];
+  for (let i = from; i <= Math.max(from, to); i++) out.push(i);
+  return out;
+}
 
 /** Fixes returned by a "Verify with AI" request, keyed by the report's row id. */
 type VerifiedFixes = Map<
@@ -35,6 +58,8 @@ export class ReportPanel {
   private readonly context: vscode.ExtensionContext;
   /** Scan history for this workspace, current scan included. */
   private history: ScanRecord[] = [];
+  /** Scans, fixes and dismissals, newest last. */
+  private activity: ActivityEvent[] = [];
 
   private constructor(
     panel: vscode.WebviewPanel,
@@ -48,6 +73,7 @@ export class ReportPanel {
     this.output = output;
     this.context = context;
     this.history = history;
+    this.activity = loadActivity(context);
 
     this.render();
     this.panel.webview.onDidReceiveMessage((msg) => this.onMessage(msg), null, this.disposables);
@@ -86,6 +112,10 @@ export class ReportPanel {
     context: vscode.ExtensionContext,
     report: ScanReport
   ): Promise<ScanRecord[]> {
+    await recordActivity(context, {
+      kind: "scan",
+      detail: `score ${report.score} · ${report.totalFindings} findings in ${report.scannedCount} files`,
+    });
     return recordScan(context, {
       at: report.scannedAt.getTime(),
       score: report.score,
@@ -111,7 +141,10 @@ export class ReportPanel {
   }
 
   private render(): void {
-    this.panel.webview.html = buildReportHtml(this.report, true, this.history);
+    this.panel.webview.html = buildReportHtml(this.report, true, this.history, {
+      activity: this.activity,
+      suppressions: listSuppressions(),
+    });
   }
 
   private async onMessage(msg: any): Promise<void> {
@@ -121,6 +154,12 @@ export class ReportPanel {
         break;
       case "verifyFile":
         await this.verifyFile(msg);
+        break;
+      case "dismiss":
+        await this.dismissFinding(msg);
+        break;
+      case "restore":
+        await this.restoreFinding(msg);
         break;
       case "previewFix":
         this.previewFix(msg);
@@ -186,7 +225,18 @@ export class ReportPanel {
       const code = doc.getText();
       const staticFindings = analyzeCode(code, msg.file);
       const result = await analyzeWithModel(code, staticFindings, getModelEndpoint());
-      const vulns = result.vulnerabilities ?? [];
+
+      // Drop findings the model could not tie to code actually in this file.
+      const { grounded, discarded } = groundVulnerabilities(
+        result.vulnerabilities ?? [],
+        code
+      );
+      for (const d of discarded) {
+        this.output.appendLine(
+          `[report] ignored ${d.cwe} in ${msg.file}: origin not present in the file`
+        );
+      }
+      const vulns = grounded;
 
       const correlation = correlateFindings(staticFindings, vulns);
 
@@ -226,11 +276,22 @@ export class ReportPanel {
           `${aiOnly.length} AI-only`
       );
 
+      // Re-render the file's source so lines the model flagged get their own
+      // colour alongside the static analyzer's.
+      const aiLines = vulns
+        .flatMap((v) =>
+          v.start_line == null
+            ? []
+            : range(v.start_line, v.end_line ?? v.start_line)
+        );
+
       this.panel.webview.postMessage({
         type: "fileVerified",
         index: msg.index,
         results,
         aiOnly,
+        codeRows: renderCodeRows(code, staticFindings.map((f) => f.line), aiLines),
+        aiLineCount: new Set(aiLines).size,
       });
     } catch (err: any) {
       this.panel.webview.postMessage({
@@ -284,6 +345,79 @@ export class ReportPanel {
   }
 
   /**
+   * Record a finding as a false positive and drop it from the in-memory report
+   * so the scores reflect the dismissal without needing a re-scan.
+   */
+  private async dismissFinding(msg: {
+    file: string;
+    cwe: string;
+    line: number;
+  }): Promise<void> {
+    const stored = this.report.files.find((f) => f.path === msg.file);
+    if (!stored?.code) return;
+
+    const snippet = lineTextAt(stored.code, msg.line);
+    const choice = await confirmSuppression(msg.cwe, snippet);
+    if (choice !== "suppress") {
+      // Re-enable the button and undo the row's dimmed state.
+      this.panel.webview.postMessage({ type: "dismissCancelled", id: `${msg.file}:${msg.line}` });
+      if (choice === "explain") {
+        await askAboutFinding(stored.uri, msg.cwe, msg.line, this.output, undefined, "suppress");
+      }
+      return;
+    }
+
+    await suppress(msg.file, msg.cwe, snippet, msg.line);
+    this.activity = await recordActivity(this.context, {
+      kind: "dismiss",
+      file: msg.file,
+      cwe: msg.cwe,
+      detail: `line ${msg.line}`,
+    });
+    this.output.appendLine(`[fp] dismissed ${msg.cwe} at ${msg.file}:${msg.line}`);
+    // Keep the per-file status-bar counter in step with dismissals made here.
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
+
+    stored.findings = stored.findings.filter(
+      (f) => !(f.cweId === msg.cwe && f.line === msg.line)
+    );
+    stored.score = scoreForFindings(stored.findings);
+    this.report.score = projectScore(this.report.files.map((f) => f.score));
+    this.report.cleanCount = this.report.files.filter((f) => f.findings.length === 0).length;
+    this.report.totalFindings = this.report.files.reduce((n, f) => n + f.findings.length, 0);
+
+    this.panel.webview.postMessage({
+      type: "dismissed",
+      score: stored.score,
+      projectScore: this.report.score,
+      cleanCount: this.report.cleanCount,
+      scannedCount: this.report.scannedCount,
+      file: msg.file,
+    });
+  }
+
+  /**
+   * Undo a false-positive dismissal. The finding is not re-inserted into the
+   * current report — it reappears on the next scan, when the analyzer looks at
+   * that code again.
+   */
+  private async restoreFinding(msg: {
+    file: string;
+    cwe: string;
+    code: string;
+  }): Promise<void> {
+    await unsuppress(msg.file, msg.cwe, msg.code);
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
+    this.activity = await recordActivity(this.context, {
+      kind: "restore",
+      file: msg.file,
+      cwe: msg.cwe,
+    });
+    this.output.appendLine(`[fp] restored ${msg.cwe} in ${msg.file}`);
+    this.panel.webview.postMessage({ type: "restored", file: msg.file, cwe: msg.cwe });
+  }
+
+  /**
    * Render the change inline in the report rather than in a modal dialog, so
    * the diff is reviewed in the same place as the finding it belongs to.
    */
@@ -329,6 +463,13 @@ export class ReportPanel {
     this.report.cleanCount = this.report.files.filter((f) => f.findings.length === 0).length;
     this.report.totalFindings = this.report.files.reduce((n, f) => n + f.findings.length, 0);
 
+    this.activity = await recordActivity(this.context, {
+      kind: "fix",
+      file: entry.relPath,
+      cwe: entry.cwe,
+      detail: `file score ${score} · project ${this.report.score}`,
+    });
+
     this.output.appendLine(
       `[report] fix applied to ${entry.relPath} — now ${findings.length} finding(s), ` +
         `file ${score}, project ${this.report.score}` +
@@ -357,7 +498,10 @@ export class ReportPanel {
 
     const target = vscode.Uri.joinPath(folder.uri, "security-report.html");
     try {
-      const html = buildReportHtml(this.report, false, this.history);
+      const html = buildReportHtml(this.report, false, this.history, {
+        activity: this.activity,
+        suppressions: listSuppressions(),
+      });
       await vscode.workspace.fs.writeFile(target, Buffer.from(html, "utf-8"));
       this.output.appendLine(`[report] exported to ${target.fsPath}`);
     } catch (err: any) {

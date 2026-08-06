@@ -34,6 +34,22 @@
       {
         "command": "secure-assist.showFixes",
         "title": "Secure Assist: Show AI Fixes"
+      },
+      {
+        "command": "secure-assist.askQuestion",
+        "title": "Secure Assist: Ask the Security Assistant"
+      },
+      {
+        "command": "secure-assist.reportFalsePositive",
+        "title": "Secure Assist: Report Finding as False Positive"
+      },
+      {
+        "command": "secure-assist.showDismissed",
+        "title": "Secure Assist: Show Dismissed Findings in This File"
+      },
+      {
+        "command": "secure-assist.settings",
+        "title": "Secure Assist: Settings"
       }
     ],
     "configuration": {
@@ -43,6 +59,29 @@
           "type": "string",
           "default": "http://localhost:8000",
           "description": "Base URL of the Secure Assist model server (Docker)."
+        },
+        "secureAssist.agentApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "API key for the security assistant (Anthropic). Stored in your user settings — do not commit it to the repository."
+        },
+        "secureAssist.agentModel": {
+          "type": "string",
+          "default": "claude-sonnet-5",
+          "description": "Model used by the security assistant."
+        },
+        "secureAssist.enabledCwes": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Which weaknesses are reported. A CWE set to `false` is excluded from findings **and** from the project score. Easiest to edit from **Secure Assist: Settings**.",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "secureAssist.liveMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Re-run the static analyzer as you type. When off, files are analysed on save only."
         }
       }
     }

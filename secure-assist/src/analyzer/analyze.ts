@@ -1,5 +1,5 @@
 import { Finding } from "./types";
-import { initAstAnalyzer, astAnalyzeCode } from "../scripts/ast/astAnalyzer";
+import { initAstAnalyzer, astAnalyzeCode } from "./ast/astAnalyzer";
 
 export { initAstAnalyzer };
 

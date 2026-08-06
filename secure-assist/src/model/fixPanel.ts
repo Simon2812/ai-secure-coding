@@ -5,6 +5,8 @@ import { getModelResults, applyFixEdit } from "./aiFix";
 import { findOriginRange } from "./originMatch";
 import { PALETTE } from "../report/reportHtml";
 import { renderFixDiff, DIFF_STYLES } from "./diffView";
+import { askAboutFinding } from "../agent/askAgent";
+import { recordActivity } from "../report/history";
 
 function escapeHtml(value: string): string {
   return value
@@ -34,6 +36,7 @@ export class FixPanel {
   private readonly panel: vscode.WebviewPanel;
   private readonly aiDiagnostics: vscode.DiagnosticCollection;
   private readonly output: vscode.OutputChannel;
+  private readonly context: vscode.ExtensionContext;
   private uri: vscode.Uri;
   private items: PanelItem[] = [];
   private disposables: vscode.Disposable[] = [];
@@ -42,12 +45,14 @@ export class FixPanel {
     panel: vscode.WebviewPanel,
     uri: vscode.Uri,
     aiDiagnostics: vscode.DiagnosticCollection,
-    output: vscode.OutputChannel
+    output: vscode.OutputChannel,
+    context: vscode.ExtensionContext
   ) {
     this.panel = panel;
     this.uri = uri;
     this.aiDiagnostics = aiDiagnostics;
     this.output = output;
+    this.context = context;
 
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
@@ -56,7 +61,8 @@ export class FixPanel {
   static show(
     uri: vscode.Uri,
     aiDiagnostics: vscode.DiagnosticCollection,
-    output: vscode.OutputChannel
+    output: vscode.OutputChannel,
+    context: vscode.ExtensionContext
   ): void {
     if (FixPanel.current) {
       FixPanel.current.uri = uri;
@@ -70,7 +76,7 @@ export class FixPanel {
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       { enableScripts: true, retainContextWhenHidden: true }
     );
-    FixPanel.current = new FixPanel(panel, uri, aiDiagnostics, output);
+    FixPanel.current = new FixPanel(panel, uri, aiDiagnostics, output, context);
     FixPanel.current.refresh();
   }
 
@@ -109,6 +115,7 @@ export class FixPanel {
                   ${renderFixDiff(fix)}
                   <div class="actions">
                     <button class="apply" data-id="${id}">Apply this fix</button>
+                    <button class="ask" data-id="${id}">Ask about this</button>
                     <span class="state" id="state-${id}"></span>
                   </div>
                 </div>`;
@@ -150,6 +157,9 @@ export class FixPanel {
         vscode.postMessage({ type: 'apply', id: apply.dataset.id });
         return;
       }
+      const ask = e.target.closest('button.ask');
+      if (ask) { vscode.postMessage({ type: 'ask', id: ask.dataset.id }); return; }
+
       const loc = e.target.closest('.loc');
       if (loc) { vscode.postMessage({ type: 'reveal', line: Number(loc.dataset.line) }); return; }
 
@@ -188,6 +198,21 @@ export class FixPanel {
       return;
     }
 
+    if (msg?.type === "ask") {
+      const [ai, fi] = String(msg.id).split("-").map(Number);
+      const target = this.items.find((it) => it.index === ai);
+      if (!target) return;
+      // Hand the agent the fix as well, so it can explain why the patch works.
+      await askAboutFinding(
+        this.uri,
+        target.vuln.cwe,
+        target.vuln.start_line,
+        this.output,
+        target.fixes[fi]
+      );
+      return;
+    }
+
     if (msg?.type !== "apply") return;
 
     const [itemIndex, fixIndex] = String(msg.id).split("-").map(Number);
@@ -207,6 +232,12 @@ export class FixPanel {
     const applied = await applyFixEdit(this.uri, fix, this.aiDiagnostics);
     if (applied) {
       this.output.appendLine(`[fixes] applied ${item!.vuln.cwe} fix in ${this.uri.fsPath}`);
+      await recordActivity(this.context, {
+        kind: "fix",
+        file: vscode.workspace.asRelativePath(this.uri, false).replace(/\\/g, "/"),
+        cwe: item!.vuln.cwe,
+        detail: "applied from the fixes panel",
+      });
       this.panel.webview.postMessage({ type: "applied", id: msg.id });
     } else {
       this.panel.webview.postMessage({
@@ -272,6 +303,7 @@ button {
   font-family: inherit; font-size: 0.82rem; padding: 5px 14px; border-radius: 4px;
   border: 1px solid transparent; background: var(--accent); color: var(--accent-fg); cursor: pointer;
 }
+button.ask { background: var(--surface-2); color: var(--text); border-color: var(--border); }
 button:disabled { opacity: 0.5; cursor: default; }
 .state { font-size: 0.8rem; color: var(--text-dim); }
 .state.ok { color: var(--good); font-weight: 600; }

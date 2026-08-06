@@ -2,7 +2,8 @@ import { ScanReport, FileReport } from "./scanner";
 import { getCweInfo } from "../model/cweCatalog";
 import { scoreBand, severityOf } from "./score";
 import { buildTree, collapseSingleChildFolders, FolderNode } from "./tree";
-import { ScanRecord, sparklineSvg } from "./history";
+import { ScanRecord, ActivityEvent, sparklineSvg } from "./history";
+import { Suppression } from "./suppressions";
 import { DIFF_STYLES } from "../model/diffView";
 
 function escapeHtml(value: string): string {
@@ -207,6 +208,51 @@ details.cwe-panel[open] > summary .folder-icon { transform: rotate(90deg); }
   font-variant-numeric: tabular-nums; font-weight: 600;
 }
 
+/* Collapsible side panels: activity log and dismissed findings */
+details.side-panel {
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); margin-bottom: 12px;
+}
+details.side-panel > summary { font-weight: 500; }
+details.side-panel[open] > summary .folder-icon { transform: rotate(90deg); }
+.side-body { padding: 4px 14px 12px; }
+
+.fp-file {
+  font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim);
+  margin: 10px 0 4px;
+}
+.fp-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 5px 0 5px 10px; border-left: 2px solid var(--border);
+  font-size: 0.8rem;
+}
+.fp-row.restored { opacity: 0.5; }
+.fp-cwe { font-weight: 600; flex: 0 0 auto; }
+.fp-code {
+  flex: 1; min-width: 0; font-family: var(--mono); font-size: 0.75rem;
+  color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fp-when { color: var(--text-dim); font-size: 0.72rem; }
+button.restore { font-size: 0.74rem; padding: 2px 10px; }
+.fp-note { color: var(--text-dim); font-size: 0.76rem; margin: 12px 0 0; }
+
+.act-row {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 4px 0 4px 10px; border-left: 2px solid var(--border); font-size: 0.8rem;
+}
+.act-row.fix { border-left-color: var(--good); }
+.act-row.dismiss { border-left-color: var(--text-dim); }
+.act-row.restore { border-left-color: var(--warn); }
+.act-row.scan { border-left-color: var(--accent); }
+.act-icon { flex: 0 0 1em; text-align: center; color: var(--text-dim); }
+.act-kind {
+  flex: 0 0 7em; text-transform: uppercase; font-size: 0.68rem;
+  letter-spacing: 0.05em; color: var(--text-dim);
+}
+.act-what { flex: 1 1 240px; min-width: 0; }
+.act-detail { color: var(--text-dim); font-size: 0.76rem; }
+.act-when { color: var(--text-dim); font-size: 0.72rem; margin-left: auto; }
+
 /* Filter bar */
 .filters {
   display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
@@ -251,6 +297,10 @@ details.file { background: var(--surface); }
 /* A finding whose fix has been applied stays visible but reads as resolved. */
 .finding.fixed { opacity: 0.6; border-left-color: var(--good) !important; }
 .finding.fixed .cwe { text-decoration: line-through; }
+/* Dismissed as a false positive — kept visible so the decision is auditable. */
+.finding.dismissed { opacity: 0.45; border-left-style: dotted; }
+.finding.dismissed .cwe { text-decoration: line-through; }
+button.dismiss { font-size: 0.76rem; }
 .ai-findings:empty { display: none; }
 
 /* Inline source viewer */
@@ -261,9 +311,25 @@ button.see-code { font-size: 0.78rem; }
   font-family: var(--mono); font-size: 0.78rem; line-height: 1.5;
   max-height: 460px; overflow-y: auto;
 }
-.code-line { display: flex; white-space: pre; }
-.code-line.flagged { background: rgba(248, 81, 73, 0.14); border-left: 3px solid var(--bad); }
-.code-line:not(.flagged) { border-left: 3px solid transparent; }
+.code-line { display: flex; white-space: pre; border-left: 3px solid transparent; }
+/* Static analyzer finding. */
+.code-line.flagged { background: rgba(240, 102, 95, 0.14); border-left-color: var(--bad); }
+/* Model finding — its own colour so the two sources stay distinguishable. */
+.code-line.ai-flagged { background: rgba(162, 116, 240, 0.16); border-left-color: var(--ai); }
+/* Flagged by both: red bar, blended tint. */
+.code-line.flagged.ai-flagged {
+  background: rgba(200, 110, 165, 0.16);
+  border-left-color: var(--bad);
+  box-shadow: inset -3px 0 0 var(--ai);
+}
+.code-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin: 0 14px 6px; font-size: 0.72rem; color: var(--text-dim);
+}
+.code-legend span { display: flex; align-items: center; gap: 5px; }
+.code-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.code-legend i.s { background: var(--bad); }
+.code-legend i.a { background: var(--ai); }
 .ln {
   flex: 0 0 3.2em; text-align: right; padding: 0 10px 0 6px;
   color: var(--text-dim); user-select: none;
@@ -299,7 +365,11 @@ function renderFinding(
     <div class="msg">${escapeHtml(f.message)}</div>
     ${info?.recommendation ? `<div class="rec">${escapeHtml(info.recommendation)}</div>` : ""}
     ${f.evidence ? `<pre class="evidence">${escapeHtml(f.evidence)}</pre>` : ""}
-    <div class="actions" id="actions-${id}"></div>
+    <div class="actions" id="actions-${id}">
+      ${interactive
+        ? `<button class="dismiss" data-file="${escapeHtml(file.path)}" data-cwe="${escapeHtml(f.cweId)}" data-line="${f.line}" title="Never report this exact code again">Not a vulnerability</button>`
+        : ""}
+    </div>
   </div>`;
 }
 
@@ -325,13 +395,26 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
  * Source lines with line numbers, flagged lines highlighted.
  * Exported so the panel can re-render a file's code after a fix is applied.
  */
-export function renderCodeRows(code: string, flaggedLines: Iterable<number>): string {
+export function renderCodeRows(
+  code: string,
+  flaggedLines: Iterable<number>,
+  aiLines: Iterable<number> = []
+): string {
   const flagged = new Set(flaggedLines);
+  const ai = new Set(aiLines);
   return code
     .split("\n")
     .map((line, i) => {
       const n = i + 1;
-      const cls = flagged.has(n) ? "code-line flagged" : "code-line";
+      // A line both tools flagged keeps the static (red) marker and adds the
+      // AI one, so agreement is visible rather than one colour hiding the other.
+      const cls = [
+        "code-line",
+        flagged.has(n) ? "flagged" : "",
+        ai.has(n) ? "ai-flagged" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
       return `<div class="${cls}"><span class="ln">${n}</span><span class="lc">${escapeHtml(line) || "&nbsp;"}</span></div>`;
     })
     .join("");
@@ -413,7 +496,8 @@ function renderFolder(
 export function buildReportHtml(
   report: ScanReport,
   interactive: boolean,
-  history: ScanRecord[] = []
+  history: ScanRecord[] = [],
+  extras: { activity?: ActivityEvent[]; suppressions?: Suppression[] } = {}
 ): string {
   const band = scoreBand(report.score);
 
@@ -495,6 +579,35 @@ export function buildReportHtml(
             if (box) box.remove();
             return;
           }
+          const restore = e.target.closest('button.restore');
+          if (restore) {
+            const row = restore.closest('.fp-row');
+            restore.disabled = true;
+            vscode.postMessage({
+              type: 'restore',
+              file: row.dataset.file,
+              cwe: row.dataset.cwe,
+              code: row.dataset.code,
+            });
+            row.classList.add('restored');
+            restore.textContent = 'Suppression removed';
+            return;
+          }
+          const dismiss = e.target.closest('button.dismiss');
+          if (dismiss) {
+            // Optimistic, but reverted if the confirmation is declined.
+            dismiss.disabled = true;
+            dismiss.dataset.pending = dismiss.dataset.file + ':' + dismiss.dataset.line;
+            vscode.postMessage({
+              type: 'dismiss',
+              file: dismiss.dataset.file,
+              cwe: dismiss.dataset.cwe,
+              line: Number(dismiss.dataset.line),
+            });
+            const row = dismiss.closest('.finding');
+            if (row) { row.classList.add('dismissed'); }
+            return;
+          }
           // Toolbar actions are delegated too, so they work regardless of when
           // the script runs relative to the buttons being parsed.
           if (e.target.closest('#export')) {
@@ -552,6 +665,23 @@ export function buildReportHtml(
               const actions = document.getElementById('actions-' + r.id);
               if (actions && r.fixCount > 0) addFixButtons(actions, r.id, r.fixCount);
             });
+
+            // Repaint the source so the model's lines show in their own colour,
+            // and explain the two colours now that both are present.
+            if (msg.codeRows) {
+              const block = document.getElementById('code-' + msg.index);
+              if (block) block.innerHTML = msg.codeRows;
+              const tools = document.querySelector('#code-' + msg.index).previousElementSibling;
+              if (msg.aiLineCount > 0 && tools && !document.getElementById('legend-' + msg.index)) {
+                const legend = document.createElement('div');
+                legend.className = 'code-legend';
+                legend.id = 'legend-' + msg.index;
+                legend.innerHTML =
+                  '<span><i class="s"></i>static analyzer</span>' +
+                  '<span><i class="a"></i>AI</span>';
+                tools.insertAdjacentElement('afterend', legend);
+              }
+            }
 
             // Findings only the model reported.
             const host = document.getElementById('aifindings-' + msg.index);
@@ -647,6 +777,25 @@ export function buildReportHtml(
                 clean.textContent = msg.cleanCount + ' of ' + msg.scannedCount + ' files clean';
               }
             }
+          } else if (msg.type === 'dismissCancelled') {
+            const btn = document.querySelector('button.dismiss[data-pending="' + msg.id + '"]');
+            if (btn) {
+              btn.disabled = false;
+              delete btn.dataset.pending;
+              const row = btn.closest('.finding');
+              if (row) row.classList.remove('dismissed');
+            }
+          } else if (msg.type === 'dismissed') {
+            // Scores move as soon as a finding is dismissed, no re-scan needed.
+            const proj = document.getElementById('projectScore');
+            if (proj) { proj.textContent = msg.projectScore; proj.className = 'score ' + band(msg.projectScore); }
+            const clean = document.getElementById('cleanLabel');
+            if (clean) clean.textContent = msg.cleanCount + ' of ' + msg.scannedCount + ' files clean';
+            document.querySelectorAll('details.file').forEach(f => {
+              if (f.dataset.path !== (msg.file || '').toLowerCase()) return;
+              const el = f.querySelector('summary .file-score');
+              if (el) { el.textContent = msg.score; el.className = 'file-score ' + band(msg.score); }
+            });
           } else if (msg.type === 'verifyFailed') {
             if (status) status.textContent = msg.message || 'AI verification failed.';
           }
@@ -692,6 +841,89 @@ export function buildReportHtml(
                 <span class="cwe-count">${entry.count}</span>
               </div>`;
             })
+            .join("")}
+        </div>
+      </details>`
+    : "";
+
+  // Dismissed findings, grouped by file, each restorable.
+  const suppressions = extras.suppressions ?? [];
+  const byFile = new Map<string, Suppression[]>();
+  for (const s of suppressions) {
+    const list = byFile.get(s.file) ?? [];
+    list.push(s);
+    byFile.set(s.file, list);
+  }
+
+  const dismissedPanel = suppressions.length
+    ? `<details class="side-panel">
+        <summary>
+          <span class="folder-icon">▸</span>
+          <span class="folder-name">Dismissed as false positive</span>
+          <span class="status">${suppressions.length}</span>
+        </summary>
+        <div class="side-body">
+          ${[...byFile.entries()]
+            .map(
+              ([file, items]) => `
+            <div class="fp-file">${escapeHtml(file)}</div>
+            ${items
+              .map(
+                (s) => `
+              <div class="fp-row" data-file="${escapeHtml(s.file)}" data-cwe="${escapeHtml(s.cwe)}" data-code="${escapeHtml(s.code)}">
+                <span class="fp-cwe">${escapeHtml(s.cwe)}</span>
+                <code class="fp-code">${escapeHtml(s.code.length > 90 ? s.code.slice(0, 90) + "…" : s.code)}</code>
+                <span class="fp-when">${new Date(s.at).toLocaleDateString()}</span>
+                ${interactive ? `<button class="restore">Remove suppression</button>` : ""}
+              </div>`
+              )
+              .join("")}`
+            )
+            .join("")}
+          ${interactive
+            ? `<p class="fp-note">Removing a suppression does not create a finding. It only stops this code being filtered out, so the analyzer can report it again on the next scan if it still considers it a problem.</p>`
+            : ""}
+        </div>
+      </details>`
+    : "";
+
+  // What has been done to this project, newest first.
+  const activity = [...(extras.activity ?? [])].reverse();
+  const activityIcon: Record<ActivityEvent["kind"], string> = {
+    scan: "◆",
+    fix: "✓",
+    dismiss: "✕",
+    restore: "↺",
+  };
+  // The stored kind is kept as-is so older entries still resolve; only the
+  // label shown to the reader is reworded.
+  const activityLabel: Record<ActivityEvent["kind"], string> = {
+    scan: "scan",
+    fix: "fix",
+    dismiss: "suppressed",
+    restore: "unsuppressed",
+  };
+  const activityPanel = activity.length
+    ? `<details class="side-panel">
+        <summary>
+          <span class="folder-icon">▸</span>
+          <span class="folder-name">Activity</span>
+          <span class="status">${activity.length} event${activity.length === 1 ? "" : "s"}</span>
+        </summary>
+        <div class="side-body">
+          ${activity
+            .map(
+              (e) => `
+            <div class="act-row ${e.kind}">
+              <span class="act-icon">${activityIcon[e.kind] ?? "•"}</span>
+              <span class="act-kind">${activityLabel[e.kind] ?? e.kind}</span>
+              <span class="act-what">${escapeHtml(
+                [e.cwe, e.file].filter(Boolean).join(" in ") || "project"
+              )}</span>
+              <span class="act-detail">${escapeHtml(e.detail ?? "")}</span>
+              <span class="act-when">${new Date(e.at).toLocaleString()}</span>
+            </div>`
+            )
             .join("")}
         </div>
       </details>`
@@ -817,6 +1049,8 @@ export function buildReportHtml(
   </div>
 
   ${cweBreakdown}
+  ${activityPanel}
+  ${dismissedPanel}
   ${toolbar}
   ${filterBar}
   ${body}

@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { analyzeCode } from "../analyzer/analyze";
 import { Finding } from "../analyzer/types";
 import { projectScore, scoreForFindings, severityOf } from "./score";
+import { filterSuppressed } from "./suppressions";
+import { filterDisabledCwes } from "./settings";
 
 /** Files the AST analyzer understands. */
 const SCAN_GLOB = "**/*.{py,java,c,h,cpp,cc}";
@@ -84,7 +86,11 @@ export async function scanWorkspace(
 
     let findings: Finding[] = [];
     try {
-      findings = analyzeCode(code, relPath);
+      // Disabled CWEs and dismissed findings are removed before scoring, so
+      // the score reflects only what this workspace tracks.
+      findings = filterDisabledCwes(
+        filterSuppressed(analyzeCode(code, relPath), relPath, code)
+      );
     } catch {
       findings = []; // a parse failure shouldn't abort the project scan
     }

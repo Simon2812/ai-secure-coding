@@ -16,7 +16,23 @@ import { ModelFix } from "./model/client";
 import { loadCweCatalog, explainCwe } from "./model/cweCatalog";
 import { correlateFindings } from "./model/correlation";
 import { ReportPanel } from "./report/reportPanel";
+import {
+  initSuppressions,
+  filterSuppressed,
+  filterSuppressedVulns,
+  suppress,
+  lineTextAt,
+  listSuppressions,
+  confirmSuppression,
+} from "./report/suppressions";
+import { DismissedPanel } from "./report/dismissedPanel";
+import { groundVulnerabilities } from "./model/originMatch";
+import { recordActivity } from "./report/history";
+import { filterDisabledCwes, filterDisabledCweVulns, isLiveModeEnabled } from "./report/settings";
+import { SettingsPanel } from "./report/settingsPanel";
 import { FixPanel } from "./model/fixPanel";
+import { AskAgentProvider, askAboutFinding, ASK_AGENT_COMMAND } from "./agent/askAgent";
+import { AgentPanel } from "./agent/agentPanel";
 
 // Analysis is on by default — the user should get findings without having to
 // discover a "start tracking" command first.
@@ -37,6 +53,8 @@ export async function activate(context: vscode.ExtensionContext) {
   await initAstAnalyzer();
   // Shared CWE metadata (same catalog the CLI uses) for enriched findings.
   loadCweCatalog(context);
+  // Dismissed false positives, persisted per workspace.
+  initSuppressions(context);
 
   const output = vscode.window.createOutputChannel("Secure Assist");
   const diagnostics = createDiagnosticCollection();
@@ -96,7 +114,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     fileStore.set(relPath, content);
 
-    const findings = analyzeCode(content, relPath);
+    // Findings the developer dismissed as false positives never come back.
+    const findings = filterDisabledCwes(filterSuppressed(analyzeCode(content, relPath), relPath, content));
     updateDiagnostics(diagnostics, doc, findings);
 
     const key = doc.uri.toString();
@@ -131,6 +150,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const changeSub = vscode.workspace.onDidChangeTextDocument((event) => {
     const doc = event.document;
     if (!isTracking) return;
+    if (!isLiveModeEnabled()) return; // analyse on save only
     if (doc.uri.scheme !== "file") return;
     if (!SUPPORTED_SOURCE.test(doc.fileName)) return;
 
@@ -160,7 +180,9 @@ export async function activate(context: vscode.ExtensionContext) {
     const doc = editor.document;
     const relPath = vscode.workspace.asRelativePath(doc.uri, false).replace(/\\/g, "/");
     const code = doc.getText();
-    const staticFindings = analyzeCode(code, relPath);
+    const staticFindings = filterDisabledCwes(
+      filterSuppressed(analyzeCode(code, relPath), relPath, code)
+    );
 
     // Surface our channel so results are visible without hunting the dropdown.
     output.show(true);
@@ -180,7 +202,23 @@ export async function activate(context: vscode.ExtensionContext) {
         progress.report({ message: "running model…" });
         try {
           const result = await analyzeWithModel(code, staticFindings, getModelEndpoint(), token);
-          const vulns = result.vulnerabilities ?? [];
+
+          // Discard findings the model could not tie to real code — usually a
+          // remembered fix pattern rather than something it read in this file.
+          const { grounded, discarded } = groundVulnerabilities(
+            result.vulnerabilities ?? [],
+            code
+          );
+          for (const d of discarded) {
+            output.appendLine(
+              `[AI] ignored ${d.cwe}: its origin does not appear in this file ` +
+                `(${(d.fixes?.[0]?.origin ?? "no fix").split("\n")[0].trim()})`
+            );
+          }
+
+          const vulns = filterDisabledCweVulns(
+            filterSuppressedVulns(grounded, relPath, code)
+          );
 
           // Cross-check the two sources so we can mark issues that both agree on.
           const correlation = correlateFindings(staticFindings, vulns);
@@ -229,6 +267,11 @@ export async function activate(context: vscode.ExtensionContext) {
           }
 
           refreshFixesButton();
+          await recordActivity(context, {
+            kind: "scan",
+            file: relPath,
+            detail: `AI scan · ${vulns.length} finding(s) in ${secs}s`,
+          });
 
           const bothCount = correlation.confirmedModel.size;
           vscode.window.showInformationMessage(
@@ -263,7 +306,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const showFixesCmd = vscode.commands.registerCommand("secure-assist.showFixes", () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) return;
-    FixPanel.show(editor.document.uri, aiDiagnostics, output);
+    FixPanel.show(editor.document.uri, aiDiagnostics, output, context);
   });
 
   /** Show the fixes button only when the active file has fixes to offer. */
@@ -285,7 +328,10 @@ export async function activate(context: vscode.ExtensionContext) {
     fixesButton.show();
   };
 
-  const editorSub = vscode.window.onDidChangeActiveTextEditor(() => refreshFixesButton());
+  const editorSub = vscode.window.onDidChangeActiveTextEditor(() => {
+    refreshFixesButton();
+    refreshDismissedButton();
+  });
 
   // Deep scan: static analysis over the whole workspace, rendered as a report.
   const deepScanCmd = vscode.commands.registerCommand("secure-assist.deepScan", async () => {
@@ -303,8 +349,160 @@ export async function activate(context: vscode.ExtensionContext) {
   const applyAiFixCmd = vscode.commands.registerCommand(
     APPLY_AI_FIX_COMMAND,
     async (uri: vscode.Uri, fix: ModelFix, cwe: string) => {
-      await previewAndApplyFix(uri, fix, cwe, aiDiagnostics);
+      const applied = await previewAndApplyFix(uri, fix, cwe, aiDiagnostics);
+      if (!applied) return;
+      await recordActivity(context, {
+        kind: "fix",
+        file: vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/"),
+        cwe,
+        detail: "applied from the editor",
+      });
     }
+  );
+
+  // Settings: which weaknesses are reported, live mode, model connection and
+  // the stored suppression / history data.
+  const settingsCmd = vscode.commands.registerCommand("secure-assist.settings", () => {
+    SettingsPanel.show(context, () => {
+      // Re-analyse the visible file so a toggled CWE takes effect immediately.
+      const editor = vscode.window.activeTextEditor;
+      if (editor) runStaticAnalysis(editor.document, { verbose: false });
+      refreshDismissedButton();
+    });
+  });
+
+  const settingsButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 97);
+  settingsButton.text = "$(gear)";
+  settingsButton.tooltip = "Secure Assist: settings";
+  settingsButton.command = "secure-assist.settings";
+  settingsButton.show();
+
+  // Per-file view of what has been dismissed here, with restore. The project
+  // report covers the whole workspace; this is for the file being edited.
+  const dismissedButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+  dismissedButton.command = "secure-assist.showDismissed";
+  dismissedButton.tooltip = "Secure Assist: findings dismissed in this file";
+
+  /** Re-analyse a file so a restored finding reappears immediately. */
+  const reanalyse = async (uri: vscode.Uri) => {
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const rel = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+    const text = doc.getText();
+    updateDiagnostics(
+      diagnostics,
+      doc,
+      filterDisabledCwes(filterSuppressed(analyzeCode(text, rel), rel, text))
+    );
+    refreshDismissedButton();
+  };
+
+  const showDismissedCmd = vscode.commands.registerCommand(
+    "secure-assist.showDismissed",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      DismissedPanel.show(editor.document.uri, reanalyse);
+    }
+  );
+
+  // Not declared in package.json, so it stays out of the command palette: it
+  // exists only so the report webview can refresh the status bar after a
+  // dismissal, without holding a reference to it.
+  const refreshStatusCmd = vscode.commands.registerCommand(
+    "secure-assist.internal.refreshStatusBar",
+    () => refreshDismissedButton()
+  );
+
+  function refreshDismissedButton(): void {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      dismissedButton.hide();
+      return;
+    }
+    const rel = vscode.workspace.asRelativePath(editor.document.uri, false).replace(/\\/g, "/");
+    const count = listSuppressions().filter((s) => s.file === rel).length;
+    if (count === 0) {
+      dismissedButton.hide();
+      return;
+    }
+    dismissedButton.text = `$(circle-slash) ${count} dismissed`;
+    dismissedButton.show();
+  }
+
+  // Dismiss a finding as a false positive. Keyed on the text of the flagged
+  // line, so it stays dismissed if the code moves but returns if the code
+  // itself changes.
+  const dismissCmd = vscode.commands.registerCommand(
+    "secure-assist.reportFalsePositive",
+    async (uri: vscode.Uri, cwe: string, line: number, endLine?: number) => {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const relPath = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+      const code = doc.getText();
+      const snippet = lineTextAt(code, line, endLine ?? line);
+
+      const choice = await confirmSuppression(cwe, snippet);
+      if (choice === "cancel") return;
+      if (choice === "explain") {
+        await askAboutFinding(uri, cwe, line, output, undefined, "suppress");
+        return;
+      }
+
+      await suppress(relPath, cwe, snippet, line);
+      await recordActivity(context, {
+        kind: "dismiss",
+        file: relPath,
+        cwe,
+        detail: `line ${line}`,
+      });
+      output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} — ${snippet.trim()}`);
+
+      // Refresh both diagnostic sets so the squiggle disappears immediately.
+      const refreshed = filterDisabledCwes(
+        filterSuppressed(analyzeCode(code, relPath), relPath, code)
+      );
+      updateDiagnostics(diagnostics, doc, refreshed);
+      aiDiagnostics.set(
+        uri,
+        modelVulnsToDiagnostics(doc, filterSuppressedVulns(getModelResults(uri), relPath, code))
+      );
+
+      refreshDismissedButton();
+      vscode.window.showInformationMessage(
+        `Secure Assist: ${cwe} dismissed for this code. It will not be reported again unless the line changes.`
+      );
+    }
+  );
+
+  // Teacher agent: explains a finding conversationally. Backed by an external
+  // API rather than the fine-tuned model, which only emits fix JSON.
+  const askAgentCmd = vscode.commands.registerCommand(
+    ASK_AGENT_COMMAND,
+    async (
+      uri: vscode.Uri,
+      cwe: string,
+      line?: number,
+      fix?: { origin: string; replacement: string }
+    ) => {
+      await askAboutFinding(uri, cwe, line, output, fix);
+    }
+  );
+
+  const openAgentCmd = vscode.commands.registerCommand("secure-assist.askQuestion", () => {
+    AgentPanel.open(output);
+  });
+
+  // Always available: a question that is not tied to a finding — "is this fix
+  // correct?", "why is this pattern unsafe?" — with the open file as context.
+  const askButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 96);
+  askButton.text = "$(comment-discussion) Ask";
+  askButton.tooltip = "Secure Assist: ask the security assistant about this file";
+  askButton.command = "secure-assist.askQuestion";
+  askButton.show();
+
+  const askAgentProvider = vscode.languages.registerCodeActionsProvider(
+    { scheme: "file" },
+    new AskAgentProvider(),
+    { providedCodeActionKinds: AskAgentProvider.kinds }
   );
 
   // Quick-fix provider: "Apply AI fix" on lines the model flagged.
@@ -323,6 +521,16 @@ export async function activate(context: vscode.ExtensionContext) {
     applyAiFixCmd,
     deepScanCmd,
     showFixesCmd,
+    askAgentCmd,
+    openAgentCmd,
+    dismissCmd,
+    showDismissedCmd,
+    refreshStatusCmd,
+    settingsCmd,
+    settingsButton,
+    askButton,
+    dismissedButton,
+    askAgentProvider,
     editorSub,
     scanButton,
     deepScanButton,
@@ -332,6 +540,10 @@ export async function activate(context: vscode.ExtensionContext) {
     diagnostics,
     aiDiagnostics
   );
+
+  // Dismissals are persisted, so the status bar must reflect them on startup
+  // rather than only after the first editor switch.
+  refreshDismissedButton();
 }
 
 export function deactivate() {}

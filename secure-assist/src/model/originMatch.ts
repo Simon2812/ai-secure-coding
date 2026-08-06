@@ -92,3 +92,64 @@ export function findOriginRange(
 export function containsOrigin(code: string, origin: string): boolean {
   return findOriginRange(code, origin) !== undefined;
 }
+
+/** 1-based line number of a character offset. */
+function lineOf(code: string, offset: number): number {
+  let line = 1;
+  for (let i = 0; i < offset && i < code.length; i++) {
+    if (code[i] === "\n") line++;
+  }
+  return line;
+}
+
+interface Locatable {
+  cwe: string;
+  fixes?: { origin: string; replacement: string }[];
+  start_line?: number;
+  end_line?: number;
+}
+
+/**
+ * Tie model findings back to real positions in the file, discarding any that
+ * cannot be placed.
+ *
+ * The model sometimes returns a fix for code that is not in the file at all —
+ * a remembered pattern rather than something it read. Such a finding has no
+ * location, cannot be shown in context, verified or applied, so it is dropped
+ * rather than surfaced as an unactionable entry.
+ *
+ * Where the server failed to supply a line but the origin *is* present, the
+ * range is recovered here using whitespace-tolerant matching.
+ */
+export function groundVulnerabilities<T extends Locatable>(
+  vulns: T[],
+  code: string
+): { grounded: T[]; discarded: T[] } {
+  const grounded: T[] = [];
+  const discarded: T[] = [];
+
+  for (const vuln of vulns) {
+    if (vuln.start_line != null) {
+      grounded.push(vuln);
+      continue;
+    }
+
+    // No line from the server — try to derive one from a fix we can locate.
+    let located: T | undefined;
+    for (const fix of vuln.fixes ?? []) {
+      const range = findOriginRange(code, fix.origin);
+      if (!range) continue;
+      located = {
+        ...vuln,
+        start_line: lineOf(code, range.start),
+        end_line: lineOf(code, Math.max(range.start, range.end - 1)),
+      };
+      break;
+    }
+
+    if (located) grounded.push(located);
+    else discarded.push(vuln);
+  }
+
+  return { grounded, discarded };
+}

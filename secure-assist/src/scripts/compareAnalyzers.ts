@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { analyzeCode } from "../analyzer/analyze";
-import { initAstAnalyzer, astAnalyzeCode } from "./ast/astAnalyzer";
+import { initAstAnalyzer, astAnalyzeCode } from "../analyzer/ast/astAnalyzer";
 
 const REPO_ROOT = process.argv[2]
   ? path.resolve(process.argv[2])
