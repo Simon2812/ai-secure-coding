@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import * as http from "http";
+import * as fs from "fs";
+import * as path from "path";
 import { URL } from "url";
 import {
   ALL_CWES,
@@ -78,6 +80,17 @@ export class SettingsPanel {
       byFile.set(s.file, list);
     }
 
+    // Files can be deleted, renamed or moved while their suppressions remain.
+    // Those entries can never match anything again, so they are marked rather
+    // than silently kept — a stale list is how a user loses trust in the panel.
+    const missingFiles = new Set(
+      [...byFile.keys()].filter((file) => !this.fileExists(file))
+    );
+    const missingCount = [...missingFiles].reduce(
+      (n, file) => n + (byFile.get(file)?.length ?? 0),
+      0
+    );
+
     const cweRows = ALL_CWES.map((cwe) => {
       const info = getCweInfo(cwe);
       const on = map[cwe] !== false;
@@ -96,10 +109,11 @@ export class SettingsPanel {
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(
             ([file, items]) => `
-        <details class="file-group">
+        <details class="file-group${missingFiles.has(file) ? " missing" : ""}">
           <summary>
             <span class="chev">▸</span>
             <span class="fname">${escapeHtml(file)}</span>
+            ${missingFiles.has(file) ? `<span class="missing-tag">file no longer exists</span>` : ""}
             <span class="count">${items.length}</span>
           </summary>
           <div class="group-body">
@@ -214,10 +228,12 @@ export class SettingsPanel {
     <div class="sec-head">
       <h2>Suppressed findings</h2>
       <div class="sec-actions">
+        ${missingCount ? `<button id="prune-sup" class="ghost">Remove ${missingCount} for missing file${missingCount === 1 ? "" : "s"}</button>` : ""}
         ${suppressions.length ? `<button id="clear-sup" class="ghost danger">Remove all</button>` : ""}
       </div>
     </div>
     <p class="muted">Removing a suppression does not create a finding — it only lets the analyzer report that code again.</p>
+    ${missingCount ? `<p class="warn-line">${missingCount} suppression${missingCount === 1 ? " refers" : "s refer"} to files that no longer exist. They can never match again and are safe to remove.</p>` : ""}
     <div id="sup-list">${suppressionRows}</div>
   </section>
 
@@ -259,6 +275,7 @@ export class SettingsPanel {
         vscode.postMessage({ type: 'test' });
       }
       else if (btn.id === 'clear-sup')  vscode.postMessage({ type: 'clearSuppressions' });
+      else if (btn.id === 'prune-sup')  vscode.postMessage({ type: 'pruneSuppressions' });
       else if (btn.id === 'clear-hist') vscode.postMessage({ type: 'clearHistory' });
       else if (btn.id === 'clear-act')  vscode.postMessage({ type: 'clearActivity' });
       else if (btn.classList.contains('unsuppress')) {
@@ -340,18 +357,66 @@ export class SettingsPanel {
         this.render();
         break;
       }
-      case "clearHistory":
-        await clearHistory(this.context);
+      case "pruneSuppressions": {
+        const stale = listSuppressions().filter((s) => !this.fileExists(s.file));
+        if (stale.length === 0) return;
+        for (const s of stale) await unsuppress(s.file, s.cwe, s.code);
+        this.onChanged();
+        this.render();
         this.panel.webview.postMessage({
           type: "dataMsg",
-          text: "Scan history cleared — the trend line starts fresh.",
+          text: `Removed ${stale.length} suppression${stale.length === 1 ? "" : "s"} for files that no longer exist.`,
         });
         break;
+      }
+      case "clearHistory": {
+        const ok = await vscode.window.showWarningMessage(
+          "Clear the scan history for this workspace?",
+          {
+            modal: true,
+            detail:
+              "The recorded scans, their scores and the trend line are deleted. " +
+              "The scan counter resets to zero. This cannot be undone.",
+          },
+          "Clear history"
+        );
+        if (ok !== "Clear history") return;
+        await clearHistory(this.context);
+        // The report panel keeps its own copy of the history, so clearing
+        // storage alone leaves it showing a stale count until the next scan.
+        await vscode.commands.executeCommand("secure-assist.internal.refreshReportHistory");
+        this.panel.webview.postMessage({
+          type: "dataMsg",
+          text: "Scan history cleared — the trend line and scan count start fresh.",
+        });
+        break;
+      }
       case "clearActivity":
         await clearActivity(this.context);
         this.render();
         break;
     }
+  }
+
+  /**
+   * Does the file a suppression refers to still exist?
+   *
+   * Suppressions store a workspace-relative path. Uses a synchronous check
+   * because the panel renders synchronously; the paths are few and local.
+   */
+  private fileExists(relPath: string): boolean {
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders?.length) return true; // no workspace: cannot judge, keep it
+    for (const folder of folders) {
+      const full = path.join(folder.uri.fsPath, relPath);
+      try {
+        if (fs.existsSync(full)) return true;
+      } catch {
+        /* unreadable path — treat as present rather than delete blindly */
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Ping the model server so the user knows before a scan, not during one. */
@@ -451,6 +516,14 @@ details.file-group > summary {
   gap: 10px; user-select: none; font-size: 0.82rem;
 }
 details.file-group > summary::-webkit-details-marker { display: none; }
+details.file-group.missing > summary .fname { text-decoration: line-through; opacity: .65; }
+.missing-tag {
+  font-size: 11px; padding: 1px 6px; border-radius: 9px;
+  color: var(--warn); border: 1px solid var(--warn); opacity: .85;
+}
+.warn-line {
+  margin: 4px 0 10px; font-size: 12px; color: var(--warn);
+}
 details.file-group > summary:hover { background: var(--hover); }
 .chev { color: var(--text-dim); transition: transform 0.12s ease; display: inline-block; }
 details.file-group[open] > summary .chev { transform: rotate(90deg); }

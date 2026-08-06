@@ -413,6 +413,13 @@ export async function activate(context: vscode.ExtensionContext) {
     () => refreshDismissedButton()
   );
 
+  // Same reasoning: the settings panel can clear the scan history, but the
+  // report panel holds its own copy, so it needs telling to reload.
+  const refreshHistoryCmd = vscode.commands.registerCommand(
+    "secure-assist.internal.refreshReportHistory",
+    () => ReportPanel.reloadHistory(context)
+  );
+
   function refreshDismissedButton(): void {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -526,6 +533,7 @@ export async function activate(context: vscode.ExtensionContext) {
     dismissCmd,
     showDismissedCmd,
     refreshStatusCmd,
+    refreshHistoryCmd,
     settingsCmd,
     settingsButton,
     askButton,

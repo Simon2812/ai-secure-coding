@@ -48,6 +48,21 @@ type VerifiedFixes = Map<
 export class ReportPanel {
   private static current: ReportPanel | undefined;
 
+  /**
+   * Re-read the scan history from storage and redraw.
+   *
+   * The panel caches the history so it can draw the trend without touching
+   * storage on every render. When the settings panel clears it, that cache
+   * has to be invalidated or the report keeps showing the old scan count.
+   */
+  static reloadHistory(context: vscode.ExtensionContext): void {
+    const panel = ReportPanel.current;
+    if (!panel) return;
+    panel.history = loadHistory(context);
+    panel.activity = loadActivity(context);
+    panel.render();
+  }
+
   private readonly panel: vscode.WebviewPanel;
   private readonly output: vscode.OutputChannel;
   private readonly verified: VerifiedFixes = new Map();
@@ -152,6 +167,9 @@ export class ReportPanel {
       case "open":
         await this.openAt(msg.file, msg.line);
         break;
+      case "openFile":
+        await this.openFileInWorkspace(msg.file, msg.line);
+        break;
       case "verifyFile":
         await this.verifyFile(msg);
         break;
@@ -196,6 +214,38 @@ export class ReportPanel {
     const pos = new vscode.Position(Math.max(0, line - 1), 0);
     editor.selection = new vscode.Selection(pos, pos);
     editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
+  }
+
+  /**
+   * Open the real file for editing, rather than the report's read-only copy.
+   *
+   * Differs from openAt in that it takes focus and reuses the editor group the
+   * user was last in: this is "take me to the file", not "show me the line
+   * beside the report".
+   */
+  private async openFileInWorkspace(relPath: string, line: number): Promise<void> {
+    const uri = this.fileUri(relPath);
+    if (!uri) {
+      void vscode.window.showWarningMessage(
+        `Could not locate ${relPath} in the workspace. It may have been moved or deleted since the scan.`
+      );
+      return;
+    }
+    try {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const editor = await vscode.window.showTextDocument(doc, {
+        viewColumn: vscode.ViewColumn.One,
+        preview: false,
+        preserveFocus: false,
+      });
+      const pos = new vscode.Position(Math.max(0, line - 1), 0);
+      editor.selection = new vscode.Selection(pos, pos);
+      editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
+    } catch (err) {
+      void vscode.window.showErrorMessage(
+        `Could not open ${relPath}: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
   }
 
   /**

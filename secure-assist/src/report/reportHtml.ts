@@ -387,8 +387,18 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
     ? `<button class="see-code" data-target="code-${fileIndex}">See code</button>`
     : "";
 
-  if (!verify && !code) return "";
-  return `<div class="file-tools">${code}${verify}</div>`;
+  // "See code" shows a read-only copy inside the report; this opens the real
+  // file in the editor so it can be edited, at the first finding if there is
+  // one. Only in the panel — the exported HTML has no way to open an editor.
+  const firstLine = file.findings.length
+    ? Math.min(...file.findings.map((f) => f.line || 1))
+    : 1;
+  const openFile = interactive
+    ? `<button class="open-file" data-file="${escapeHtml(file.path)}" data-line="${firstLine}">Open file</button>`
+    : "";
+
+  if (!verify && !code && !openFile) return "";
+  return `<div class="file-tools">${code}${openFile}${verify}</div>`;
 }
 
 /**
@@ -540,6 +550,15 @@ export function buildReportHtml(
           const loc = e.target.closest('.loc');
           if (loc) {
             vscode.postMessage({ type: 'open', file: loc.dataset.file, line: Number(loc.dataset.line) });
+            return;
+          }
+          const openFile = e.target.closest('button.open-file');
+          if (openFile) {
+            vscode.postMessage({
+              type: 'openFile',
+              file: openFile.dataset.file,
+              line: Number(openFile.dataset.line),
+            });
             return;
           }
           const verify = e.target.closest('button.verify');
