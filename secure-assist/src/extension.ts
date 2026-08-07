@@ -171,6 +171,22 @@ export async function activate(context: vscode.ExtensionContext) {
     runStaticAnalysis(doc, { verbose: true });
   });
 
+  // On open: analyse quietly, so a file has its squiggles as soon as it is
+  // shown rather than only after the first save. Without this a reopened
+  // workspace looks clean until the user edits something.
+  const openSub = vscode.workspace.onDidOpenTextDocument((doc) => {
+    if (!SUPPORTED_SOURCE.test(doc.fileName)) return;
+    runStaticAnalysis(doc, { verbose: false });
+  });
+
+  // Documents restored by VSCode at startup are already open, so no open
+  // event fires for them — they have to be analysed explicitly.
+  for (const doc of vscode.workspace.textDocuments) {
+    if (SUPPORTED_SOURCE.test(doc.fileName)) {
+      runStaticAnalysis(doc, { verbose: false });
+    }
+  }
+
   // Live mode: on every edit, debounce briefly then re-run the (fast) static
   // analyzer so squiggles update as you type. Quiet — no Output spam.
   const changeSub = vscode.workspace.onDidChangeTextDocument((event) => {
@@ -564,6 +580,7 @@ export async function activate(context: vscode.ExtensionContext) {
     startCmd,
     showStoredCmd,
     saveSub,
+    openSub,
     changeSub,
     scanAiCmd,
     applyAiFixCmd,

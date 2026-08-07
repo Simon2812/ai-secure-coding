@@ -559,6 +559,11 @@ export function buildReportHtml(
   const script = interactive
     ? `<script>
         const vscode = acquireVsCodeApi();
+
+        // Tell the extension the listener is attached. Anything it posts
+        // before this point is dropped on the floor, so state it wants to
+        // restore into a freshly rendered report has to wait for this.
+        vscode.postMessage({ type: 'ready' });
         // Elapsed-time tickers per file, cleared when the response arrives.
         const timers = {};
         // The model serves one request at a time on a single GPU, so only one
@@ -790,6 +795,23 @@ export function buildReportHtml(
                 'button.verify[data-file="' + (entry.path || '').replace(/"/g, '\\\\"') + '"]'
               );
               if (!btn) return;
+              // Static rows the model agreed with: badge them and attach its
+              // fix, using the row id the report already rendered.
+              (entry.confirmed || []).forEach((c) => {
+                const rowId = btn.dataset.index + '-' + c.staticIndex;
+                const verdict = document.getElementById('verdict-' + rowId);
+                if (verdict && !verdict.textContent) {
+                  verdict.textContent = c.atLine
+                    ? 'AI confirmed (at line ' + c.atLine + ')'
+                    : 'AI confirmed';
+                  verdict.className = 'verdict ok';
+                }
+                const actions = document.getElementById('actions-' + rowId);
+                if (actions && c.fixCount > 0 && !actions.querySelector('button.fix')) {
+                  addFixButtons(actions, c.fixId, c.fixCount);
+                }
+              });
+
               const host = document.getElementById('aifindings-' + btn.dataset.index);
               if (!host) return;
 

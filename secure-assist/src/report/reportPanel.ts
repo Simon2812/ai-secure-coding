@@ -164,11 +164,11 @@ export class ReportPanel {
       activity: this.activity,
       suppressions: listSuppressions(),
     });
-    // The webview is rebuilt from scratch, so the injected AI findings are
-    // gone and have to be pushed back in. The "already shown" guard is reset
-    // for the same reason — it tracks what is in the current DOM.
+    // The injected AI findings are gone with the old DOM and have to be
+    // pushed back in. The "already shown" guard is reset for the same reason.
+    // The push itself waits for the webview's "ready" message: posting now
+    // would land before its listener exists and be lost.
     this.aiOnlyShown.clear();
-    void this.showExistingAiFindings();
   }
 
   /**
@@ -181,7 +181,7 @@ export class ReportPanel {
    * those rows are already on screen.
    */
   private async showExistingAiFindings(): Promise<void> {
-    const payload: { path: string; aiOnly: unknown[] }[] = [];
+    const payload: { path: string; aiOnly: unknown[]; confirmed: unknown[] }[] = [];
 
     for (const file of this.report.files) {
       const stored = getModelResults(file.uri);
@@ -189,6 +189,32 @@ export class ReportPanel {
 
       const correlation = correlateFindings(file.findings, stored);
       const aiOnly: unknown[] = [];
+      const confirmed: unknown[] = [];
+
+      // Static findings the model agreed with. These already have a row in
+      // the report, so they get a verdict badge and the model's fix rather
+      // than a second entry — otherwise a corroborated finding shows nothing
+      // at all and the AI scan looks like it did nothing.
+      correlation.confirmedStatic.forEach((staticIndex) => {
+        const match = stored.find((v) => v.cwe === file.findings[staticIndex]?.cweId);
+        const fixes = (match?.fixes ?? []).filter((f) =>
+          containsOrigin(file.code ?? "", f.origin)
+        );
+        const fixId = `conf-${file.path}-${staticIndex}`;
+        this.verified.set(fixId, {
+          uri: file.uri,
+          fixes,
+          cwe: file.findings[staticIndex]?.cweId ?? "",
+          fileIndex: "",
+          relPath: file.path,
+        });
+        confirmed.push({
+          staticIndex,
+          fixId,
+          fixCount: fixes.length,
+          atLine: match?.start_line,
+        });
+      });
 
       stored.forEach((vuln, index) => {
         if (correlation.confirmedModel.has(index)) return;
@@ -220,7 +246,9 @@ export class ReportPanel {
         });
       });
 
-      if (aiOnly.length) payload.push({ path: file.path, aiOnly });
+      if (aiOnly.length || confirmed.length) {
+        payload.push({ path: file.path, aiOnly, confirmed });
+      }
     }
 
     if (payload.length) {
@@ -230,6 +258,11 @@ export class ReportPanel {
 
   private async onMessage(msg: any): Promise<void> {
     switch (msg?.type) {
+      case "ready":
+        // The webview can receive messages now — restore anything the
+        // extension already knows that is not part of the static HTML.
+        await this.showExistingAiFindings();
+        break;
       case "open":
         await this.openAt(msg.file, msg.line);
         break;
