@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
         # Name used for checkpoint directory:
         # ./checkpoints/<experiment_name>
-        experiment_name="stage1-qwen",
+        experiment_name="experiment",
 
         evaluator=evaluator,
     )
