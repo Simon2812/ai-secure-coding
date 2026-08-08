@@ -2,7 +2,7 @@
 
 This document provides a concise technical overview of the SecureAssist system.
 
-A detailed evaluation of the system, including benchmark methodology, performance results, comparison with other security tools, false-positive analysis, limitations, and future improvements, is available in the root-level [`SecureAssist_Paper.docx`](../SecureAssist_Paper.docx). fileciteturn2file0
+A detailed evaluation of the system, including benchmark methodology, performance results, comparison with other security tools, false-positive analysis, limitations, and future improvements, is available in the root-level [`SecureAssist_Paper.docx`](../SecureAssist_Paper.docx). 
 
 ## System Components
 
