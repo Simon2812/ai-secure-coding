@@ -37,7 +37,7 @@ The system analyzes source code written in **Python**, **Java**, and **C/C++**, 
 The overall SecureAssist architecture is shown below.
 
 <p align="center">
-<img width="1693" height="929" alt="architecture" src="https://github.com/user-attachments/assets/6fe1b11f-3e41-4e48-b471-9e3019018dac" />
+<img width="1661" height="947" alt="architecture" src="https://github.com/user-attachments/assets/15b91cab-8f12-4229-9a59-fa84795f5575" />
 </p>
 
 A detailed description of the system architecture and components is available in [`docs/technical-documentation.md`](docs/technical-documentation.md).
