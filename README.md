@@ -96,24 +96,11 @@ Additional project documentation is available in the **`docs`** directory.
 
 | Document | Description |
 |----------|-------------|
+| `project-management.md` | Development workflow using Jira and GitHub |
 | `technical-documentation.md` | Technical overview of the system architecture and components |
 | `testing.md` | Testing strategy, implemented tests, and validation process |
-| `project-management.md` | Development workflow using Jira and GitHub |
 
 The repository also includes **`SecureAssist_Paper.docx`**, which contains the complete project evaluation and benchmark results.
-
----
-
-## Technology Stack
-
-- Python
-- FastAPI
-- TypeScript
-- AST-based static analysis
-- Hugging Face Transformers
-- PEFT / LoRA
-- VS Code Extension API
-- RunPod
 
 ---
 
