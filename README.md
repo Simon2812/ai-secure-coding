@@ -96,6 +96,7 @@ A detailed description of the system architecture and components is available in
 ### 3. Remediate
 
 - Apply the suggested fix manually or automatically
+- Discard findings or disable selected CWE categories in settings
 - Re-run the analysis to verify the remediation
 
 ---
