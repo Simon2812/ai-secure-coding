@@ -26,9 +26,10 @@ The system analyzes source code written in **Python**, **Java**, and **C/C++**, 
 - Detects software vulnerabilities using AST-based static analysis
 - Enhances vulnerability detection with a fine-tuned LLM
 - Explains detected vulnerabilities through an integrated AI assistant
-- Suggests secure code fixes
+- Suggests secure code fixes with automatic application.
 - Provides both a CLI tool and a VS Code extension
 - Supports Python, Java, and C/C++
+- Supports deep scan of entire projects and source code folders
 
 ---
 
@@ -40,7 +41,7 @@ The overall SecureAssist architecture is shown below.
   <img src="https://github.com/user-attachments/assets/5d1587c8-9246-4a78-93ee-bfe695e8a1c5" width="850"/>
 </p>
 
-A detailed description of the system architecture, components, and analysis workflow is available in **`docs/technical-documentation.md`**.
+A detailed description of the system architecture and components is available in [`docs/technical-documentation.md`](docs/technical-documentation.md).
 
 ---
 
@@ -107,21 +108,24 @@ SecureAssist has been evaluated using multiple third-party vulnerability detecti
 - OWASP Benchmark
 - NIST Juliet
 
-The complete evaluation methodology, benchmark configuration, performance metrics, comparison with existing tools, analysis of limitations, and future improvement directions are documented in **`SecureAssist_Paper.docx`**.
+The complete evaluation methodology, benchmark configuration, performance metrics,
+comparison with existing tools, and discussion of limitations are documented in
+[`SecureAssist_Paper.docx`](SecureAssist_Paper.docx).
 
 ---
 
 ## Documentation
 
-Additional project documentation is available in the **`docs`** directory.
+Additional project documentation is available in the [`docs`](docs) directory.
 
 | Document | Description |
 |----------|-------------|
-| `project-management.md` | Development workflow using Jira and GitHub |
-| `technical-documentation.md` | Technical overview of the system architecture and components |
-| `testing.md` | Testing strategy, implemented tests, and validation process |
+| [`testing.md`](docs/testing.md) | Testing strategy, implemented tests, and validation process |
+| [`technical-documentation.md`](docs/technical-documentation.md) | Technical overview of the system architecture and components |
+| [`project-management.md`](docs/project-management.md) | Development workflow using Jira and GitHub |
 
-The repository also includes **`SecureAssist_Paper.docx`**, which contains the complete project evaluation and benchmark results.
+The repository also includes the complete project evaluation in
+[`SecureAssist_Paper.docx`](SecureAssist_Paper.docx).
 
 ---
 
@@ -133,6 +137,8 @@ Potential future improvements include:
 - Improved LLM fine-tuning and remediation quality
 - Real-time project monitoring and continuous scanning
 - Expanded IDE capabilities and user experience improvements
+
+---
 
 ## Authors
 
@@ -153,3 +159,12 @@ Unlike traditional security analysis tools, SecureAssist:
 - ✅ Suggests secure code fixes
 - ✅ Integrates directly into the developer workflow through CLI and VS Code
 - ✅ Is designed for both practical software development and security research
+
+--- 
+
+## Project Links
+
+- GitHub repository: [Github](https://github.com/Simon2812/AI-Secure-Coding)
+- Jira project: [Jira](https://aisecurecoding.atlassian.net/jira/software/projects/ASC/boards/1)
+- Testing documentation: [docs/testing.md](docs/testing.md)
+- Technical documentation: [docs/technical-documentation.md](docs/technical-documentation.md)
