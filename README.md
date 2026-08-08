@@ -28,7 +28,6 @@ The system analyzes source code written in **Python**, **Java**, and **C/C++**, 
 - Explains detected vulnerabilities through an integrated AI assistant
 - Suggests secure code fixes with automatic application.
 - Provides both a CLI tool and a VS Code extension
-- Supports Python, Java, and C/C++
 - Supports deep scan of entire projects and source code folders
 
 ---
