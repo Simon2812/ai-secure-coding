@@ -77,6 +77,27 @@ A detailed description of the system architecture, components, and analysis work
 </p>
 
 ---
+## Typical User Flow
+
+### 1. Run Analysis
+
+- Open the CLI or Visual Studio Code extension
+- Select a source file or project
+- Start the security analysis
+- Review the detected vulnerabilities
+
+### 2. Investigate Findings
+
+- Select a reported vulnerability
+- View the vulnerability description, CWE, and severity
+- Read the AI-generated explanation
+- Review the suggested secure fix
+
+### 3. Remediate
+
+- Apply the suggested fix manually or automatically
+- Re-run the analysis to verify the remediation
+---
 
 ## Evaluation
 
@@ -103,6 +124,15 @@ Additional project documentation is available in the **`docs`** directory.
 The repository also includes **`SecureAssist_Paper.docx`**, which contains the complete project evaluation and benchmark results.
 
 ---
+
+## Future Work
+
+Potential future improvements include:
+
+- Support for additional CWE categories and programming languages
+- Improved LLM fine-tuning and remediation quality
+- Real-time project monitoring and continuous scanning
+- Expanded IDE capabilities and user experience improvements
 
 ## Authors
 
