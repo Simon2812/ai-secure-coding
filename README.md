@@ -98,19 +98,6 @@ A detailed description of the system architecture and components is available in
 
 - Apply the suggested fix manually or automatically
 - Re-run the analysis to verify the remediation
----
-
-## Evaluation
-
-SecureAssist has been evaluated using multiple third-party vulnerability detection benchmarks, including:
-
-- RealVuln
-- OWASP Benchmark
-- NIST Juliet
-
-The complete evaluation methodology, benchmark configuration, performance metrics,
-comparison with existing tools, and discussion of limitations are documented in
-[`SecureAssist_Paper.docx`](SecureAssist_Paper.docx).
 
 ---
 
@@ -125,6 +112,19 @@ Additional project documentation is available in the [`docs`](docs) directory.
 | [`project-management.md`](docs/project-management.md) | Development workflow using Jira and GitHub |
 
 The repository also includes the complete project evaluation in
+[`SecureAssist_Paper.docx`](SecureAssist_Paper.docx).
+
+---
+## Evaluation
+
+SecureAssist has been evaluated using multiple third-party vulnerability detection benchmarks, including:
+
+- RealVuln
+- OWASP Benchmark
+- NIST Juliet
+
+The complete evaluation methodology, benchmark configuration, performance metrics,
+comparison with existing tools, and discussion of limitations are documented in
 [`SecureAssist_Paper.docx`](SecureAssist_Paper.docx).
 
 ---
