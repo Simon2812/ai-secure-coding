@@ -15,143 +15,105 @@
 
 ## Overview
 
-The **AI Secure Coding Advisor** is an intelligent system that:
+The **AI Secure Coding Advisor** is a hybrid security analysis system that combines static analysis and a fine-tuned Large Language Model (LLM) to improve secure software development.
 
-- Detects vulnerabilities in source code
-- Explains why code is insecure
-- Suggests secure fixes automatically
-
-It combines:
-
-- Static analysis
-- Large Language Models (LLMs)
-- Real-world datasets
-
-The system provides context-aware security insights and targets vulnerabilities such as injections, hardcoded secrets, and weak cryptography.
+The system analyzes source code written in **Python**, **Java**, and **C/C++**, detects supported software vulnerabilities, explains their security impact, and assists developers in applying secure fixes through both a command-line interface (CLI) and a Visual Studio Code extension.
 
 ---
 
-## Problem
+## Features
 
-Modern development suffers from:
-
-- Late vulnerability detection
-- Static tools without context
-- High false-positive rates
-
-This makes real threats difficult to identify and fix efficiently.
-
----
-
-## Objectives
-
-- Build a static analyzer + LLM layer
-- Train models on real datasets
-- Provide a CLI tool
-- Develop an IDE plugin
+- Detects software vulnerabilities using AST-based static analysis
+- Enhances vulnerability detection with a fine-tuned LLM
+- Explains detected vulnerabilities through an integrated AI assistant
+- Suggests secure code fixes
+- Provides both a CLI tool and a VS Code extension
+- Supports Python, Java, and C/C++
 
 ---
 
 ## Architecture
 
-###  System Architecture (Entity Diagram)
+The overall SecureAssist architecture is shown below.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/5d1587c8-9246-4a78-93ee-bfe695e8a1c5" width="850"/>
 </p>
 
-### Components
-
-#### Data Sources
-- NIST datasets
-- OWASP Benchmark
-- Open-source repositories
-
-#### Analyzer Layer
-- AST-based static analysis
-- Rule-based detection
-- LLM reasoning
-
-#### Backend
-- Python REST API
-
-#### Interfaces
-- CLI tool
-- VS Code extension
+A detailed description of the system architecture, components, and analysis workflow is available in **`docs/technical-documentation.md`**.
 
 ---
 
 ## Application Screenshots
 
 ### Settings Screen
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/c7048c77-7831-4b0c-9f11-b91dd3f37624" width="850"/>
 </p>
 
 ### Problem Highlight
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/a716c476-fe7a-4881-ac09-2a97fefb1853" width="850"/>
 </p>
 
 ### Learn More
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/c1297e47-2528-43fe-b135-a7d73619a500" width="850"/>
 </p>
 
 ### Autofix
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/73aa67cc-6fd2-4488-b3b7-288aff8bd42d" width="850"/>
 </p>
 
 ### AI Chat
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/cf031f5d-d04c-45c0-98f1-275623c03fbf" width="850"/>
 </p>
 
 ---
 
-## Typical User Flow
+## Evaluation
 
-### Run Analysis
-- Open CLI or IDE plugin
-- Select code/project
-- Start analysis
-- Receive vulnerability report
+SecureAssist has been evaluated using multiple third-party vulnerability detection benchmarks, including:
 
-### Apply Fix
-- Select vulnerability
-- View details (type, CWE, severity)
-- Review suggested fix
-- Apply manually or use auto-fix
+- RealVuln
+- OWASP Benchmark
+- NIST Juliet
+
+The complete evaluation methodology, benchmark configuration, performance metrics, comparison with existing tools, analysis of limitations, and future improvement directions are documented in **`SecureAssist_Paper.docx`**.
 
 ---
 
-## User Stories
+## Documentation
 
-- Developer receives real-time warnings
-- Student understands why code is insecure
-- Junior developer gets auto-fix suggestions
-- Security analyst sees risk scores
-- Team lead manages findings as **To-Do** or **Ignore**
+Additional project documentation is available in the **`docs`** directory.
 
----
+| Document | Description |
+|----------|-------------|
+| `technical-documentation.md` | Technical overview of the system architecture and components |
+| `testing.md` | Testing strategy, implemented tests, and validation process |
+| `project-management.md` | Development workflow using Jira and GitHub |
 
-## Technologies
-
-- **Backend:** Python (Flask)
-- **Static Analysis:** AST + rule-based analysis
-- **AI Layer:** LLM integration
-- **IDE Plugin:** VS Code (TypeScript)
-- **Data Sources:** NIST, OWASP, GitHub
+The repository also includes **`SecureAssist_Paper.docx`**, which contains the complete project evaluation and benchmark results.
 
 ---
 
-## Future Work
+## Technology Stack
 
-- Full IDE integration
-- Better LLM fine-tuning
-- Real-time scanning
-- Expanded CWE coverage
+- Python
+- FastAPI
+- TypeScript
+- AST-based static analysis
+- Hugging Face Transformers
+- PEFT / LoRA
+- VS Code Extension API
+- RunPod
 
 ---
 
@@ -160,15 +122,17 @@ This makes real threats difficult to identify and fix efficiently.
 - Simon Pakhtusov
 - Denis Rozhansky
 
-Computer Science Students (Bar-Ilan University)
+**Computer Science Students**  
+**Bar-Ilan University**
 
 ---
 
 ## Why This Project
 
-Unlike traditional tools, this system:
+Unlike traditional security analysis tools, SecureAssist:
 
-- ✅ Understands context
-- ✅ Provides real fixes
-- ✅ Reduces false positives
-- ✅ Is designed for AI training and real usage
+- ✅ Combines deterministic static analysis with AI reasoning
+- ✅ Provides context-aware vulnerability explanations
+- ✅ Suggests secure code fixes
+- ✅ Integrates directly into the developer workflow through CLI and VS Code
+- ✅ Is designed for both practical software development and security research
