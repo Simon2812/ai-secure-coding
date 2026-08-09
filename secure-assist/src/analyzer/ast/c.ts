@@ -953,7 +953,7 @@ function findConstantOobWrites(root: Node, filePath: string, code: string): Find
               cweId: "CWE-787", ruleId: "ast-oob-write",
               vulnerability: "Out-of-bounds Write",
               severity: "high",
-              message: `Array write with constant negative index (${idxVal}) — always out of bounds.`,
+              message: `Array write with constant negative index (${idxVal}) - always out of bounds.`,
               filePath, node, code,
             }));
           }

@@ -49,7 +49,7 @@ export class DismissedPanel {
     }
     const panel = vscode.window.createWebviewPanel(
       "secureAssistDismissed",
-      "Secure Assist — Dismissed",
+      "Secure Assist - Dismissed",
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -67,13 +67,13 @@ export class DismissedPanel {
   private render(): void {
     const relPath = vscode.workspace.asRelativePath(this.uri, false).replace(/\\/g, "/");
     const items = this.forThisFile();
-    this.panel.title = `Dismissed — ${relPath.split("/").pop()}`;
+    this.panel.title = `Dismissed - ${relPath.split("/").pop()}`;
 
     const body = items.length
       ? items
           .map((s, i) => {
             const info = getCweInfo(s.cwe);
-            const title = info ? `${s.cwe} — ${info.title}` : s.cwe;
+            const title = info ? `${s.cwe} - ${info.title}` : s.cwe;
             return `
             <div class="row" id="row-${i}">
               <div class="head">
@@ -96,7 +96,7 @@ export class DismissedPanel {
 <body>
   <h1>Dismissed findings</h1>
   <p class="sub">${escapeHtml(relPath)} · ${items.length} dismissed</p>
-  ${items.length ? `<p class="note">While a suppression is in place this exact code is filtered out of results. Editing the line lifts it automatically. Removing a suppression does not create a finding — it only lets the analyzer report that code again if it still considers it a problem.</p>` : ""}
+  ${items.length ? `<p class="note">While a suppression is in place this exact code is filtered out of results. Editing the line lifts it automatically. Removing a suppression does not create a finding - it only lets the analyzer report that code again if it still considers it a problem.</p>` : ""}
   ${body}
   <script>
     const vscode = acquireVsCodeApi();
@@ -115,7 +115,7 @@ export class DismissedPanel {
       // The analyzer decides whether anything is reported — removing the
       // suppression only stops this code being filtered out.
       if (state) {
-        state.textContent = 'Suppression removed — the analyzer can report this again';
+        state.textContent = 'Suppression removed - the analyzer can report this again';
         state.className = 'state ok';
       }
       if (row) row.classList.add('done');

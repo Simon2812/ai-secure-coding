@@ -65,7 +65,7 @@ export class AgentPanel {
   static async explain(ctx: FindingContext, output: vscode.OutputChannel): Promise<void> {
     const panel = AgentPanel.reveal(output);
     panel.intent = ctx.intent ?? "explain";
-    panel.post({ type: "title", title: `${ctx.cwe}${ctx.title ? ` — ${ctx.title}` : ""}` });
+    panel.post({ type: "title", title: `${ctx.cwe}${ctx.title ? ` - ${ctx.title}` : ""}` });
     await panel.send(buildContextMessage(ctx), {
       display:
         ctx.intent === "suppress"
@@ -118,7 +118,7 @@ export class AgentPanel {
     }
     const panel = vscode.window.createWebviewPanel(
       "secureAssistAgent",
-      "Secure Assist — Ask",
+      "Secure Assist - Ask",
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: false },
       { enableScripts: true, retainContextWhenHidden: true }
     );

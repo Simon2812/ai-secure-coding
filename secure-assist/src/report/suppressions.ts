@@ -91,7 +91,7 @@ export async function confirmSuppression(
       detail:
         `${preview}\n\n` +
         "This does not change the code. If the finding is real, the vulnerability " +
-        "stays in your project and will not be reported again — unless you edit " +
+        "stays in your project and will not be reported again - unless you edit " +
         "this line or remove the suppression in Settings.\n\n" +
         "If you are not sure whether it is a false positive, ask the assistant first.",
     },

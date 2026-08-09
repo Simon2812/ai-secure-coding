@@ -518,7 +518,7 @@ export async function activate(context: vscode.ExtensionContext) {
         cwe,
         detail: `line ${line}`,
       });
-      output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} — ${snippet.trim()}`);
+      output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} - ${snippet.trim()}`);
 
       // Refresh both diagnostic sets so the squiggle disappears immediately.
       const refreshed = filterDisabledCwes(

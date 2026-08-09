@@ -75,7 +75,7 @@ export class FixPanel {
     }
     const panel = vscode.window.createWebviewPanel(
       "secureAssistFixes",
-      "Secure Assist — AI Fixes",
+      "Secure Assist - AI Fixes",
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -103,7 +103,7 @@ export class FixPanel {
       (item) => item.fixes.length === 0 && (item.vuln.fixes ?? []).length > 0
     ).length;
 
-    this.panel.title = `AI Fixes — ${this.uri.path.split("/").pop()}`;
+    this.panel.title = `AI Fixes - ${this.uri.path.split("/").pop()}`;
     this.panel.webview.html = this.html(doc);
   }
 
@@ -114,7 +114,7 @@ export class FixPanel {
       ? this.items
           .map((item) => {
             const info = getCweInfo(item.vuln.cwe);
-            const title = info ? `${item.vuln.cwe} — ${info.title}` : item.vuln.cwe;
+            const title = info ? `${item.vuln.cwe} - ${info.title}` : item.vuln.cwe;
             const line = item.vuln.start_line;
 
             const fixes = item.fixes
@@ -158,7 +158,7 @@ export class FixPanel {
           ${applied
             .map((entry, i) => {
               const info = getCweInfo(entry.cwe);
-              const title = info ? `${entry.cwe} — ${info.title}` : entry.cwe;
+              const title = info ? `${entry.cwe} - ${info.title}` : entry.cwe;
               return `
               <div class="applied-row">
                 <span class="cwe">${escapeHtml(title)}</span>
@@ -247,7 +247,7 @@ export class FixPanel {
     const restored = await revertAppliedFix(entry, this.uri);
     if (!restored) {
       vscode.window.showWarningMessage(
-        "Secure Assist: could not revert — the code has been edited since the fix was applied."
+        "Secure Assist: could not revert - the code has been edited since the fix was applied."
       );
       await this.refresh();
       return;
@@ -336,7 +336,7 @@ export class FixPanel {
       this.panel.webview.postMessage({
         type: "applyFailed",
         id: msg.id,
-        message: "Could not apply — the code may have changed.",
+        message: "Could not apply - the code may have changed.",
       });
     }
   }

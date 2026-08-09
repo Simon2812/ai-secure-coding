@@ -62,7 +62,7 @@ export class SettingsPanel {
     }
     const panel = vscode.window.createWebviewPanel(
       "secureAssistSettings",
-      "Secure Assist — Settings",
+      "Secure Assist - Settings",
       vscode.ViewColumn.Active,
       { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -194,7 +194,7 @@ export class SettingsPanel {
       </div>
     </div>
     <p class="warn-box">
-      Turning a weakness off does not make the code safer — it only stops the tool
+      Turning a weakness off does not make the code safer - it only stops the tool
       reporting it. Those findings disappear from results <em>and</em> from the project
       score, so the score will rise even though nothing changed. Disable a category
       only when it genuinely does not apply to this project.
@@ -233,7 +233,7 @@ export class SettingsPanel {
         ${suppressions.length ? `<button id="clear-sup" class="ghost danger">Remove all</button>` : ""}
       </div>
     </div>
-    <p class="muted">Removing a suppression does not create a finding — it only lets the analyzer report that code again.</p>
+    <p class="muted">Removing a suppression does not create a finding - it only lets the analyzer report that code again.</p>
     ${missingCount ? `<p class="warn-line">${missingCount} suppression${missingCount === 1 ? " refers" : "s refer"} to files that no longer exist. They can never match again and are safe to remove.</p>` : ""}
     <div id="sup-list">${suppressionRows}</div>
   </section>
@@ -350,7 +350,7 @@ export class SettingsPanel {
             modal: true,
             detail:
               "All previously dismissed findings become eligible to be reported " +
-              "again. This cannot be undone — the record of what was dismissed is lost.",
+              "again. This cannot be undone - the record of what was dismissed is lost.",
           },
           "Remove all"
         );
@@ -411,7 +411,7 @@ export class SettingsPanel {
         await vscode.commands.executeCommand("secure-assist.internal.refreshReportHistory");
         this.panel.webview.postMessage({
           type: "dataMsg",
-          text: "Scan history cleared — the trend line and scan count start fresh.",
+          text: "Scan history cleared - the trend line and scan count start fresh.",
         });
         break;
       }
@@ -457,16 +457,16 @@ export class SettingsPanel {
       (res) => {
         res.resume();
         const ms = Date.now() - started;
-        if (res.statusCode === 200) report(true, `Reachable (${ms} ms) — the model is ready.`);
+        if (res.statusCode === 200) report(true, `Reachable (${ms} ms) - the model is ready.`);
         else report(false, `Responded with HTTP ${res.statusCode}.`);
       }
     );
     req.on("timeout", () => {
       req.destroy();
-      report(false, "No response within 5s — the container may still be loading the model.");
+      report(false, "No response within 5s - the container may still be loading the model.");
     });
     req.on("error", () =>
-      report(false, `Not reachable at ${endpoint} — is the Docker container running?`)
+      report(false, `Not reachable at ${endpoint} - is the Docker container running?`)
     );
   }
 

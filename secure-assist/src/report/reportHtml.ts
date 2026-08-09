@@ -364,7 +364,7 @@ function renderFinding(
   const f = file.findings[index];
   const info = getCweInfo(f.cweId);
   const sev = severityOf(f.cweId);
-  const title = info ? `${f.cweId} — ${info.title}` : f.cweId;
+  const title = info ? `${f.cweId} - ${info.title}` : f.cweId;
   const id = `${fileIndex}-${index}`;
 
   // The exported file is a read-only artifact: jump-to-line needs the extension,
@@ -848,7 +848,7 @@ export function buildReportHtml(
               '<div class="preview-actions">' +
                 '<button class="confirm-fix primary" data-id="' + msg.id + '" data-fix-index="' + msg.fixIndex + '">Apply</button>' +
                 '<button class="cancel-fix" data-id="' + msg.id + '">Cancel</button>' +
-                '<span class="status">AI fixes are not always correct — review the change.</span>' +
+                '<span class="status">AI fixes are not always correct - review the change.</span>' +
               '</div>';
             actions.insertAdjacentElement('afterend', box);
           } else if (msg.type === 'fixApplied') {
@@ -964,7 +964,7 @@ export function buildReportHtml(
           ${report.byCwe
             .map((entry) => {
               const info = getCweInfo(entry.cwe);
-              const label = info ? `${entry.cwe} — ${info.title}` : entry.cwe;
+              const label = info ? `${entry.cwe} - ${info.title}` : entry.cwe;
               const width = maxCweCount ? Math.round((entry.count / maxCweCount) * 100) : 0;
               return `<div class="cwe-row ${severityOf(entry.cwe)}">
                 <span class="cwe-label">${escapeHtml(label)}</span>
@@ -1158,7 +1158,7 @@ export function buildReportHtml(
 
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Secure Assist — project report</title><style>${PALETTE}${DIFF_STYLES}${STYLES}</style></head>
+<head><meta charset="UTF-8"><title>Secure Assist - project report</title><style>${PALETTE}${DIFF_STYLES}${STYLES}</style></head>
 <body>
   <h1>Project security report</h1>
   <div class="sub">${escapeHtml(report.scannedAt.toLocaleString())} · ${report.scannedCount} file${report.scannedCount === 1 ? "" : "s"} scanned${interactive ? "" : " · exported report (static)"}</div>

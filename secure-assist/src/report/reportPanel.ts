@@ -119,7 +119,7 @@ export class ReportPanel {
 
     const panel = vscode.window.createWebviewPanel(
       "secureAssistReport",
-      "Secure Assist — Project Report",
+      "Secure Assist - Project Report",
       vscode.ViewColumn.One,
       { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -359,7 +359,7 @@ export class ReportPanel {
     const restored = await revertAppliedFix(entry, uri);
     if (!restored) {
       vscode.window.showWarningMessage(
-        `Secure Assist: could not revert the ${entry.cwe} fix in ${relPath} — the code has been edited since.`
+        `Secure Assist: could not revert the ${entry.cwe} fix in ${relPath} - the code has been edited since.`
       );
       this.render();
       return;
@@ -480,7 +480,7 @@ export class ReportPanel {
       this.panel.webview.postMessage({
         type: "verifyFailed",
         index: msg.index,
-        message: "Could not resolve this file — re-scan the project.",
+        message: "Could not resolve this file - re-scan the project.",
       });
       return;
     }
@@ -758,9 +758,9 @@ export class ReportPanel {
     });
 
     this.output.appendLine(
-      `[report] fix applied to ${entry.relPath} — now ${findings.length} finding(s), ` +
+      `[report] fix applied to ${entry.relPath} - now ${findings.length} finding(s), ` +
         `file ${score}, project ${this.report.score}` +
-        (doc.isDirty ? "  (unsaved — save the file to keep the change)" : "")
+        (doc.isDirty ? "  (unsaved - save the file to keep the change)" : "")
     );
 
     this.panel.webview.postMessage({
@@ -793,7 +793,7 @@ export class ReportPanel {
       this.output.appendLine(`[report] exported to ${target.fsPath}`);
     } catch (err: any) {
       const message = err?.message ?? String(err);
-      vscode.window.showErrorMessage(`Secure Assist: export failed — ${message}`);
+      vscode.window.showErrorMessage(`Secure Assist: export failed - ${message}`);
       this.output.appendLine(`[report] export failed: ${message}`);
       return;
     }
@@ -820,7 +820,7 @@ export class ReportPanel {
       exec(command, { shell: process.platform === "win32" ? "cmd.exe" : undefined }, (err) => {
         if (err) {
           vscode.window.showErrorMessage(
-            `Secure Assist: could not open the report — it is at ${path}`
+            `Secure Assist: could not open the report - it is at ${path}`
           );
         }
       });

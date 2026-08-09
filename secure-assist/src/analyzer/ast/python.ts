@@ -136,7 +136,7 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
             cweId: "CWE-78", ruleId: "ast-cmd-injection",
             vulnerability: "OS Command Injection",
             severity: "high",
-            message: `${fnName}() receives user-controlled data via 'input=' keyword — shell will read it as script input.`,
+            message: `${fnName}() receives user-controlled data via 'input=' keyword - shell will read it as script input.`,
             filePath, node: inputKwarg, code,
           }));
         }

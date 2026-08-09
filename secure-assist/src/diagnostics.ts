@@ -22,7 +22,7 @@ export function updateDiagnostics(
     // Enrich with the shared CWE catalog so the squiggle explains the class of
     // issue, not just the rule that fired.
     const info = getCweInfo(finding.cweId);
-    const header = info ? `${finding.cweId} — ${info.title}` : finding.cweId;
+    const header = info ? `${finding.cweId} - ${info.title}` : finding.cweId;
     const extra = info?.recommendation ? `\n${info.recommendation}` : "";
 
     const diagnostic = new vscode.Diagnostic(

@@ -171,7 +171,7 @@ export function modelVulnsToDiagnostics(
     const info = getCweInfo(vuln.cwe);
     const confirmed = confirmedModel?.has(index) ?? false;
     const origin = confirmed ? "AI + static analyzer" : "AI";
-    const header = info ? `${vuln.cwe} — ${info.title}` : vuln.cwe;
+    const header = info ? `${vuln.cwe} - ${info.title}` : vuln.cwe;
     const summary = info?.summary ?? "Model-detected vulnerability.";
 
     const diag = new vscode.Diagnostic(
@@ -268,15 +268,15 @@ export async function previewAndApplyFix(
   const resolved = resolveFix(document, fix);
   if (!resolved) {
     vscode.window.showWarningMessage(
-      "Secure Assist: the code changed since the AI scan — re-run the scan."
+      "Secure Assist: the code changed since the AI scan - re-run the scan."
     );
     return false;
   }
 
   const preview =
     `${explainCwe(cwe)}\n\n` +
-    `— Current —\n${fix.origin}\n\n` +
-    `— Suggested —\n${fix.replacement}\n\n` +
+    `- Current -\n${fix.origin}\n\n` +
+    `- Suggested -\n${fix.replacement}\n\n` +
     `AI-generated fixes are not always correct. Review before applying.`;
 
   const choice = await vscode.window.showInformationMessage(
@@ -304,7 +304,7 @@ export async function applyFixEdit(
   const resolved = resolveFix(document, fix);
   if (!resolved) {
     vscode.window.showWarningMessage(
-      "Secure Assist: the code changed since the AI scan — re-run the scan."
+      "Secure Assist: the code changed since the AI scan - re-run the scan."
     );
     return false;
   }
