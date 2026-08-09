@@ -1,6 +1,3 @@
-<img width="1600" height="873" alt="ai-chat" src="https://github.com/user-attachments/assets/b27b376f-43ca-48a1-9f27-7a6e2fa6d284" />
-<img width="1623" height="624" alt="architecture" src="https://github.com/user-attachments/assets/43f36e5f-bab8-42a4-8450-e789f782a62d" />
-<img width="1280" height="492" alt="arch" src="https://github.com/user-attachments/assets/a806c04e-fcce-4ef1-b13d-639b12a06465" />
 # AI Secure Coding Advisor
 
 <p align="center">
