@@ -56,7 +56,7 @@ features.
 
 The model runs locally in Docker and suggests fixes for the findings.
 
-**Requirements:** Docker Desktop, an NVIDIA GPU with roughly 8 GB of memory, and
+**Requirements:** Docker Desktop, an NVIDIA GPU with 8 GB VRAM (minimum, 12GB is recommended), and
 about 15 GB of disk for the model weights.
 
 ```bash
