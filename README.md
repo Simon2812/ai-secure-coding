@@ -48,13 +48,12 @@ A detailed description of the system architecture and components is available in
 ### Report Screen
 
 <p align="center">
-  <img width="1600" height="871" alt="report" src="https://github.com/user-attachments/assets/0737a758-c766-4681-b83b-c1a984b5f24d" />
+<img width="1600" height="871" alt="report" src="https://github.com/user-attachments/assets/0737a758-c766-4681-b83b-c1a984b5f24d" />
 </p>
 
 ### Problem Highlight
 
 <p align="center">
-![Uploading report.jpeg…]()
 <img width="1162" height="416" alt="problem-highlight" src="https://github.com/user-attachments/assets/c9902b75-a981-43ef-bc1f-80e97a04536f" />
 </p>
 
@@ -67,7 +66,7 @@ A detailed description of the system architecture and components is available in
 ### AI Chat
 
 <p align="center">
-  <img width="1600" height="873" alt="ai-chat" src="https://github.com/user-attachments/assets/7d87e7b9-a7ac-43f6-9249-7a9c0e89418f" />
+<img width="1600" height="873" alt="ai-chat" src="https://github.com/user-attachments/assets/7d87e7b9-a7ac-43f6-9249-7a9c0e89418f" />
 </p>
 
 ### Settings Window
