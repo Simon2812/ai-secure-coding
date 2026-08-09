@@ -24,4 +24,7 @@ env/
 *.log
 *.tmp
 
+# Packaged extension — a build artifact, rebuilt with `npm run package`.
+*.vsix
+
 PROJECT_STATE.md

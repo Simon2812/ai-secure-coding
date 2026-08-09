@@ -9,3 +9,38 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+# Evaluation harness and its cached results — development tooling, not part
+# of the extension. raw.jsonl alone is over half a megabyte.
+bench/**
+
+# Sample and demo corpora used while developing the analyzer.
+test-samples/**
+demo_ideas/**
+enriched/**
+
+# Development helpers.
+start-model.ps1
+_tmp_*
+scripts/**
+
+# Compiled dev and evaluation tooling. Nothing in src/ imports from these:
+# the analyzer entry points live in out/analyzer, so out/scripts is only the
+# dataset, benchmark and evaluation harnesses. 61 files of dead weight.
+out/scripts/**
+out/test/**
+
+# Packaged with --no-dependencies, so node_modules is not resolved by vsce
+# and has to be curated here.
+#
+# The grammars are vendored into resources/wasm/, but web-tree-sitter itself
+# is a JavaScript module that init.ts requires at runtime — excluding all of
+# node_modules makes the extension fail on activation with "Cannot find
+# module 'web-tree-sitter'". It is the one package that must ship.
+node_modules/**
+!node_modules/web-tree-sitter/**
+
+# ...minus its source maps, debug build and duplicate wasm, which together
+# are most of its 4.4 MB.
+node_modules/web-tree-sitter/debug/**
+node_modules/web-tree-sitter/**/*.map

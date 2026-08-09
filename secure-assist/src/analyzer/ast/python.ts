@@ -59,7 +59,11 @@ export function analyzePython(code: string, filePath: string, tree: Tree): Findi
     // CWE-22: pathlib / operator — base / tainted_var
     if (node.type === "binary_operator") {
       const op = node.children.find(c => c.type === "/");
-      if (op) {
+      // Python overloads "/" for path joining, but it is division far more
+      // often. Requiring the left operand to be a path keeps arithmetic such
+      // as `tp / (tp + fp)` from being reported as path traversal whenever a
+      // tainted value appears in it.
+      if (op && isPathExpression(node.childForFieldName("left"), root)) {
         const right = node.childForFieldName("right");
         if (right && (taint.expressionIsTainted(right) || isPythonUserInputExpr(right))) {
           // Suppress if the right-hand side is itself a path sanitizer call
@@ -547,6 +551,53 @@ function findHardcodedCredentialsPython(
  */
 // Returns true if the node is a call that sanitizes a path, making traversal impossible.
 // e.g. os.path.basename(x), Path(x).name, secure_filename(x)
+/**
+ * Is this expression a filesystem path rather than a number?
+ *
+ * Only meaningful for the "/" operator, which pathlib overloads for joining.
+ * Recognises a Path()/PurePath() construction, a chain rooted in one
+ * (`Path(a) / b / c`), and a variable assigned from one earlier in the file.
+ * Anything else is treated as arithmetic.
+ */
+function isPathExpression(node: Node | null, root: Node): boolean {
+  if (!node) return false;
+
+  // Path("...") / PurePath(...) / Path.home() / Path.cwd()
+  if (node.type === "call") {
+    const name = callName(node) ?? "";
+    if (/(^|\.)(Path|PurePath|PurePosixPath|PureWindowsPath)$/.test(name)) return true;
+    if (/^(Path|PurePath)\.(home|cwd)$/.test(name)) return true;
+    return false;
+  }
+
+  // Left-nested chain: Path(root) / "a" / user_input
+  if (node.type === "binary_operator") {
+    return isPathExpression(node.childForFieldName("left"), root);
+  }
+
+  if (node.type === "parenthesized_expression") {
+    return isPathExpression(node.namedChildren[0] ?? null, root);
+  }
+
+  // A name assigned from a Path elsewhere in the file: base = Path(root)
+  if (node.type === "identifier") {
+    for (const candidate of walkAll(root)) {
+      if (candidate.type !== "assignment") continue;
+      if (candidate.childForFieldName("left")?.text !== node.text) continue;
+      const value = candidate.childForFieldName("right");
+      if (value && value !== node && isPathExpression(value, root)) return true;
+    }
+    // Attribute access on a path-ish name, e.g. self.output_dir / name
+    return /(^|_)(path|dir|folder|root)$/i.test(node.text);
+  }
+
+  if (node.type === "attribute") {
+    return /(^|_)(path|dir|folder|root)$/i.test(node.text.split(".").pop() ?? "");
+  }
+
+  return false;
+}
+
 function isPathSanitizerCall(node: Node): boolean {
   if (node.type !== "call") return false;
   const name = callName(node) ?? "";
