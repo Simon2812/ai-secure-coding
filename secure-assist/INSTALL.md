@@ -28,13 +28,23 @@ code --install-extension secure-assist-0.0.1.vsix
 Installing does not activate the extension in windows that are already open.
 Press `Ctrl+Shift+P`, run **Developer: Reload Window**, or just restart VS Code.
 
-You should see these in the status bar along the bottom:
+You should see these in the status bar along the bottom left:
 
-```
-Scan with AI    Deep Scan Project    Ask    Settings
-```
+| Icon | Shows as | What it does |
+|---|---|---|
+| 🛡️ | 🛡️ Scan with AI | Runs the AI analysis on the file you are editing |
+| 🔍 | 🔍 Deep Scan Project | Scans every source file and opens the report |
+| 💬 | 💬 Ask | Asks the security assistant about the open file |
+| ⚙️ | ⚙️ | Settings (icon only, no label) |
 
-If they are not there, the extension has not activated — reload again.
+Two more appear only when they have something to show:
+
+| Icon | Shows as | When |
+|---|---|---|
+| ⚡ | ⚡ 3 AI fixes | After a scan that produced fixes for the file |
+| 🚫 | 🚫 2 dismissed | When findings have been dismissed in the file |
+
+If they are not there, the extension has not activated - reload again.
 
 ---
 
