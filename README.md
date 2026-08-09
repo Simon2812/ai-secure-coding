@@ -45,34 +45,42 @@ A detailed description of the system architecture and components is available in
 
 ## Application Screenshots
 
-### Settings Screen
+### Report Screen
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c7048c77-7831-4b0c-9f11-b91dd3f37624" width="850"/>
+  <img width="1600" height="871" alt="report" src="https://github.com/user-attachments/assets/0737a758-c766-4681-b83b-c1a984b5f24d" />
 </p>
 
 ### Problem Highlight
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a716c476-fe7a-4881-ac09-2a97fefb1853" width="850"/>
+![Uploading report.jpeg…]()
+<img width="1162" height="416" alt="problem-highlight" src="https://github.com/user-attachments/assets/c9902b75-a981-43ef-bc1f-80e97a04536f" />
 </p>
 
-### Learn More
+### Deep Scan Screen
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c1297e47-2528-43fe-b135-a7d73619a500" width="850"/>
-</p>
-
-### Autofix
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/73aa67cc-6fd2-4488-b3b7-288aff8bd42d" width="850"/>
+<img width="1600" height="956" alt="deep-scan" src="https://github.com/user-attachments/assets/be12c206-ab15-4ec7-8714-f67ac292fc85" />
 </p>
 
 ### AI Chat
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/cf031f5d-d04c-45c0-98f1-275623c03fbf" width="850"/>
+  <img width="1600" height="873" alt="ai-chat" src="https://github.com/user-attachments/assets/7d87e7b9-a7ac-43f6-9249-7a9c0e89418f" />
+</p>
+
+### Settings Window
+
+<p align="center">
+<img width="1600" height="870" alt="settings-screen" src="https://github.com/user-attachments/assets/7798e2a2-008e-4b0e-b23c-908ee14f7094" />
+</p>
+
+
+### Dismissed/Suppressed Findings
+
+<p align="center">
+<img width="1600" height="872" alt="dismissed-findings" src="https://github.com/user-attachments/assets/387b58a1-19d1-4e71-8058-ff13899a1c0e" />
 </p>
 
 ---
