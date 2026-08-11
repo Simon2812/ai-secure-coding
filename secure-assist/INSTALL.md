@@ -62,7 +62,8 @@ features.
 
 ---
 
-## 3. Optional — AI repairs
+## 3. Optional — AI repairs 
+*Note - model running always on cloud is future work, right now only local available*
 
 The model runs locally in Docker and suggests fixes for the findings.
 
@@ -101,6 +102,7 @@ Settings → secureAssist.modelEndpoint
 ---
 
 ## 4. Optional — the AI assistant
+*Note - AI agent running always on cloud is future work, right now can only be accessed with your own private API key*
 
 The assistant explains findings in plain language: what an attacker would do
 with one, why a suggested fix works, and whether dismissing it is safe.
