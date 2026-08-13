@@ -1,5 +1,10 @@
 import * as vscode from "vscode";
-import { listSuppressions, unsuppress, Suppression } from "./suppressions";
+import {
+  listSuppressions,
+  unsuppress,
+  onDidChangeSuppressions,
+  Suppression,
+} from "./suppressions";
 import { getCweInfo } from "../model/cweCatalog";
 import { PALETTE } from "./reportHtml";
 
@@ -26,6 +31,9 @@ export class DismissedPanel {
   private readonly refresh: (uri: vscode.Uri) => Promise<void>;
   private uri: vscode.Uri;
   private disposables: vscode.Disposable[] = [];
+  /** Set while this panel is the one changing the list, so it keeps its own
+   *  "removed" confirmation instead of re-rendering the row away underneath. */
+  private removingHere = false;
 
   private constructor(
     panel: vscode.WebviewPanel,
@@ -37,6 +45,15 @@ export class DismissedPanel {
     this.refresh = refresh;
     this.render();
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
+    // A finding dismissed elsewhere - the quick fix, the report, the settings
+    // screen - must show up here without the panel being closed and reopened.
+    onDidChangeSuppressions(
+      () => {
+        if (!this.removingHere) this.render();
+      },
+      null,
+      this.disposables
+    );
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
 
@@ -129,7 +146,12 @@ export class DismissedPanel {
     const item = this.forThisFile()[msg.index];
     if (!item) return;
 
-    await unsuppress(item.file, item.cwe, item.code);
+    this.removingHere = true;
+    try {
+      await unsuppress(item.file, item.cwe, item.code);
+    } finally {
+      this.removingHere = false;
+    }
     // Re-analyse straight away so the squiggle comes back now rather than on
     // the next project scan.
     await this.refresh(this.uri);

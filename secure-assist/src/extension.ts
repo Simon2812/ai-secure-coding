@@ -29,6 +29,7 @@ import {
   confirmSuppression,
 } from "./report/suppressions";
 import { DismissedPanel } from "./report/dismissedPanel";
+import { SecureAssistHoverProvider, registerHoverActions } from "./hover";
 import { groundVulnerabilities, findOriginRange } from "./model/originMatch";
 import { initAppliedFixes } from "./model/appliedFixes";
 import { recordActivity } from "./report/history";
@@ -576,6 +577,14 @@ export async function activate(context: vscode.ExtensionContext) {
     { providedCodeActionKinds: AiFixProvider.kinds }
   );
 
+  // The same actions on the hover itself, so they are one click away and are
+  // not mixed in with every other extension's quick fixes.
+  const hoverProvider = vscode.languages.registerHoverProvider(
+    { scheme: "file" },
+    new SecureAssistHoverProvider()
+  );
+  const hoverActionCmd = registerHoverActions();
+
   context.subscriptions.push(
     startCmd,
     showStoredCmd,
@@ -603,6 +612,8 @@ export async function activate(context: vscode.ExtensionContext) {
     deepScanButton,
     fixesButton,
     aiFixProvider,
+    hoverProvider,
+    hoverActionCmd,
     output,
     diagnostics,
     aiDiagnostics

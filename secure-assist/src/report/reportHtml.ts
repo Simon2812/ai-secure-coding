@@ -415,6 +415,14 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
     ? `<button class="open-file" data-file="${escapeHtml(file.path)}" data-line="${firstLine}">Open file</button>`
     : "";
 
+  // Discards this file's AI findings without touching the rest of the project.
+  // The report is built from the static scan and does not know yet whether the
+  // file has any, so it ships hidden and is revealed when the AI payload says
+  // there is something to clear.
+  const clearAi = interactive
+    ? `<button class="clear-ai" id="clearai-${fileIndex}" data-file="${escapeHtml(file.path)}" hidden title="Discard the AI findings for this file only">Clear AI findings</button>`
+    : "";
+
   // Fixes already written to this file, so a change can be undone from the
   // report rather than only from the fixes panel. Reverting restores the code
   // and puts the finding back into the counts.
@@ -435,7 +443,7 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
     : "";
 
   if (!verify && !code && !openFile && !revertRows) return "";
-  return `<div class="file-tools">${code}${openFile}${verify}</div>${revertRows}`;
+  return `<div class="file-tools">${code}${openFile}${verify}${clearAi}</div>${revertRows}`;
 }
 
 /**
@@ -622,6 +630,11 @@ export function buildReportHtml(
               file: openFile.dataset.file,
               line: Number(openFile.dataset.line),
             });
+            return;
+          }
+          const clearAi = e.target.closest('button.clear-ai');
+          if (clearAi) {
+            vscode.postMessage({ type: 'clearFileAi', file: clearAi.dataset.file });
             return;
           }
           const verify = e.target.closest('button.verify');
@@ -812,8 +825,62 @@ export function buildReportHtml(
                 }
               });
 
+              // The payload is the full current picture, so anything the model
+              // no longer reports has to come off the screen. Only AI verdicts
+              // are cleared - "Fix applied" and the rest are left alone.
+              const stillConfirmed = new Set(
+                (entry.confirmed || []).map((c) => btn.dataset.index + '-' + c.staticIndex)
+              );
+              document
+                .querySelectorAll('[id^="verdict-' + btn.dataset.index + '-"]')
+                .forEach((el) => {
+                  const rowId = el.id.slice('verdict-'.length);
+                  if (!el.classList.contains('ok') || stillConfirmed.has(rowId)) return;
+                  el.textContent = '';
+                  el.className = 'verdict';
+                  const acts = document.getElementById('actions-' + rowId);
+                  if (acts) acts.querySelectorAll('button.fix').forEach((b) => b.remove());
+                });
+
+              // Re-colour the source so lines the model flagged are marked in
+              // "See code" too. The block stays hidden if it was: this only
+              // updates what the user sees when they open it.
+              if (entry.codeRows) {
+                const codeBlock = document.getElementById('code-' + btn.dataset.index);
+                if (codeBlock) codeBlock.innerHTML = entry.codeRows;
+                // The key explaining the two colours belongs with the code, so
+                // it appears once the model has marked something in this file
+                // and goes away again if those findings are removed.
+                const legendId = 'legend-' + btn.dataset.index;
+                const existingLegend = document.getElementById(legendId);
+                const tools = codeBlock ? codeBlock.previousElementSibling : null;
+                if (entry.aiLineCount > 0 && tools && !existingLegend) {
+                  const legend = document.createElement('div');
+                  legend.className = 'code-legend';
+                  legend.id = legendId;
+                  legend.innerHTML =
+                    '<span><i class="s"></i>static analyzer</span>' +
+                    '<span><i class="a"></i>AI</span>';
+                  tools.insertAdjacentElement('afterend', legend);
+                } else if (!entry.aiLineCount && existingLegend) {
+                  existingLegend.remove();
+                }
+              }
+
+              // Only offer to clear this file's AI findings while it has some.
+              const clearBtn = document.getElementById('clearai-' + btn.dataset.index);
+              if (clearBtn) clearBtn.hidden = !entry.hasAi;
+
               const host = document.getElementById('aifindings-' + btn.dataset.index);
               if (!host) return;
+
+              // Drop AI-only rows the model no longer reports - a cleared or
+              // fixed finding should leave the report, not linger until it is
+              // rebuilt.
+              const keep = new Set((entry.aiOnly || []).map((v) => v.id));
+              host.querySelectorAll('[data-finding-id]').forEach((el) => {
+                if (!keep.has(el.getAttribute('data-finding-id'))) el.remove();
+              });
 
               (entry.aiOnly || []).forEach((v) => {
                 if (host.querySelector('[data-finding-id="' + v.id + '"]')) return;
@@ -1105,7 +1172,11 @@ export function buildReportHtml(
         const open = !!e.target.closest('#expandAll');
         document.querySelectorAll('details.folder, details.file').forEach(d => {
           if (open) d.setAttribute('open', ''); else d.removeAttribute('open');
+          // Asking for everything open or closed overrides whatever the filter
+          // remembered, so clearing the box later must not undo it.
+          delete d.dataset.wasOpen;
         });
+        wasExpanding = false;
       }
     });
 
@@ -1115,12 +1186,26 @@ export function buildReportHtml(
     const onlyIssues = document.getElementById('onlyIssues');
     const filterCount = document.getElementById('filterCount');
 
+    // Whether a filter was forcing folders open on the previous run, so the
+    // tree can be put back exactly as the user left it once it is cleared.
+    let wasExpanding = false;
+
     function applyFilters() {
       const text = (q.value || '').trim().toLowerCase();
       const sev = sevSel.value;
       const cwe = cweSel.value;
       const issuesOnly = onlyIssues.checked;
       let shown = 0;
+
+      // A filter reveals matches by opening their folders. That is only helpful
+      // while filtering: clearing the box must not leave the whole project
+      // expanded, so the open/closed state is captured on the way in.
+      const expanding = !!(text || sev || cwe);
+      if (expanding && !wasExpanding) {
+        document.querySelectorAll('details.folder').forEach(folder => {
+          folder.dataset.wasOpen = folder.open ? '1' : '0';
+        });
+      }
 
       document.querySelectorAll('details.file').forEach(file => {
         const path = file.dataset.path || '';
@@ -1143,8 +1228,18 @@ export function buildReportHtml(
       document.querySelectorAll('details.folder').forEach(folder => {
         const any = folder.querySelector('details.file:not([style*="display: none"])');
         folder.style.display = any ? '' : 'none';
-        if (any && (text || sev || cwe)) folder.setAttribute('open', '');
+
+        if (expanding) {
+          if (any) folder.setAttribute('open', '');
+        } else if (folder.dataset.wasOpen !== undefined) {
+          // Filter cleared: restore what was open before it was applied.
+          if (folder.dataset.wasOpen === '1') folder.setAttribute('open', '');
+          else folder.removeAttribute('open');
+          delete folder.dataset.wasOpen;
+        }
       });
+
+      wasExpanding = expanding;
 
       const filtering = text || sev || cwe || issuesOnly;
       filterCount.textContent = filtering ? shown + ' file' + (shown === 1 ? '' : 's') + ' shown' : '';

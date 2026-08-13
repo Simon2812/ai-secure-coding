@@ -29,7 +29,13 @@ import {
 } from "../model/client";
 import { analyzeCode } from "../analyzer/analyze";
 import { correlateFindings } from "../model/correlation";
-import { applyFixEdit, getModelResults, setModelResults } from "../model/aiFix";
+import {
+  applyFixEdit,
+  getModelResults,
+  setModelResults,
+  clearModelResults,
+  onDidChangeModelResults,
+} from "../model/aiFix";
 import { appliedFixesFor, revertAppliedFix } from "../model/appliedFixes";
 import { renderFixDiff } from "../model/diffView";
 import { getCweInfo } from "../model/cweCatalog";
@@ -72,6 +78,9 @@ export class ReportPanel {
   private readonly verified: VerifiedFixes = new Map();
   /** AI-only findings already injected into the report, so repeat verifies don't duplicate them. */
   private readonly aiOnlyShown = new Set<string>();
+  /** Files whose AI findings are currently on screen, so one that loses them
+   *  still gets a payload telling the report to take its rows away. */
+  private readonly aiFilesShown = new Set<string>();
   private disposables: vscode.Disposable[] = [];
   private report: ScanReport;
   private readonly context: vscode.ExtensionContext;
@@ -96,6 +105,18 @@ export class ReportPanel {
 
     this.render();
     this.panel.webview.onDidReceiveMessage((msg) => this.onMessage(msg), null, this.disposables);
+    // "Scan with AI" in the editor writes to the same store this report reads.
+    // Without this the report only learns about those findings when it is next
+    // rebuilt, so a file scanned while the report is open appeared to have
+    // produced nothing. Both sides of the push are idempotent, so re-running it
+    // only fills in what is missing.
+    onDidChangeModelResults(
+      () => {
+        void this.showExistingAiFindings();
+      },
+      null,
+      this.disposables
+    );
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
 
@@ -181,11 +202,20 @@ export class ReportPanel {
    * those rows are already on screen.
    */
   private async showExistingAiFindings(): Promise<void> {
-    const payload: { path: string; aiOnly: unknown[]; confirmed: unknown[] }[] = [];
+    const payload: {
+      path: string;
+      aiOnly: unknown[];
+      confirmed: unknown[];
+      codeRows?: string;
+      aiLineCount: number;
+      hasAi: boolean;
+    }[] = [];
 
     for (const file of this.report.files) {
       const stored = getModelResults(file.uri);
-      if (stored.length === 0) continue;
+      // A file that has lost its AI findings still needs a payload, otherwise
+      // its rows and highlighting would stay on screen after they are cleared.
+      if (stored.length === 0 && !this.aiFilesShown.has(file.path)) continue;
 
       const correlation = correlateFindings(file.findings, stored);
       const aiOnly: unknown[] = [];
@@ -221,9 +251,10 @@ export class ReportPanel {
 
         // Same id scheme the verify path uses, and the same index into the
         // stored results — so a later verify recognises these as already
-        // shown instead of adding a second copy.
+        // shown instead of adding a second copy. The full current set is sent
+        // every time: the report reconciles against it, which is what lets a
+        // removed finding disappear. The webview skips ids already rendered.
         const id = `ai-${file.path}-${index}`;
-        if (this.aiOnlyShown.has(id)) return;
         this.aiOnlyShown.add(id);
 
         const fixes = (vuln.fixes ?? []).filter((f) =>
@@ -246,9 +277,31 @@ export class ReportPanel {
         });
       });
 
-      if (aiOnly.length || confirmed.length) {
-        payload.push({ path: file.path, aiOnly, confirmed });
-      }
+      // The report's source view is built from the static scan alone, so lines
+      // only the model flagged carry no marker until the code is re-rendered
+      // with them. Verifying from inside the report already does this; a scan
+      // started from the editor has to do it here or "See code" stays plain.
+      const aiLines = stored.flatMap((v) =>
+        v.start_line == null ? [] : range(v.start_line, v.end_line ?? v.start_line)
+      );
+      const codeRows = file.code
+        ? renderCodeRows(file.code, file.findings.map((f) => f.line), aiLines)
+        : undefined;
+
+      if (stored.length) this.aiFilesShown.add(file.path);
+      else this.aiFilesShown.delete(file.path);
+
+      payload.push({
+        path: file.path,
+        aiOnly,
+        confirmed,
+        codeRows,
+        // Drives the two-colour key above the source: shown once the model has
+        // marked something here, removed again when it no longer has.
+        aiLineCount: new Set(aiLines).size,
+        // Whether this file has anything to clear.
+        hasAi: stored.length > 0,
+      });
     }
 
     if (payload.length) {
@@ -268,6 +321,9 @@ export class ReportPanel {
         break;
       case "openFile":
         await this.openFileInWorkspace(msg.file, msg.line);
+        break;
+      case "clearFileAi":
+        await this.clearAiForFile(msg.file);
         break;
       case "clearHistory":
         await this.clearScanHistory();
@@ -403,6 +459,50 @@ export class ReportPanel {
    * scans that drives the trend line and the scan counter, not the findings
    * being displayed.
    */
+  /**
+   * Discard one file's AI findings.
+   *
+   * Settings can only clear the whole workspace, which is too blunt when a
+   * single file's scan is stale or wrong. This goes through the same store the
+   * report listens to, so the rows, the source highlighting and the colour key
+   * come off on their own rather than needing their own removal code.
+   */
+  private async clearAiForFile(relPath: string): Promise<void> {
+    const file = this.report.files.find((f) => f.path === relPath);
+    if (!file) return;
+
+    const count = getModelResults(file.uri).length;
+    if (count === 0) return;
+
+    const ok = await vscode.window.showWarningMessage(
+      `Discard the AI findings for ${relPath}?`,
+      {
+        modal: true,
+        detail:
+          `${count} finding${count === 1 ? "" : "s"} and any fixes suggested for them are ` +
+          "removed for this file only. Static analyzer findings are not affected and other " +
+          "files keep theirs. Recovering them means scanning this file with AI again.",
+      },
+      "Discard"
+    );
+    if (ok !== "Discard") return;
+
+    clearModelResults(file.uri);
+
+    // The rows are gone, so the fixes registered against them are dead entries.
+    for (const key of [...this.verified.keys()]) {
+      if (key.startsWith(`ai-${relPath}-`) || key.startsWith(`conf-${relPath}-`)) {
+        this.verified.delete(key);
+      }
+    }
+    for (const id of [...this.aiOnlyShown]) {
+      if (id.startsWith(`ai-${relPath}-`)) this.aiOnlyShown.delete(id);
+    }
+
+    await vscode.commands.executeCommand("secure-assist.internal.refreshAiDiagnostics");
+    this.output.appendLine(`[report] cleared ${count} AI finding(s) for ${relPath}`);
+  }
+
   private async clearScanHistory(): Promise<void> {
     const ok = await vscode.window.showWarningMessage(
       "Clear the scan history for this workspace?",

@@ -11,11 +11,23 @@ import {
   isLiveModeEnabled,
   setLiveMode,
 } from "./settings";
-import { listSuppressions, unsuppress, clearSuppressions, Suppression } from "./suppressions";
+import {
+  listSuppressions,
+  unsuppress,
+  clearSuppressions,
+  onDidChangeSuppressions,
+  Suppression,
+} from "./suppressions";
 import { getCweInfo } from "../model/cweCatalog";
 import { getModelEndpoint } from "../model/client";
 import { clearHistory, clearActivity, loadActivity } from "./history";
-import { clearAllModelResults } from "../model/aiFix";
+import {
+  clearAllModelResults,
+  clearModelResults,
+  filesWithModelResults,
+  getModelResults,
+  onDidChangeModelResults,
+} from "../model/aiFix";
 import { PALETTE } from "./reportHtml";
 
 function escapeHtml(value: string): string {
@@ -40,6 +52,9 @@ export class SettingsPanel {
   private readonly context: vscode.ExtensionContext;
   private readonly onChanged: () => void;
   private disposables: vscode.Disposable[] = [];
+  /** Set while this panel is the one changing the list, so its own rows keep
+   *  their feedback and a bulk removal re-renders once rather than per item. */
+  private mutatingHere = false;
 
   private constructor(
     panel: vscode.WebviewPanel,
@@ -51,6 +66,24 @@ export class SettingsPanel {
     this.onChanged = onChanged;
     this.render();
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
+    // A finding dismissed or restored elsewhere must show up in the suppression
+    // list here without the settings screen being closed and reopened.
+    onDidChangeSuppressions(
+      () => {
+        if (!this.mutatingHere) this.render();
+      },
+      null,
+      this.disposables
+    );
+    // Same for AI findings: a scan or a clear done elsewhere changes what this
+    // screen offers to remove, so the list cannot be built once and left.
+    onDidChangeModelResults(
+      () => {
+        if (!this.mutatingHere) this.render();
+      },
+      null,
+      this.disposables
+    );
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
 
@@ -67,6 +100,18 @@ export class SettingsPanel {
       { enableScripts: true, retainContextWhenHidden: true }
     );
     SettingsPanel.current = new SettingsPanel(panel, context, onChanged);
+  }
+
+  /** Files holding AI findings, with how many, newest scan order aside. */
+  private aiFiles(): { path: string; uri: vscode.Uri; count: number }[] {
+    return filesWithModelResults()
+      .map((uri) => ({
+        uri,
+        path: vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/"),
+        count: getModelResults(uri).length,
+      }))
+      .filter((f) => f.count > 0)
+      .sort((a, b) => a.path.localeCompare(b.path));
   }
 
   private render(): void {
@@ -134,6 +179,25 @@ export class SettingsPanel {
           )
           .join("")
       : `<p class="muted">Nothing is suppressed in this workspace.</p>`;
+
+    // AI findings held for this workspace, per file. Clearing the lot is often
+    // more than is wanted - usually one file's scan is stale or wrong - so each
+    // file can be discarded on its own.
+    const aiFiles = this.aiFiles();
+    const aiTotal = aiFiles.reduce((n, f) => n + f.count, 0);
+    const aiRows = aiFiles.length
+      ? aiFiles
+          .map(
+            (f) => `
+        <div class="sup-row${this.fileExists(f.path) ? "" : " missing"}" data-file="${escapeHtml(f.path)}">
+          <span class="fname">${escapeHtml(f.path)}</span>
+          ${this.fileExists(f.path) ? "" : `<span class="missing-tag">file no longer exists</span>`}
+          <span class="count">${f.count}</span>
+          <button class="clear-file-ai" data-file="${escapeHtml(f.path)}">Clear</button>
+        </div>`
+          )
+          .join("")
+      : `<p class="muted">No AI findings are stored for this workspace.</p>`;
 
     // Activity, also grouped per file. Project-level events (deep scans) have
     // no file of their own, so they get their own group.
@@ -240,9 +304,19 @@ export class SettingsPanel {
 
   <section>
     <div class="sec-head">
+      <h2>AI findings</h2>
+      <div class="sec-actions">
+        ${aiTotal ? `<button id="clear-ai" class="ghost danger">Clear all</button>` : ""}
+      </div>
+    </div>
+    <p class="muted">Findings produced by "Scan with AI" and "Verify with AI", kept per file. Clearing them does not change your code and does not affect static analyzer findings.</p>
+    <div id="ai-list">${aiRows}</div>
+  </section>
+
+  <section>
+    <div class="sec-head">
       <h2>Activity</h2>
       <div class="sec-actions">
-        <button id="clear-ai" class="ghost danger">Clear AI findings</button>
         <button id="clear-hist" class="ghost danger">Clear scan history</button>
         <button id="clear-act" class="ghost danger">Clear activity log</button>
       </div>
@@ -281,6 +355,10 @@ export class SettingsPanel {
       else if (btn.id === 'clear-ai')   vscode.postMessage({ type: 'clearAiFindings' });
       else if (btn.id === 'clear-hist') vscode.postMessage({ type: 'clearHistory' });
       else if (btn.id === 'clear-act')  vscode.postMessage({ type: 'clearActivity' });
+      else if (btn.classList.contains('clear-file-ai')) {
+        btn.disabled = true;
+        vscode.postMessage({ type: 'clearFileAi', file: btn.dataset.file });
+      }
       else if (btn.classList.contains('unsuppress')) {
         const row = btn.closest('.sup-row');
         btn.disabled = true;
@@ -339,8 +417,48 @@ export class SettingsPanel {
       case "test":
         await this.testConnection();
         break;
+      case "clearFileAi": {
+        const target = this.aiFiles().find((f) => f.path === msg.file);
+        if (!target) return;
+
+        const ok = await vscode.window.showWarningMessage(
+          `Discard the AI findings for ${target.path}?`,
+          {
+            modal: true,
+            detail:
+              `${target.count} finding${target.count === 1 ? "" : "s"} and any fixes suggested ` +
+              "for them are removed for this file only. Other files keep theirs, and static " +
+              "analyzer findings are not affected.",
+          },
+          "Discard"
+        );
+        if (ok !== "Discard") {
+          this.render(); // re-enable the button the webview disabled
+          return;
+        }
+
+        this.mutatingHere = true;
+        try {
+          clearModelResults(target.uri);
+        } finally {
+          this.mutatingHere = false;
+        }
+        await vscode.commands.executeCommand("secure-assist.internal.refreshAiDiagnostics");
+        this.onChanged();
+        this.render();
+        this.panel.webview.postMessage({
+          type: "dataMsg",
+          text: `Cleared ${target.count} AI finding${target.count === 1 ? "" : "s"} for ${target.path}.`,
+        });
+        break;
+      }
       case "unsuppress":
-        await unsuppress(msg.file, msg.cwe, msg.code);
+        this.mutatingHere = true;
+        try {
+          await unsuppress(msg.file, msg.cwe, msg.code);
+        } finally {
+          this.mutatingHere = false;
+        }
         this.onChanged();
         break;
       case "clearSuppressions": {
@@ -355,7 +473,12 @@ export class SettingsPanel {
           "Remove all"
         );
         if (ok !== "Remove all") return;
-        await clearSuppressions();
+        this.mutatingHere = true;
+        try {
+          await clearSuppressions();
+        } finally {
+          this.mutatingHere = false;
+        }
         this.onChanged();
         this.render();
         break;
@@ -363,7 +486,12 @@ export class SettingsPanel {
       case "pruneSuppressions": {
         const stale = listSuppressions().filter((s) => !this.fileExists(s.file));
         if (stale.length === 0) return;
-        for (const s of stale) await unsuppress(s.file, s.cwe, s.code);
+        this.mutatingHere = true;
+        try {
+          for (const s of stale) await unsuppress(s.file, s.cwe, s.code);
+        } finally {
+          this.mutatingHere = false;
+        }
         this.onChanged();
         this.render();
         this.panel.webview.postMessage({

@@ -12,6 +12,17 @@ const STORAGE_KEY = "secureAssist.modelResults";
 let context: vscode.ExtensionContext | undefined;
 
 /**
+ * Fires whenever the stored model findings change.
+ *
+ * A scan started in the editor writes here, but the project report is built
+ * from a static scan and would otherwise not learn about it until it was
+ * closed and reopened. Views showing AI findings listen rather than every
+ * caller remembering to notify them.
+ */
+const changed = new vscode.EventEmitter<void>();
+export const onDidChangeModelResults = changed.event;
+
+/**
  * Persisted shape.
  *
  * Keyed by workspace-relative path rather than absolute URI so the results
@@ -88,6 +99,7 @@ async function persist(): Promise<void> {
   }
 
   await context.workspaceState.update(STORAGE_KEY, out);
+  changed.fire();
 }
 
 export function setModelResults(uri: vscode.Uri, vulns: ModelVulnerability[]): void {
@@ -372,6 +384,32 @@ export function pruneStaleAiFindings(
 function vulnCoversRange(vuln: ModelVulnerability, range: vscode.Range): boolean {
   if (vuln.start_line == null || vuln.end_line == null) return true;
   return range.start.line >= vuln.start_line - 1 && range.start.line <= vuln.end_line - 1;
+}
+
+/**
+ * The first model fix that still applies at a position, if there is one.
+ *
+ * The hover needs to know whether to offer "Apply AI fix" before it renders,
+ * and it identifies a finding by position rather than by holding onto the fix
+ * object, so the lookup happens here where the store lives.
+ */
+export function fixAt(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  cwe?: string
+): { vuln: ModelVulnerability; fix: ModelFix } | undefined {
+  const vulns = modelResults.get(document.uri.toString());
+  if (!vulns?.length) return undefined;
+
+  const range = new vscode.Range(position, position);
+  for (const vuln of vulns) {
+    if (cwe && vuln.cwe !== cwe) continue;
+    if (!vulnCoversRange(vuln, range)) continue;
+    for (const fix of vuln.fixes ?? []) {
+      if (resolveFix(document, fix)) return { vuln, fix };
+    }
+  }
+  return undefined;
 }
 
 /** Offers "Apply AI fix" quick fixes for model findings on the current line. */

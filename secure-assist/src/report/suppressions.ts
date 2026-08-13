@@ -17,6 +17,16 @@ export interface Suppression {
 
 let context: vscode.ExtensionContext | undefined;
 
+/**
+ * Fires whenever the suppression list changes.
+ *
+ * Suppressions are added and removed from several places - the quick fix, the
+ * project report, this file's dismissed panel and the settings screen - so any
+ * view showing them listens here rather than each caller remembering to notify.
+ */
+const changed = new vscode.EventEmitter<void>();
+export const onDidChangeSuppressions = changed.event;
+
 export function initSuppressions(ctx: vscode.ExtensionContext): void {
   context = ctx;
 }
@@ -64,6 +74,7 @@ export async function suppress(
   if (isSuppressed(file, cwe, code)) return;
   const next = [...load(), { file, cwe, code: normalize(code), line, at: Date.now() }];
   await context.workspaceState.update(STORAGE_KEY, next);
+  changed.fire();
 }
 
 /** What the user chose when asked to confirm a suppression. */
@@ -109,10 +120,12 @@ export async function unsuppress(file: string, cwe: string, code: string): Promi
   const target = keyOf(file, cwe, code);
   const next = load().filter((s) => keyOf(s.file, s.cwe, s.code) !== target);
   await context.workspaceState.update(STORAGE_KEY, next);
+  changed.fire();
 }
 
 export async function clearSuppressions(): Promise<void> {
   await context?.workspaceState.update(STORAGE_KEY, []);
+  changed.fire();
 }
 
 /** Text of the lines a finding covers, used as its identity. */
