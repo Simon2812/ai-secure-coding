@@ -1,4 +1,4 @@
-# AI Secure Coding Advisor
+# AI Secure Coding Advisor [![Download](https://img.shields.io/badge/download-.vsix-3DDC97?style=flat-square)](https://github.com/Simon2812/ai-secure-coding/releases/tag/v0.0.1)
 
 <p align="center">
   <b>AI-powered vulnerability detection & automated secure code fixing</b>
