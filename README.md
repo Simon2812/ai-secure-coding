@@ -9,6 +9,7 @@
   <img src="https://img.shields.io/badge/AI-LLM-purple"/>
   <img src="https://img.shields.io/badge/Security-CWE-red"/>
   <img src="https://img.shields.io/badge/Status-Active-brightgreen"/>
+  [![Download](https://img.shields.io/badge/download-.vsix-3DDC97?style=flat-square)](https://github.com/Simon2812/ai-secure-coding/releases/tag/v0.0.1)
 </p>
 
 ---
