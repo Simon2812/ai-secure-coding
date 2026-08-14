@@ -1,13 +1,25 @@
 {
   "name": "secure-assist",
   "displayName": "Secure Assist",
-  "description": "secure assist",
+  "description": "Finds, explains and fixes security vulnerabilities as you write code. Static taint analysis across 10 CWEs in Python, Java and C, with an optional locally-hosted model for repairs.",
   "version": "0.0.1",
+  "publisher": "secure-assist",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.109.0"
   },
   "categories": [
+    "Linters",
+    "Programming Languages",
     "Other"
+  ],
+  "keywords": [
+    "security",
+    "sast",
+    "vulnerability",
+    "cwe",
+    "static analysis",
+    "taint"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -93,7 +105,9 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "enrich": "npm run compile && node ./out/scripts/enrichDataset.js"
+    "enrich": "npm run compile && node ./out/scripts/enrichDataset.js",
+    "wasm:refresh": "node scripts/dev/copyWasm.js",
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -103,13 +117,20 @@
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
-  },
-  "dependencies": {
-    "tree-sitter": "^0.22.4",
+    "typescript-eslint": "^8.54.0",
     "tree-sitter-c": "^0.24.1",
     "tree-sitter-java": "^0.23.5",
-    "tree-sitter-python": "^0.25.0",
+    "tree-sitter-python": "^0.25.0"
+  },
+  "dependencies": {
     "web-tree-sitter": "^0.26.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Simon2812/AI-Secure-Coding.git",
+    "directory": "secure-assist"
+  },
+  "bugs": {
+    "url": "https://github.com/Simon2812/AI-Secure-Coding/issues"
   }
 }

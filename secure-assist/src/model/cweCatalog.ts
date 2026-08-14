@@ -37,7 +37,7 @@ export function getCweInfo(cwe: string | undefined): CweInfo | undefined {
 /** Short "CWE-89 — SQL Injection" style label for diagnostics. */
 export function describeCwe(cwe: string): string {
   const info = getCweInfo(cwe);
-  return info ? `${cwe} — ${info.title}` : cwe;
+  return info ? `${cwe} - ${info.title}` : cwe;
 }
 
 /** Multi-line explanation used for hovers and Output logging. */
@@ -45,7 +45,7 @@ export function explainCwe(cwe: string): string {
   const info = getCweInfo(cwe);
   if (!info) return cwe;
   const lines = [
-    `${cwe} — ${info.title} (${info.severity})`,
+    `${cwe} - ${info.title} (${info.severity})`,
     info.summary,
   ];
   if (info.impact?.length) lines.push(`Impact: ${info.impact.join("; ")}`);

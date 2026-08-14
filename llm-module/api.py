@@ -227,9 +227,55 @@ def add_origin_line_ranges(
         if not added_entry:
             expanded_vulnerabilities.append(vulnerability)
 
-    prediction["vulnerabilities"] = expanded_vulnerabilities
+    prediction["vulnerabilities"] = deduplicate_vulnerabilities(
+        expanded_vulnerabilities
+    )
 
     return prediction
+
+
+def deduplicate_vulnerabilities(
+    vulnerabilities: list,
+):
+    """
+    Drop repeats of the same finding.
+
+    Greedy decoding sometimes loops, emitting one detection many times over
+    until the token budget runs out. Every copy carries the same CWE, origin
+    and replacement, so only the first is useful; the rest are noise in the
+    editor and inflate the finding count.
+    """
+
+    seen = set()
+    unique = []
+
+    for vulnerability in vulnerabilities:
+        if not isinstance(vulnerability, dict):
+            continue
+
+        fixes = vulnerability.get("fixes") or []
+
+        signature = (
+            vulnerability.get("cwe"),
+            vulnerability.get("start_line"),
+            vulnerability.get("end_line"),
+            tuple(
+                (
+                    fix.get("origin"),
+                    fix.get("replacement"),
+                )
+                for fix in fixes
+                if isinstance(fix, dict)
+            ),
+        )
+
+        if signature in seen:
+            continue
+
+        seen.add(signature)
+        unique.append(vulnerability)
+
+    return unique
 
 
 @asynccontextmanager

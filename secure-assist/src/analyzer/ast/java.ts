@@ -170,11 +170,13 @@ export function analyzeJava(code: string, filePath: string, tree: Tree): Finding
         }
       }
 
-      // Path.resolve(tainted) — called on any Path variable.
-      // Skip if the receiver is `new SomeClass()` — that's a user-defined method,
-      // not java.nio.file.Path.resolve().
-      if (methodName === "resolve" && argsNode
-          && obj?.type !== "object_creation_expression") {
+      // Path.resolve(tainted).
+      //
+      // "resolve" is a common method name — dependency injectors, DNS
+      // clients, promise APIs and module resolvers all use it — so the
+      // receiver has to be shown to be a Path before this is a path join.
+      // Matching the name alone reported every one of those as traversal.
+      if (methodName === "resolve" && argsNode && isJavaPathReceiver(obj, root)) {
         const args = getJavaArgs(argsNode);
         if (args.some(a => taint.expressionIsTainted(a) || isJavaUserInputExpr(a))
             && !isJavaPathGuarded(node, code)) {
@@ -790,6 +792,65 @@ function isHardcodedKeyMaterial(node: Node, literalVars: Map<string, Node>): boo
  * `.startsWith(` after a `.resolve(` call, combined with an early exit.
  * A text scan is sufficient here because the pattern is highly distinctive.
  */
+/**
+ * Is the receiver of a call a java.nio.file.Path?
+ *
+ * Used to tell a genuine path join from the many unrelated APIs that also
+ * expose a "resolve" method. Recognises a Paths.get()/Path.of() expression,
+ * a chained resolve on one, a local declared as Path, and a field or
+ * parameter of that type.
+ */
+function isJavaPathReceiver(node: Node | null | undefined, root: Node): boolean {
+  if (!node) return false;
+
+  if (node.type === "method_invocation") {
+    const name = node.childForFieldName("name")?.text ?? "";
+    const target = node.childForFieldName("object")?.text ?? "";
+    // Paths.get(...) / Path.of(...) — the usual constructors.
+    if ((target === "Paths" && name === "get") || (target === "Path" && name === "of")) {
+      return true;
+    }
+    // Chained: base.resolve(a).resolve(b), or toPath() off a File.
+    if (name === "resolve" || name === "toPath" || name === "getParent" || name === "normalize") {
+      return isJavaPathReceiver(node.childForFieldName("object"), root) || name === "toPath";
+    }
+    return false;
+  }
+
+  if (node.type === "identifier") {
+    const name = node.text;
+    // A local, field or parameter declared as Path.
+    for (const decl of walkAll(root)) {
+      const isDecl =
+        decl.type === "local_variable_declaration" ||
+        decl.type === "field_declaration" ||
+        decl.type === "formal_parameter";
+      if (!isDecl) continue;
+
+      const declaredType = decl.childForFieldName("type")?.text ?? "";
+      if (!/(^|\.)Path$/.test(declaredType)) continue;
+
+      if (decl.type === "formal_parameter") {
+        if (decl.childForFieldName("name")?.text === name) return true;
+        continue;
+      }
+      for (const child of walkAll(decl)) {
+        if (child.type === "variable_declarator" &&
+            child.childForFieldName("name")?.text === name) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  if (node.type === "field_access") {
+    return isJavaPathReceiver(node.childForFieldName("field"), root);
+  }
+
+  return false;
+}
+
 function isJavaPathGuarded(sinkNode: Node, code: string): boolean {
   // Walk up to the enclosing method/constructor declaration
   let cursor: import("web-tree-sitter").Node | null = sinkNode.parent;

@@ -1,5 +1,10 @@
 import * as vscode from "vscode";
-import { listSuppressions, unsuppress, Suppression } from "./suppressions";
+import {
+  listSuppressions,
+  unsuppress,
+  onDidChangeSuppressions,
+  Suppression,
+} from "./suppressions";
 import { getCweInfo } from "../model/cweCatalog";
 import { PALETTE } from "./reportHtml";
 
@@ -26,6 +31,9 @@ export class DismissedPanel {
   private readonly refresh: (uri: vscode.Uri) => Promise<void>;
   private uri: vscode.Uri;
   private disposables: vscode.Disposable[] = [];
+  /** Set while this panel is the one changing the list, so it keeps its own
+   *  "removed" confirmation instead of re-rendering the row away underneath. */
+  private removingHere = false;
 
   private constructor(
     panel: vscode.WebviewPanel,
@@ -37,6 +45,15 @@ export class DismissedPanel {
     this.refresh = refresh;
     this.render();
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
+    // A finding dismissed elsewhere - the quick fix, the report, the settings
+    // screen - must show up here without the panel being closed and reopened.
+    onDidChangeSuppressions(
+      () => {
+        if (!this.removingHere) this.render();
+      },
+      null,
+      this.disposables
+    );
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
 
@@ -49,7 +66,7 @@ export class DismissedPanel {
     }
     const panel = vscode.window.createWebviewPanel(
       "secureAssistDismissed",
-      "Secure Assist — Dismissed",
+      "Secure Assist - Dismissed",
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -67,13 +84,13 @@ export class DismissedPanel {
   private render(): void {
     const relPath = vscode.workspace.asRelativePath(this.uri, false).replace(/\\/g, "/");
     const items = this.forThisFile();
-    this.panel.title = `Dismissed — ${relPath.split("/").pop()}`;
+    this.panel.title = `Dismissed - ${relPath.split("/").pop()}`;
 
     const body = items.length
       ? items
           .map((s, i) => {
             const info = getCweInfo(s.cwe);
-            const title = info ? `${s.cwe} — ${info.title}` : s.cwe;
+            const title = info ? `${s.cwe} - ${info.title}` : s.cwe;
             return `
             <div class="row" id="row-${i}">
               <div class="head">
@@ -96,7 +113,7 @@ export class DismissedPanel {
 <body>
   <h1>Dismissed findings</h1>
   <p class="sub">${escapeHtml(relPath)} · ${items.length} dismissed</p>
-  ${items.length ? `<p class="note">While a suppression is in place this exact code is filtered out of results. Editing the line lifts it automatically. Removing a suppression does not create a finding — it only lets the analyzer report that code again if it still considers it a problem.</p>` : ""}
+  ${items.length ? `<p class="note">While a suppression is in place this exact code is filtered out of results. Editing the line lifts it automatically. Removing a suppression does not create a finding - it only lets the analyzer report that code again if it still considers it a problem.</p>` : ""}
   ${body}
   <script>
     const vscode = acquireVsCodeApi();
@@ -115,7 +132,7 @@ export class DismissedPanel {
       // The analyzer decides whether anything is reported — removing the
       // suppression only stops this code being filtered out.
       if (state) {
-        state.textContent = 'Suppression removed — the analyzer can report this again';
+        state.textContent = 'Suppression removed - the analyzer can report this again';
         state.className = 'state ok';
       }
       if (row) row.classList.add('done');
@@ -129,7 +146,12 @@ export class DismissedPanel {
     const item = this.forThisFile()[msg.index];
     if (!item) return;
 
-    await unsuppress(item.file, item.cwe, item.code);
+    this.removingHere = true;
+    try {
+      await unsuppress(item.file, item.cwe, item.code);
+    } finally {
+      this.removingHere = false;
+    }
     // Re-analyse straight away so the squiggle comes back now rather than on
     // the next project scan.
     await this.refresh(this.uri);

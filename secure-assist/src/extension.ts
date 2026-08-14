@@ -10,6 +10,9 @@ import {
   previewAndApplyFix,
   pruneStaleAiFindings,
   getModelResults,
+  initModelResults,
+  filesWithModelResults,
+  clearAllModelResults,
   APPLY_AI_FIX_COMMAND,
 } from "./model/aiFix";
 import { ModelFix } from "./model/client";
@@ -26,7 +29,9 @@ import {
   confirmSuppression,
 } from "./report/suppressions";
 import { DismissedPanel } from "./report/dismissedPanel";
-import { groundVulnerabilities } from "./model/originMatch";
+import { SecureAssistHoverProvider, registerHoverActions } from "./hover";
+import { groundVulnerabilities, findOriginRange } from "./model/originMatch";
+import { initAppliedFixes } from "./model/appliedFixes";
 import { recordActivity } from "./report/history";
 import { filterDisabledCwes, filterDisabledCweVulns, isLiveModeEnabled } from "./report/settings";
 import { SettingsPanel } from "./report/settingsPanel";
@@ -55,10 +60,32 @@ export async function activate(context: vscode.ExtensionContext) {
   loadCweCatalog(context);
   // Dismissed false positives, persisted per workspace.
   initSuppressions(context);
+  // Applied AI fixes, so they can be reverted in a later session.
+  initAppliedFixes(context);
 
   const output = vscode.window.createOutputChannel("Secure Assist");
   const diagnostics = createDiagnosticCollection();
   const aiDiagnostics = vscode.languages.createDiagnosticCollection("secure-assist-ai");
+
+  // AI findings from previous sessions. A workspace-wide AI scan is slow and
+  // costs GPU time, so it is restored rather than thrown away on window close.
+  // Findings whose code has since changed are dropped during the restore.
+  await initModelResults(context);
+  for (const uri of filesWithModelResults()) {
+    try {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const rel = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+      aiDiagnostics.set(
+        uri,
+        modelVulnsToDiagnostics(
+          doc,
+          filterSuppressedVulns(getModelResults(uri), rel, doc.getText())
+        )
+      );
+    } catch {
+      /* file unreadable now — its findings were already dropped on restore */
+    }
+  }
   const startCmd = vscode.commands.registerCommand("secure-assist.startTracking", () => {
     isTracking = true;
     output.show(true);
@@ -144,6 +171,22 @@ export async function activate(context: vscode.ExtensionContext) {
   const saveSub = vscode.workspace.onDidSaveTextDocument((doc) => {
     runStaticAnalysis(doc, { verbose: true });
   });
+
+  // On open: analyse quietly, so a file has its squiggles as soon as it is
+  // shown rather than only after the first save. Without this a reopened
+  // workspace looks clean until the user edits something.
+  const openSub = vscode.workspace.onDidOpenTextDocument((doc) => {
+    if (!SUPPORTED_SOURCE.test(doc.fileName)) return;
+    runStaticAnalysis(doc, { verbose: false });
+  });
+
+  // Documents restored by VSCode at startup are already open, so no open
+  // event fires for them — they have to be analysed explicitly.
+  for (const doc of vscode.workspace.textDocuments) {
+    if (SUPPORTED_SOURCE.test(doc.fileName)) {
+      runStaticAnalysis(doc, { verbose: false });
+    }
+  }
 
   // Live mode: on every edit, debounce briefly then re-run the (fast) static
   // analyzer so squiggles update as you type. Quiet — no Output spam.
@@ -316,10 +359,15 @@ export async function activate(context: vscode.ExtensionContext) {
       fixesButton.hide();
       return;
     }
-    const count = getModelResults(editor.document.uri).reduce(
-      (n, v) => n + (v.fixes?.length ?? 0),
-      0
-    );
+    // Count what the panel will actually show: findings that still have at
+    // least one fix whose original text can be located in the file. Counting
+    // raw fix objects promised more than the panel could deliver, because a
+    // fix whose origin no longer matches is filtered out when it opens.
+    const code = editor.document.getText();
+    const count = getModelResults(editor.document.uri).filter((v) =>
+      (v.fixes ?? []).some((f) => findOriginRange(code, f.origin))
+    ).length;
+
     if (count === 0) {
       fixesButton.hide();
       return;
@@ -413,6 +461,23 @@ export async function activate(context: vscode.ExtensionContext) {
     () => refreshDismissedButton()
   );
 
+  // Same reasoning: the settings panel can clear the scan history, but the
+  // report panel holds its own copy, so it needs telling to reload.
+  const refreshHistoryCmd = vscode.commands.registerCommand(
+    "secure-assist.internal.refreshReportHistory",
+    () => ReportPanel.reloadHistory(context)
+  );
+
+  // Clearing AI findings has to take their squiggles with it, otherwise the
+  // editor keeps showing findings the extension no longer holds.
+  const refreshAiCmd = vscode.commands.registerCommand(
+    "secure-assist.internal.refreshAiDiagnostics",
+    () => {
+      aiDiagnostics.clear();
+      refreshFixesButton();
+    }
+  );
+
   function refreshDismissedButton(): void {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -454,7 +519,7 @@ export async function activate(context: vscode.ExtensionContext) {
         cwe,
         detail: `line ${line}`,
       });
-      output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} — ${snippet.trim()}`);
+      output.appendLine(`[fp] dismissed ${cwe} at ${relPath}:${line} - ${snippet.trim()}`);
 
       // Refresh both diagnostic sets so the squiggle disappears immediately.
       const refreshed = filterDisabledCwes(
@@ -512,10 +577,19 @@ export async function activate(context: vscode.ExtensionContext) {
     { providedCodeActionKinds: AiFixProvider.kinds }
   );
 
+  // The same actions on the hover itself, so they are one click away and are
+  // not mixed in with every other extension's quick fixes.
+  const hoverProvider = vscode.languages.registerHoverProvider(
+    { scheme: "file" },
+    new SecureAssistHoverProvider()
+  );
+  const hoverActionCmd = registerHoverActions();
+
   context.subscriptions.push(
     startCmd,
     showStoredCmd,
     saveSub,
+    openSub,
     changeSub,
     scanAiCmd,
     applyAiFixCmd,
@@ -526,6 +600,8 @@ export async function activate(context: vscode.ExtensionContext) {
     dismissCmd,
     showDismissedCmd,
     refreshStatusCmd,
+    refreshHistoryCmd,
+    refreshAiCmd,
     settingsCmd,
     settingsButton,
     askButton,
@@ -536,14 +612,18 @@ export async function activate(context: vscode.ExtensionContext) {
     deepScanButton,
     fixesButton,
     aiFixProvider,
+    hoverProvider,
+    hoverActionCmd,
     output,
     diagnostics,
     aiDiagnostics
   );
 
-  // Dismissals are persisted, so the status bar must reflect them on startup
-  // rather than only after the first editor switch.
+  // Dismissals and AI findings are both persisted, so the status bar must
+  // reflect them on startup rather than only after the first editor switch —
+  // no editor-change event fires for a document that is already open.
   refreshDismissedButton();
+  refreshFixesButton();
 }
 
 export function deactivate() {}

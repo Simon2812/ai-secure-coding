@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import * as http from "http";
+import * as fs from "fs";
+import * as path from "path";
 import { URL } from "url";
 import {
   ALL_CWES,
@@ -9,10 +11,23 @@ import {
   isLiveModeEnabled,
   setLiveMode,
 } from "./settings";
-import { listSuppressions, unsuppress, clearSuppressions, Suppression } from "./suppressions";
+import {
+  listSuppressions,
+  unsuppress,
+  clearSuppressions,
+  onDidChangeSuppressions,
+  Suppression,
+} from "./suppressions";
 import { getCweInfo } from "../model/cweCatalog";
 import { getModelEndpoint } from "../model/client";
 import { clearHistory, clearActivity, loadActivity } from "./history";
+import {
+  clearAllModelResults,
+  clearModelResults,
+  filesWithModelResults,
+  getModelResults,
+  onDidChangeModelResults,
+} from "../model/aiFix";
 import { PALETTE } from "./reportHtml";
 
 function escapeHtml(value: string): string {
@@ -37,6 +52,9 @@ export class SettingsPanel {
   private readonly context: vscode.ExtensionContext;
   private readonly onChanged: () => void;
   private disposables: vscode.Disposable[] = [];
+  /** Set while this panel is the one changing the list, so its own rows keep
+   *  their feedback and a bulk removal re-renders once rather than per item. */
+  private mutatingHere = false;
 
   private constructor(
     panel: vscode.WebviewPanel,
@@ -48,6 +66,24 @@ export class SettingsPanel {
     this.onChanged = onChanged;
     this.render();
     this.panel.webview.onDidReceiveMessage((m) => this.onMessage(m), null, this.disposables);
+    // A finding dismissed or restored elsewhere must show up in the suppression
+    // list here without the settings screen being closed and reopened.
+    onDidChangeSuppressions(
+      () => {
+        if (!this.mutatingHere) this.render();
+      },
+      null,
+      this.disposables
+    );
+    // Same for AI findings: a scan or a clear done elsewhere changes what this
+    // screen offers to remove, so the list cannot be built once and left.
+    onDidChangeModelResults(
+      () => {
+        if (!this.mutatingHere) this.render();
+      },
+      null,
+      this.disposables
+    );
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
   }
 
@@ -59,11 +95,23 @@ export class SettingsPanel {
     }
     const panel = vscode.window.createWebviewPanel(
       "secureAssistSettings",
-      "Secure Assist — Settings",
+      "Secure Assist - Settings",
       vscode.ViewColumn.Active,
       { enableScripts: true, retainContextWhenHidden: true }
     );
     SettingsPanel.current = new SettingsPanel(panel, context, onChanged);
+  }
+
+  /** Files holding AI findings, with how many, newest scan order aside. */
+  private aiFiles(): { path: string; uri: vscode.Uri; count: number }[] {
+    return filesWithModelResults()
+      .map((uri) => ({
+        uri,
+        path: vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/"),
+        count: getModelResults(uri).length,
+      }))
+      .filter((f) => f.count > 0)
+      .sort((a, b) => a.path.localeCompare(b.path));
   }
 
   private render(): void {
@@ -77,6 +125,17 @@ export class SettingsPanel {
       list.push(s);
       byFile.set(s.file, list);
     }
+
+    // Files can be deleted, renamed or moved while their suppressions remain.
+    // Those entries can never match anything again, so they are marked rather
+    // than silently kept — a stale list is how a user loses trust in the panel.
+    const missingFiles = new Set(
+      [...byFile.keys()].filter((file) => !this.fileExists(file))
+    );
+    const missingCount = [...missingFiles].reduce(
+      (n, file) => n + (byFile.get(file)?.length ?? 0),
+      0
+    );
 
     const cweRows = ALL_CWES.map((cwe) => {
       const info = getCweInfo(cwe);
@@ -96,10 +155,11 @@ export class SettingsPanel {
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(
             ([file, items]) => `
-        <details class="file-group">
+        <details class="file-group${missingFiles.has(file) ? " missing" : ""}">
           <summary>
             <span class="chev">▸</span>
             <span class="fname">${escapeHtml(file)}</span>
+            ${missingFiles.has(file) ? `<span class="missing-tag">file no longer exists</span>` : ""}
             <span class="count">${items.length}</span>
           </summary>
           <div class="group-body">
@@ -119,6 +179,25 @@ export class SettingsPanel {
           )
           .join("")
       : `<p class="muted">Nothing is suppressed in this workspace.</p>`;
+
+    // AI findings held for this workspace, per file. Clearing the lot is often
+    // more than is wanted - usually one file's scan is stale or wrong - so each
+    // file can be discarded on its own.
+    const aiFiles = this.aiFiles();
+    const aiTotal = aiFiles.reduce((n, f) => n + f.count, 0);
+    const aiRows = aiFiles.length
+      ? aiFiles
+          .map(
+            (f) => `
+        <div class="sup-row${this.fileExists(f.path) ? "" : " missing"}" data-file="${escapeHtml(f.path)}">
+          <span class="fname">${escapeHtml(f.path)}</span>
+          ${this.fileExists(f.path) ? "" : `<span class="missing-tag">file no longer exists</span>`}
+          <span class="count">${f.count}</span>
+          <button class="clear-file-ai" data-file="${escapeHtml(f.path)}">Clear</button>
+        </div>`
+          )
+          .join("")
+      : `<p class="muted">No AI findings are stored for this workspace.</p>`;
 
     // Activity, also grouped per file. Project-level events (deep scans) have
     // no file of their own, so they get their own group.
@@ -179,7 +258,7 @@ export class SettingsPanel {
       </div>
     </div>
     <p class="warn-box">
-      Turning a weakness off does not make the code safer — it only stops the tool
+      Turning a weakness off does not make the code safer - it only stops the tool
       reporting it. Those findings disappear from results <em>and</em> from the project
       score, so the score will rise even though nothing changed. Disable a category
       only when it genuinely does not apply to this project.
@@ -214,11 +293,24 @@ export class SettingsPanel {
     <div class="sec-head">
       <h2>Suppressed findings</h2>
       <div class="sec-actions">
+        ${missingCount ? `<button id="prune-sup" class="ghost">Remove ${missingCount} for missing file${missingCount === 1 ? "" : "s"}</button>` : ""}
         ${suppressions.length ? `<button id="clear-sup" class="ghost danger">Remove all</button>` : ""}
       </div>
     </div>
-    <p class="muted">Removing a suppression does not create a finding — it only lets the analyzer report that code again.</p>
+    <p class="muted">Removing a suppression does not create a finding - it only lets the analyzer report that code again.</p>
+    ${missingCount ? `<p class="warn-line">${missingCount} suppression${missingCount === 1 ? " refers" : "s refer"} to files that no longer exist. They can never match again and are safe to remove.</p>` : ""}
     <div id="sup-list">${suppressionRows}</div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>AI findings</h2>
+      <div class="sec-actions">
+        ${aiTotal ? `<button id="clear-ai" class="ghost danger">Clear all</button>` : ""}
+      </div>
+    </div>
+    <p class="muted">Findings produced by "Scan with AI" and "Verify with AI", kept per file. Clearing them does not change your code and does not affect static analyzer findings.</p>
+    <div id="ai-list">${aiRows}</div>
   </section>
 
   <section>
@@ -259,8 +351,14 @@ export class SettingsPanel {
         vscode.postMessage({ type: 'test' });
       }
       else if (btn.id === 'clear-sup')  vscode.postMessage({ type: 'clearSuppressions' });
+      else if (btn.id === 'prune-sup')  vscode.postMessage({ type: 'pruneSuppressions' });
+      else if (btn.id === 'clear-ai')   vscode.postMessage({ type: 'clearAiFindings' });
       else if (btn.id === 'clear-hist') vscode.postMessage({ type: 'clearHistory' });
       else if (btn.id === 'clear-act')  vscode.postMessage({ type: 'clearActivity' });
+      else if (btn.classList.contains('clear-file-ai')) {
+        btn.disabled = true;
+        vscode.postMessage({ type: 'clearFileAi', file: btn.dataset.file });
+      }
       else if (btn.classList.contains('unsuppress')) {
         const row = btn.closest('.sup-row');
         btn.disabled = true;
@@ -319,8 +417,48 @@ export class SettingsPanel {
       case "test":
         await this.testConnection();
         break;
+      case "clearFileAi": {
+        const target = this.aiFiles().find((f) => f.path === msg.file);
+        if (!target) return;
+
+        const ok = await vscode.window.showWarningMessage(
+          `Discard the AI findings for ${target.path}?`,
+          {
+            modal: true,
+            detail:
+              `${target.count} finding${target.count === 1 ? "" : "s"} and any fixes suggested ` +
+              "for them are removed for this file only. Other files keep theirs, and static " +
+              "analyzer findings are not affected.",
+          },
+          "Discard"
+        );
+        if (ok !== "Discard") {
+          this.render(); // re-enable the button the webview disabled
+          return;
+        }
+
+        this.mutatingHere = true;
+        try {
+          clearModelResults(target.uri);
+        } finally {
+          this.mutatingHere = false;
+        }
+        await vscode.commands.executeCommand("secure-assist.internal.refreshAiDiagnostics");
+        this.onChanged();
+        this.render();
+        this.panel.webview.postMessage({
+          type: "dataMsg",
+          text: `Cleared ${target.count} AI finding${target.count === 1 ? "" : "s"} for ${target.path}.`,
+        });
+        break;
+      }
       case "unsuppress":
-        await unsuppress(msg.file, msg.cwe, msg.code);
+        this.mutatingHere = true;
+        try {
+          await unsuppress(msg.file, msg.cwe, msg.code);
+        } finally {
+          this.mutatingHere = false;
+        }
         this.onChanged();
         break;
       case "clearSuppressions": {
@@ -330,28 +468,107 @@ export class SettingsPanel {
             modal: true,
             detail:
               "All previously dismissed findings become eligible to be reported " +
-              "again. This cannot be undone — the record of what was dismissed is lost.",
+              "again. This cannot be undone - the record of what was dismissed is lost.",
           },
           "Remove all"
         );
         if (ok !== "Remove all") return;
-        await clearSuppressions();
+        this.mutatingHere = true;
+        try {
+          await clearSuppressions();
+        } finally {
+          this.mutatingHere = false;
+        }
         this.onChanged();
         this.render();
         break;
       }
-      case "clearHistory":
-        await clearHistory(this.context);
+      case "pruneSuppressions": {
+        const stale = listSuppressions().filter((s) => !this.fileExists(s.file));
+        if (stale.length === 0) return;
+        this.mutatingHere = true;
+        try {
+          for (const s of stale) await unsuppress(s.file, s.cwe, s.code);
+        } finally {
+          this.mutatingHere = false;
+        }
+        this.onChanged();
+        this.render();
         this.panel.webview.postMessage({
           type: "dataMsg",
-          text: "Scan history cleared — the trend line starts fresh.",
+          text: `Removed ${stale.length} suppression${stale.length === 1 ? "" : "s"} for files that no longer exist.`,
         });
         break;
+      }
+      case "clearAiFindings": {
+        const ok = await vscode.window.showWarningMessage(
+          "Discard every AI finding saved in this workspace?",
+          {
+            modal: true,
+            detail:
+              "Findings produced by \"Scan with AI\" and \"Verify with AI\" are " +
+              "removed, along with their suggested fixes. Static analyzer findings " +
+              "are not affected. Recovering them means running the AI scan again.",
+          },
+          "Discard"
+        );
+        if (ok !== "Discard") return;
+        await clearAllModelResults();
+        await vscode.commands.executeCommand("secure-assist.internal.refreshAiDiagnostics");
+        this.panel.webview.postMessage({
+          type: "dataMsg",
+          text: "AI findings discarded.",
+        });
+        break;
+      }
+      case "clearHistory": {
+        const ok = await vscode.window.showWarningMessage(
+          "Clear the scan history for this workspace?",
+          {
+            modal: true,
+            detail:
+              "The recorded scans, their scores and the trend line are deleted. " +
+              "The scan counter resets to zero. This cannot be undone.",
+          },
+          "Clear history"
+        );
+        if (ok !== "Clear history") return;
+        await clearHistory(this.context);
+        // The report panel keeps its own copy of the history, so clearing
+        // storage alone leaves it showing a stale count until the next scan.
+        await vscode.commands.executeCommand("secure-assist.internal.refreshReportHistory");
+        this.panel.webview.postMessage({
+          type: "dataMsg",
+          text: "Scan history cleared - the trend line and scan count start fresh.",
+        });
+        break;
+      }
       case "clearActivity":
         await clearActivity(this.context);
         this.render();
         break;
     }
+  }
+
+  /**
+   * Does the file a suppression refers to still exist?
+   *
+   * Suppressions store a workspace-relative path. Uses a synchronous check
+   * because the panel renders synchronously; the paths are few and local.
+   */
+  private fileExists(relPath: string): boolean {
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders?.length) return true; // no workspace: cannot judge, keep it
+    for (const folder of folders) {
+      const full = path.join(folder.uri.fsPath, relPath);
+      try {
+        if (fs.existsSync(full)) return true;
+      } catch {
+        /* unreadable path — treat as present rather than delete blindly */
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Ping the model server so the user knows before a scan, not during one. */
@@ -368,16 +585,16 @@ export class SettingsPanel {
       (res) => {
         res.resume();
         const ms = Date.now() - started;
-        if (res.statusCode === 200) report(true, `Reachable (${ms} ms) — the model is ready.`);
+        if (res.statusCode === 200) report(true, `Reachable (${ms} ms) - the model is ready.`);
         else report(false, `Responded with HTTP ${res.statusCode}.`);
       }
     );
     req.on("timeout", () => {
       req.destroy();
-      report(false, "No response within 5s — the container may still be loading the model.");
+      report(false, "No response within 5s - the container may still be loading the model.");
     });
     req.on("error", () =>
-      report(false, `Not reachable at ${endpoint} — is the Docker container running?`)
+      report(false, `Not reachable at ${endpoint} - is the Docker container running?`)
     );
   }
 
@@ -451,6 +668,14 @@ details.file-group > summary {
   gap: 10px; user-select: none; font-size: 0.82rem;
 }
 details.file-group > summary::-webkit-details-marker { display: none; }
+details.file-group.missing > summary .fname { text-decoration: line-through; opacity: .65; }
+.missing-tag {
+  font-size: 11px; padding: 1px 6px; border-radius: 9px;
+  color: var(--warn); border: 1px solid var(--warn); opacity: .85;
+}
+.warn-line {
+  margin: 4px 0 10px; font-size: 12px; color: var(--warn);
+}
 details.file-group > summary:hover { background: var(--hover); }
 .chev { color: var(--text-dim); transition: transform 0.12s ease; display: inline-block; }
 details.file-group[open] > summary .chev { transform: rotate(90deg); }
