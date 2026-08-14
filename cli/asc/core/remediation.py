@@ -56,7 +56,7 @@ def apply_selected_fixes(
     for finding in selected_findings:
         finding_id = finding.get("id")
 
-        if finding.get("confidence") == "low":
+        if finding.get("confidence") == "Low":
             skipped.append(
                 LOW_CONFIDENCE_MESSAGE.format(finding_id=finding_id)
             )
