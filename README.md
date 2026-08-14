@@ -1,5 +1,3 @@
-<img width="1698" height="852" alt="cli-apply" src="https://github.com/user-attachments/assets/b96b61c2-9c5a-4527-85f2-1ceb69ec38ce" /># AI Secure Coding Advisor
-
 <p align="center">
   <b>AI-powered vulnerability detection & automated secure code fixing</b>
 </p>
