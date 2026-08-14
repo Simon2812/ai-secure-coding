@@ -1,4 +1,4 @@
-# AI Secure Coding Advisor
+<img width="1698" height="852" alt="cli-apply" src="https://github.com/user-attachments/assets/b96b61c2-9c5a-4527-85f2-1ceb69ec38ce" /># AI Secure Coding Advisor
 
 <p align="center">
   <b>AI-powered vulnerability detection & automated secure code fixing</b>
@@ -81,6 +81,21 @@ A detailed description of the system architecture and components is available in
 <p align="center">
 <img width="1600" height="872" alt="dismissed-findings" src="https://github.com/user-attachments/assets/387b58a1-19d1-4e71-8058-ff13899a1c0e" />
 </p>
+
+
+### CLI Analysis
+
+<p align="center">
+<img width="1886" height="910" alt="cli-analyze" src="https://github.com/user-attachments/assets/25a10017-60de-4786-b1a8-d6691a22d627" />
+</p>
+
+### CLI Apply & Help![Uploading cli-analyze.png…]()
+
+<p align="center">
+<img width="1698" height="852" alt="cli-apply" src="https://github.com/user-attachments/assets/a8c05f73-e7dd-42b8-a403-60739a8fe2eb" />
+</p>
+
+
 
 ---
 ## Typical User Flow
