@@ -84,13 +84,13 @@ A detailed description of the system architecture and components is available in
 ### CLI Analysis
 
 <p align="center">
-<img width="1886" height="910" alt="cli-analyze" src="https://github.com/user-attachments/assets/25a10017-60de-4786-b1a8-d6691a22d627" />
+<img width="1886" height="910" alt="cli-analyze" src="https://github.com/user-attachments/assets/287a2aae-d56f-432c-a307-fadb00fdd69e" />
 </p>
 
 ### CLI Apply & Help
 
 <p align="center">
-<img width="1698" height="852" alt="cli-apply" src="https://github.com/user-attachments/assets/a8c05f73-e7dd-42b8-a403-60739a8fe2eb" />
+<img width="1698" height="852" alt="cli-apply" src="https://github.com/user-attachments/assets/01c2e5cc-bbec-4d9c-b32e-db64e2f602e8" />
 </p>
 
 
