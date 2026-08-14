@@ -41,7 +41,7 @@ def build_analysis_report(
         for index, finding in enumerate(findings, start=1)
     ]
 
-    if any(finding.get("confidence") == "low" for finding in findings):
+    if any(finding.get("confidence") == "Low" for finding in findings):
         report["notes"] = [LOW_CONFIDENCE_NOTE]
     else:
         report["notes"] = []
