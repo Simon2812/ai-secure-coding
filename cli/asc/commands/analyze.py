@@ -43,6 +43,7 @@ def add_analyze_parser(
     parser.add_argument(
         "-o",
         "--output",
+        metavar="",
         help=(
             "Report output path. Defaults to report.json in the "
             "current working directory."
