@@ -87,7 +87,7 @@ A detailed description of the system architecture and components is available in
 <img width="1886" height="910" alt="cli-analyze" src="https://github.com/user-attachments/assets/25a10017-60de-4786-b1a8-d6691a22d627" />
 </p>
 
-### CLI Apply & Help![Uploading cli-analyze.png…]()
+### CLI Apply & Help
 
 <p align="center">
 <img width="1698" height="852" alt="cli-apply" src="https://github.com/user-attachments/assets/a8c05f73-e7dd-42b8-a403-60739a8fe2eb" />
