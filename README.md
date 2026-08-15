@@ -1,5 +1,5 @@
 <p align="center">
-  <font size="27"><b>🛡️ AI Secure Coding Advisor</b></font>
+  <big><big><big><b>🛡️ AI Secure Coding Advisor</b></big></big></big>
 </p>
 
 <hr>
