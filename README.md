@@ -2,9 +2,9 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/AI-Fine--Tuned%20LLM-8A2BE2"/>
-  <img src="https://img.shields.io/badge/Static%20Analysis-AST-2A9D8"/>
+  <img src="https://img.shields.io/badge/Static%20Analysis-AST-0077B6"/>
   <img src="https://img.shields.io/badge/Security-CWE-D62828"/>
-  <img src="https://img.shields.io/badge/Analysis-Hybrid-green"/>
+  <img src="https://img.shields.io/badge/Analysis-Hybrid-2A9D8F"/>
   <img src="https://img.shields.io/badge/Remediation-Automated-F4A261"/>
   <img src="https://img.shields.io/badge/Integration-VS%20Code-007ACC"/>
 </p>
