@@ -65,7 +65,7 @@ A detailed description of the system architecture and components is available in
 </p>
 
 
-### Dismissed/Suppressed Findings
+### Suppressed Findings
 
 <p align="center">
 <img width="1600" height="872" alt="dismissed-findings" src="https://github.com/user-attachments/assets/387b58a1-19d1-4e71-8058-ff13899a1c0e" />
