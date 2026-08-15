@@ -1,14 +1,4 @@
-<h1 align="center">AI Secure Coding Advisor</h1>
-
-<p align="center">
-  
-  <img src="https://img.shields.io/badge/Python-Backend-8A2BE2"/>
-  <img src="https://img.shields.io/badge/Static%20Analysis-AST-orange"/>
-  <img src="https://img.shields.io/badge/AI-LLM-green"/>
-  <img src="https://img.shields.io/badge/Security-CWE-D62828"/>
-  <img src="https://img.shields.io/badge/Analysis-Hybrid-yellow"/>
-  <img src="https://img.shields.io/badge/Integration-VS%20Code-007ACC"/>
-</p>
+<h1 align="center">🛡️AI Secure Coding Advisor</h1>
 
 ---
 ## Overview
