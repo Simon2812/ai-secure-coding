@@ -3,6 +3,7 @@
 The extension ships as a single file, `secure-assist-0.0.1.vsix`. Everything the
 analyzer needs is inside it — no dependencies to install, no network access, no
 GPU.
+[Download `secure-assist-0.0.1.vsix`](https://github.com/Simon2812/ai-secure-coding/releases/tag/v0.0.1)
 
 ---
 
