@@ -1,8 +1,8 @@
-<h1 align="center"> AI Secure Coding Advisor 🛡️</h1>
+<h1 align="center"> Secure Assist 🛡️</h1>
 
 ## Overview
 
-The **AI Secure Coding Advisor** is a hybrid security analysis system that combines static analysis and a fine-tuned Large Language Model (LLM) to improve secure software development.
+The **Secure Assist** is a hybrid security analysis system that combines static analysis and a fine-tuned Large Language Model (LLM) to improve secure software development.
 
 The system analyzes source code written in **Python**, **Java**, and **C/C++**, detects supported software vulnerabilities, explains their security impact, and assists developers in applying secure fixes through both a command-line interface (CLI) and a Visual Studio Code extension.
 
@@ -165,8 +165,6 @@ Potential future improvements include:
 - Improved LLM fine-tuning and remediation quality
 - Real-time project monitoring and continuous scanning
 - Expanded IDE capabilities and user experience improvements
-  
-The full future work plan, including detailed explanations, is documented in [`TODO.md`](docs/TODO.md)
 
 ---
 
