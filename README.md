@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Python-Backend-blue"/>
   <img src="https://img.shields.io/badge/AI-LLM-purple"/>
   <img src="https://img.shields.io/badge/Security-CWE-red"/>
-  <img src="https://img.shields.io/badge/Status-Active-brightgreen"/>
+  <img src="https://img.shields.io/badge/Hybrid-Analysis-brightgreen"/>
 </p>
 
 ---
