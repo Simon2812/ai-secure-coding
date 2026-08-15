@@ -211,7 +211,9 @@ Unlike traditional security analysis tools, SecureAssist:
 
 ## Project Links
 
-- GitHub repository: [Github](https://github.com/Simon2812/AI-Secure-Coding)
-- Jira project: [Jira](https://aisecurecoding.atlassian.net/jira/software/projects/ASC/boards/1)
-- Testing documentation: [docs/testing.md](docs/testing.md)
-- Technical documentation: [docs/technical-documentation.md](docs/technical-documentation.md)
+- [GitHub Repository](https://github.com/Simon2812/ai-secure-coding)
+- [Jira Project](https://aisecurecoding.atlassian.net/jira/software/projects/ASC/boards/1)
+- [VS Code Extension Installation](docs/INSTALL.md)
+- [CLI Installation](docs/CLI-INSTALL.md)
+- [Testing Documentation](docs/TESTING.md)
+- [Technical Documentation](docs/technical-documentation.md)
