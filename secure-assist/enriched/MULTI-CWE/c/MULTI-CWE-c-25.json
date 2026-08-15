@@ -11,7 +11,7 @@
   "vulnerabilities": [
     {
       "id": "v1",
-      "cwe": "CWE-256",
+      "cwe": "CWE-259",
       "fixes": [
         {
           "origin": "\"A9xT7v2Q\"",

@@ -41,7 +41,7 @@ def build_analysis_report(
         for index, finding in enumerate(findings, start=1)
     ]
 
-    if any(finding.get("confidence") == "low" for finding in findings):
+    if any(finding.get("confidence") == "Low" for finding in findings):
         report["notes"] = [LOW_CONFIDENCE_NOTE]
     else:
         report["notes"] = []
@@ -167,7 +167,7 @@ def _build_high_finding(
     return {
         "cwe": cwe,
         **_catalog_fields(catalog, cwe),
-        "confidence": "high",
+        "confidence": "High",
         "start_line": model_finding.get("start_line"),
         "end_line": model_finding.get("end_line"),
         "fixes": _fixes(model_finding),
@@ -187,7 +187,7 @@ def _build_model_finding(
     return {
         "cwe": cwe,
         **_catalog_fields(catalog, cwe),
-        "confidence": "medium",
+        "confidence": "Medium",
         "start_line": model_finding.get("start_line"),
         "end_line": model_finding.get("end_line"),
         "fixes": _fixes(model_finding),
@@ -207,7 +207,7 @@ def _build_static_finding(
     return {
         "cwe": cwe,
         **_catalog_fields(catalog, cwe),
-        "confidence": "low",
+        "confidence": "Low",
         "line": static_finding.get("line"),
         "evidence": static_finding.get("evidence"),
         "fixes": [],
