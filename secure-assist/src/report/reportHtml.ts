@@ -4,7 +4,7 @@ import { scoreBand, severityOf } from "./score";
 import { buildTree, collapseSingleChildFolders, FolderNode } from "./tree";
 import { ScanRecord, ActivityEvent, sparklineSvg } from "./history";
 import { Suppression } from "./suppressions";
-import { appliedFixesFor } from "../model/appliedFixes";
+import { appliedFixesIn } from "../model/appliedFixes";
 import { DIFF_STYLES } from "../model/diffView";
 
 function escapeHtml(value: string): string {
@@ -239,6 +239,17 @@ details.side-panel[open] > summary .folder-icon { transform: rotate(90deg); }
   font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim);
   margin: 10px 0 4px;
 }
+
+/* Dismissed findings shown inside the file they belong to. Indented to match
+   the finding rows, and quiet by default since it is a record, not a problem. */
+details.fp-panel {
+  margin: 0 14px 10px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 4px;
+}
+details.fp-panel > summary { padding: 7px 12px; font-size: 0.82rem; }
+details.fp-panel[open] > summary .folder-icon { transform: rotate(90deg); }
+details.fp-panel .fp-title { flex: 1; color: var(--text-dim); }
+.fp-body { padding: 2px 12px 10px; }
 .fp-row {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 5px 0 5px 10px; border-left: 2px solid var(--border);
@@ -426,7 +437,9 @@ function renderFileTools(file: FileReport, fileIndex: number, interactive: boole
   // Fixes already written to this file, so a change can be undone from the
   // report rather than only from the fixes panel. Reverting restores the code
   // and puts the finding back into the counts.
-  const applied = interactive ? appliedFixesFor(file.path) : [];
+  // Only fixes still present in the scanned text: one undone with the editor's
+  // own undo is no longer in the file and must not be offered for reverting.
+  const applied = interactive ? appliedFixesIn(file.path, file.code ?? "") : [];
   const revertRows = applied.length
     ? `<div class="applied-fixes">
         <span class="applied-head">${applied.length} applied fix${applied.length === 1 ? "" : "es"}</span>
@@ -482,7 +495,51 @@ function renderCode(file: FileReport, fileIndex: number): string {
   return `<div class="code-block" id="code-${fileIndex}" hidden>${rows}</div>`;
 }
 
-function renderFile(file: FileReport, fileIndex: number, interactive: boolean): string {
+/**
+ * Findings dismissed in this file, collapsed by default.
+ *
+ * Kept beside the file they belong to rather than in one project-wide list:
+ * what was silenced here is part of reading this file's result, and a single
+ * list gave no sense of which file it applied to.
+ */
+function renderDismissed(
+  file: FileReport,
+  items: Suppression[],
+  interactive: boolean
+): string {
+  if (items.length === 0) return "";
+  return `
+    <details class="fp-panel">
+      <summary>
+        <span class="folder-icon">▸</span>
+        <span class="fp-title">Dismissed as false positive</span>
+        <span class="status">${items.length}</span>
+      </summary>
+      <div class="fp-body">
+        ${items
+          .map(
+            (s) => `
+          <div class="fp-row" data-file="${escapeHtml(s.file)}" data-cwe="${escapeHtml(s.cwe)}" data-code="${escapeHtml(s.code)}">
+            <span class="fp-cwe">${escapeHtml(s.cwe)}</span>
+            <code class="fp-code">${escapeHtml(s.code.length > 90 ? s.code.slice(0, 90) + "…" : s.code)}</code>
+            <span class="fp-when">${new Date(s.at).toLocaleDateString()}</span>
+            ${interactive ? `<button class="restore">Remove suppression</button>` : ""}
+          </div>`
+          )
+          .join("")}
+        ${interactive
+          ? `<p class="fp-note">Removing a suppression does not create a finding. It only stops this code being filtered out, so the analyzer can report it again if it still considers it a problem.</p>`
+          : ""}
+      </div>
+    </details>`;
+}
+
+function renderFile(
+  file: FileReport,
+  fileIndex: number,
+  interactive: boolean,
+  dismissed: Suppression[] = []
+): string {
   const band = scoreBand(file.score);
   const count = file.findings.length;
   const header = `
@@ -508,6 +565,7 @@ function renderFile(file: FileReport, fileIndex: number, interactive: boolean): 
     ${header}
     ${findings}
     <div class="ai-findings" id="aifindings-${fileIndex}"></div>
+    ${renderDismissed(file, dismissed, interactive)}
     ${renderFileTools(file, fileIndex, interactive)}
     ${renderCode(file, fileIndex)}
   </details>`;
@@ -518,18 +576,25 @@ function renderFolder(
   folder: FolderNode,
   interactive: boolean,
   counter: { next: number },
-  depth = 0
+  depth = 0,
+  dismissedByFile: Map<string, Suppression[]> = new Map()
 ): string {
   const children =
-    folder.folders.map((f) => renderFolder(f, interactive, counter, depth + 1)).join("") +
-    folder.files.map((f) => renderFile(f, counter.next++, interactive)).join("");
+    folder.folders
+      .map((f) => renderFolder(f, interactive, counter, depth + 1, dismissedByFile))
+      .join("") +
+    folder.files
+      .map((f) =>
+        renderFile(f, counter.next++, interactive, dismissedByFile.get(f.path) ?? [])
+      )
+      .join("");
 
   // The synthetic root has no header of its own.
   if (folder.path === "" && depth === 0) return children;
 
   const band = scoreBand(folder.score);
   return `
-    <details class="folder" ${depth === 0 ? "open" : ""}>
+    <details class="folder" data-path="${escapeHtml(folder.path)}" ${depth === 0 ? "open" : ""}>
       <summary>
         <span class="folder-icon">▸</span>
         <span class="folder-name">${escapeHtml(folder.name)}</span>
@@ -556,12 +621,22 @@ export function buildReportHtml(
 ): string {
   const band = scoreBand(report.score);
 
+  // Grouped once so each file can show what was dismissed in it.
+  const dismissedByFile = new Map<string, Suppression[]>();
+  for (const s of extras.suppressions ?? []) {
+    const list = dismissedByFile.get(s.file) ?? [];
+    list.push(s);
+    dismissedByFile.set(s.file, list);
+  }
+
   const body = report.files.length === 0
     ? `<p class="empty">No source files found to scan.</p>`
     : renderFolder(
         collapseSingleChildFolders(buildTree(report.files)),
         interactive,
-        { next: 0 }
+        { next: 0 },
+        0,
+        dismissedByFile
       );
 
   const script = interactive
@@ -577,8 +652,42 @@ export function buildReportHtml(
         // The model serves one request at a time on a single GPU, so only one
         // verification may be in flight; the rest are visibly disabled.
         let busy = false;
+        // The finding whose Apply was pressed, so the result can be marked even
+        // when its fix id does not match the row id.
+        let pendingFixRow = null;
         // Score when this report was rendered, for the session's before/after.
         const initialProjectScore = ${report.score};
+
+        // Which folders and files were open, kept across re-renders.
+        //
+        // Applying a fix rebuilds this document, which would otherwise collapse
+        // the whole tree and lose the reader's place. setState belongs to the
+        // panel rather than the document, so it survives the rebuild.
+        const openKey = (d) =>
+          (d.classList.contains('folder') ? 'd:' : 'f:') + (d.dataset.path || '');
+
+        function saveOpenState() {
+          const open = [];
+          document.querySelectorAll('details.folder, details.file').forEach((d) => {
+            if (d.open) open.push(openKey(d));
+          });
+          const prev = vscode.getState() || {};
+          vscode.setState(Object.assign({}, prev, { open: open }));
+        }
+
+        function restoreOpenState() {
+          const saved = (vscode.getState() || {}).open;
+          if (!Array.isArray(saved) || saved.length === 0) return;
+          const wanted = new Set(saved);
+          document.querySelectorAll('details.folder, details.file').forEach((d) => {
+            if (wanted.has(openKey(d))) d.setAttribute('open', '');
+            else d.removeAttribute('open');
+          });
+        }
+
+        restoreOpenState();
+        // 'toggle' does not bubble, so it is captured instead.
+        document.addEventListener('toggle', saveOpenState, true);
         const band = (s) => (s >= 80 ? 'good' : s >= 50 ? 'warning' : 'critical');
 
         function setVerifyBusy(state, activeIndex) {
@@ -659,6 +768,10 @@ export function buildReportHtml(
           // Ask for the diff first; applying happens from the preview below.
           const fix = e.target.closest('button.fix');
           if (fix) {
+            // Remembered because a finding restored from an editor scan has a
+            // fix id that does not match its row id, so the result cannot find
+            // the row to mark by id alone.
+            pendingFixRow = fix.closest('.finding');
             vscode.postMessage({ type: 'previewFix', id: fix.dataset.id, fixIndex: Number(fix.dataset.fixIndex) });
             return;
           }
@@ -757,8 +870,14 @@ export function buildReportHtml(
                   : 'AI confirmed';
                 verdict.className = 'verdict ok';
               }
+              // Verifying twice, or verifying a row that already carries a
+              // button from a restored editor scan, must not stack a second
+              // Apply for the same fix. The two paths use different ids for the
+              // same row, so the guard is on the container, not the id.
               const actions = document.getElementById('actions-' + r.id);
-              if (actions && r.fixCount > 0) addFixButtons(actions, r.id, r.fixCount);
+              if (actions && r.fixCount > 0 && !actions.querySelector('button.fix')) {
+                addFixButtons(actions, r.id, r.fixCount);
+              }
             });
 
             // Repaint the source so the model's lines show in their own colour,
@@ -825,22 +944,11 @@ export function buildReportHtml(
                 }
               });
 
-              // The payload is the full current picture, so anything the model
-              // no longer reports has to come off the screen. Only AI verdicts
-              // are cleared - "Fix applied" and the rest are left alone.
-              const stillConfirmed = new Set(
-                (entry.confirmed || []).map((c) => btn.dataset.index + '-' + c.staticIndex)
-              );
-              document
-                .querySelectorAll('[id^="verdict-' + btn.dataset.index + '-"]')
-                .forEach((el) => {
-                  const rowId = el.id.slice('verdict-'.length);
-                  if (!el.classList.contains('ok') || stillConfirmed.has(rowId)) return;
-                  el.textContent = '';
-                  el.className = 'verdict';
-                  const acts = document.getElementById('actions-' + rowId);
-                  if (acts) acts.querySelectorAll('button.fix').forEach((b) => b.remove());
-                });
+              // Verdicts are deliberately not cleared from here. Rows are keyed
+              // by position, and re-analysing after a fix renumbers everything
+              // below it, so comparing fresh indices against rendered rows
+              // stripped the badge off findings that were never touched. The
+              // panel re-renders instead, which rebuilds the ids in step.
 
               // Re-colour the source so lines the model flagged are marked in
               // "See code" too. The block stays hidden if it was: this only
@@ -901,9 +1009,28 @@ export function buildReportHtml(
                 host.appendChild(div);
               });
             });
+          } else if (msg.type === 'fixUnavailable') {
+            // The extension no longer holds that fix. Say so on the button
+            // rather than doing nothing, which looks like a broken click.
+            document
+              .querySelectorAll('button.fix[data-id="' + String(msg.id).replace(/"/g, '\\\\"') + '"]')
+              .forEach((b) => {
+                b.disabled = true;
+                b.textContent = 'Fix unavailable - re-run Verify with AI';
+              });
           } else if (msg.type === 'fixPreview') {
             // Insert the diff under the finding, with its own confirm/cancel.
-            const actions = document.getElementById('actions-' + msg.id);
+            //
+            // Only the verify path's fix ids match a container id: findings
+            // restored from an editor scan are keyed "conf-<path>-<n>" or
+            // "ai-<path>-<n>", so looking the container up by id alone found
+            // nothing and the click did nothing at all. Fall back to the button
+            // that was pressed, which is inside the container we want.
+            const escId = String(msg.id).replace(/"/g, '\\\\"');
+            const actions =
+              document.getElementById('actions-' + msg.id) ||
+              (document.querySelector('button.fix[data-id="' + escId + '"]') || {}).closest?.('.actions') ||
+              null;
             if (!actions) return;
             const existing = document.getElementById('preview-' + msg.id);
             if (existing) existing.remove();
@@ -923,7 +1050,8 @@ export function buildReportHtml(
             if (box) box.remove();
             // Mark the finding as resolved and refresh the file's code + score
             // so the report reflects the edit instead of the original scan.
-            const row = document.querySelector('[data-finding-id="' + msg.id + '"]');
+            const row =
+              document.querySelector('[data-finding-id="' + msg.id + '"]') || pendingFixRow;
             if (row) {
               row.classList.add('fixed');
               const verdict = row.querySelector('.verdict');
@@ -932,16 +1060,28 @@ export function buildReportHtml(
               if (acts) acts.innerHTML = '';
             }
 
-            const block = document.getElementById('code-' + msg.fileIndex);
+            // Findings restored from an editor scan carry no file index - the
+            // report was not the thing that produced them - so it is resolved
+            // from the file's own verify button instead. Without this the
+            // source kept the highlighting from before the fix.
+            let fileIndex = msg.fileIndex;
+            if (!fileIndex && msg.file) {
+              const owner = document.querySelector(
+                'button.verify[data-file="' + msg.file.replace(/"/g, '\\\\"') + '"]'
+              );
+              if (owner) fileIndex = owner.dataset.index;
+            }
+
+            const block = document.getElementById('code-' + fileIndex);
             if (block && msg.codeRows) {
               block.innerHTML = msg.codeRows;
               // Reveal the updated code so the change is visible immediately.
               block.removeAttribute('hidden');
-              const toggle = document.querySelector('button.see-code[data-target="code-' + msg.fileIndex + '"]');
+              const toggle = document.querySelector('button.see-code[data-target="code-' + fileIndex + '"]');
               if (toggle) toggle.textContent = 'Hide code';
             }
 
-            const fileStatus = document.getElementById('filestatus-' + msg.fileIndex);
+            const fileStatus = document.getElementById('filestatus-' + fileIndex);
             if (fileStatus) {
               fileStatus.textContent = 'Fix applied. ' + msg.findingCount +
                 ' finding' + (msg.findingCount === 1 ? '' : 's') + ' remaining.';
@@ -1044,46 +1184,6 @@ export function buildReportHtml(
       </details>`
     : "";
 
-  // Dismissed findings, grouped by file, each restorable.
-  const suppressions = extras.suppressions ?? [];
-  const byFile = new Map<string, Suppression[]>();
-  for (const s of suppressions) {
-    const list = byFile.get(s.file) ?? [];
-    list.push(s);
-    byFile.set(s.file, list);
-  }
-
-  const dismissedPanel = suppressions.length
-    ? `<details class="side-panel">
-        <summary>
-          <span class="folder-icon">▸</span>
-          <span class="folder-name">Dismissed as false positive</span>
-          <span class="status">${suppressions.length}</span>
-        </summary>
-        <div class="side-body">
-          ${[...byFile.entries()]
-            .map(
-              ([file, items]) => `
-            <div class="fp-file">${escapeHtml(file)}</div>
-            ${items
-              .map(
-                (s) => `
-              <div class="fp-row" data-file="${escapeHtml(s.file)}" data-cwe="${escapeHtml(s.cwe)}" data-code="${escapeHtml(s.code)}">
-                <span class="fp-cwe">${escapeHtml(s.cwe)}</span>
-                <code class="fp-code">${escapeHtml(s.code.length > 90 ? s.code.slice(0, 90) + "…" : s.code)}</code>
-                <span class="fp-when">${new Date(s.at).toLocaleDateString()}</span>
-                ${interactive ? `<button class="restore">Remove suppression</button>` : ""}
-              </div>`
-              )
-              .join("")}`
-            )
-            .join("")}
-          ${interactive
-            ? `<p class="fp-note">Removing a suppression does not create a finding. It only stops this code being filtered out, so the analyzer can report it again on the next scan if it still considers it a problem.</p>`
-            : ""}
-        </div>
-      </details>`
-    : "";
 
   // What has been done to this project, newest first.
   const activity = [...(extras.activity ?? [])].reverse();
@@ -1277,7 +1377,6 @@ export function buildReportHtml(
 
   ${cweBreakdown}
   ${activityPanel}
-  ${dismissedPanel}
   ${toolbar}
   ${filterBar}
   ${body}

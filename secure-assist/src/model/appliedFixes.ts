@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ModelFix, ModelVulnerability } from "./client";
-import { findOriginRange } from "./originMatch";
+import { findOriginRange, containsOrigin } from "./originMatch";
 
 /**
  * Record of fixes the user applied, so they can be undone.
@@ -50,6 +50,20 @@ export function appliedFixesFor(relPath: string): AppliedFix[] {
 export async function recordAppliedFix(entry: AppliedFix): Promise<void> {
   if (!context) return;
   await context.workspaceState.update(STORAGE_KEY, [...listAppliedFixes(), entry]);
+}
+
+/**
+ * Applied fixes whose inserted text is still present in the file.
+ *
+ * Undoing a fix with the editor's own undo, or editing the line by hand, leaves
+ * the record behind: nothing tells us the change went away. Showing it would
+ * offer a Revert that cannot work and imply the file still carries a fix it does
+ * not, so entries that can no longer be located are left out of the listing.
+ * They are kept in storage rather than deleted, because a further undo can
+ * bring the text back.
+ */
+export function appliedFixesIn(relPath: string, code: string): AppliedFix[] {
+  return appliedFixesFor(relPath).filter((a) => containsOrigin(code, a.insertedText));
 }
 
 /** Identity for a record — a file plus the text that was inserted. */

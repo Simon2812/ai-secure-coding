@@ -13,6 +13,7 @@ import {
   initModelResults,
   filesWithModelResults,
   clearAllModelResults,
+  onDidChangeModelResults,
   APPLY_AI_FIX_COMMAND,
 } from "./model/aiFix";
 import { ModelFix } from "./model/client";
@@ -31,7 +32,7 @@ import {
 import { DismissedPanel } from "./report/dismissedPanel";
 import { SecureAssistHoverProvider, registerHoverActions } from "./hover";
 import { groundVulnerabilities, findOriginRange } from "./model/originMatch";
-import { initAppliedFixes } from "./model/appliedFixes";
+import { initAppliedFixes, appliedFixesIn } from "./model/appliedFixes";
 import { recordActivity } from "./report/history";
 import { filterDisabledCwes, filterDisabledCweVulns, isLiveModeEnabled } from "./report/settings";
 import { SettingsPanel } from "./report/settingsPanel";
@@ -352,7 +353,7 @@ export async function activate(context: vscode.ExtensionContext) {
     FixPanel.show(editor.document.uri, aiDiagnostics, output, context);
   });
 
-  /** Show the fixes button only when the active file has fixes to offer. */
+  /** Show the fixes button while the active file has fixes to offer or undo. */
   const refreshFixesButton = () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -368,11 +369,26 @@ export async function activate(context: vscode.ExtensionContext) {
       (v.fixes ?? []).some((f) => findOriginRange(code, f.origin))
     ).length;
 
-    if (count === 0) {
+    // Applying the last fix used to hide the button, which stranded the applied
+    // fixes: the panel is the only way to revert them, and closing it left no
+    // way back in. The button stays while there is anything to undo.
+    const relPath = vscode.workspace
+      .asRelativePath(editor.document.uri, false)
+      .replace(/\\/g, "/");
+    const applied = appliedFixesIn(relPath, code).length;
+
+    if (count === 0 && applied === 0) {
       fixesButton.hide();
       return;
     }
-    fixesButton.text = `$(zap) ${count} AI fix${count === 1 ? "" : "es"}`;
+
+    if (count > 0) {
+      fixesButton.text = `$(zap) ${count} AI fix${count === 1 ? "" : "es"}`;
+      fixesButton.tooltip = "Secure Assist: review and apply the AI's suggested fixes";
+    } else {
+      fixesButton.text = `$(history) ${applied} applied`;
+      fixesButton.tooltip = "Secure Assist: review or revert the fixes applied to this file";
+    }
     fixesButton.show();
   };
 
@@ -380,6 +396,11 @@ export async function activate(context: vscode.ExtensionContext) {
     refreshFixesButton();
     refreshDismissedButton();
   });
+
+  // Applying a fix removes the finding and records something revertible, and
+  // reverting does the reverse. Both write to the model-results store, so one
+  // subscription keeps the button in step with either.
+  const fixesButtonSub = onDidChangeModelResults(() => refreshFixesButton());
 
   // Deep scan: static analysis over the whole workspace, rendered as a report.
   const deepScanCmd = vscode.commands.registerCommand("secure-assist.deepScan", async () => {
@@ -472,8 +493,27 @@ export async function activate(context: vscode.ExtensionContext) {
   // editor keeps showing findings the extension no longer holds.
   const refreshAiCmd = vscode.commands.registerCommand(
     "secure-assist.internal.refreshAiDiagnostics",
-    () => {
+    async () => {
+      // Rebuilt from the store rather than just emptied: clearing the whole
+      // collection also took the squiggles off files that still have findings,
+      // so discarding one file's results blanked every other file until it was
+      // reopened. Mirrors the restore done at activation.
       aiDiagnostics.clear();
+      for (const uri of filesWithModelResults()) {
+        try {
+          const doc = await vscode.workspace.openTextDocument(uri);
+          const rel = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, "/");
+          aiDiagnostics.set(
+            uri,
+            modelVulnsToDiagnostics(
+              doc,
+              filterSuppressedVulns(getModelResults(uri), rel, doc.getText())
+            )
+          );
+        } catch {
+          /* file unreadable now — its findings were already dropped */
+        }
+      }
       refreshFixesButton();
     }
   );
@@ -614,6 +654,7 @@ export async function activate(context: vscode.ExtensionContext) {
     aiFixProvider,
     hoverProvider,
     hoverActionCmd,
+    fixesButtonSub,
     output,
     diagnostics,
     aiDiagnostics
