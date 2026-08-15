@@ -1,5 +1,8 @@
-# AI Secure Coding Advisor
----
+<h1 align="center">🛡️ AI Secure Coding Advisor</h1>
+
+<p align="center">
+  <b>AI-powered vulnerability detection & automated secure code fixing</b>
+</p>---
 
 ## Overview
 
