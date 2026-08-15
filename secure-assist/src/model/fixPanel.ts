@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { ModelFix, ModelVulnerability } from "./client";
 import { getCweInfo } from "./cweCatalog";
 import { getModelResults, setModelResults, applyFixEdit, modelVulnsToDiagnostics } from "./aiFix";
-import { appliedFixesFor, revertAppliedFix } from "./appliedFixes";
+import { appliedFixesIn, revertAppliedFix } from "./appliedFixes";
 import { findOriginRange } from "./originMatch";
 import { PALETTE } from "../report/reportHtml";
 import { renderFixDiff, DIFF_STYLES } from "./diffView";
@@ -150,7 +150,7 @@ export class FixPanel {
     // Fixes already written to this file. Kept visible so a change can be
     // undone here rather than through the editor's undo stack, which is lost
     // when the file closes and would leave the finding counts wrong.
-    const applied = appliedFixesFor(fileName);
+    const applied = appliedFixesIn(fileName, doc.getText());
     const appliedBlock = applied.length
       ? `<section class="applied">
           <h2>Applied fixes</h2>
@@ -241,7 +241,10 @@ export class FixPanel {
    */
   private async revert(index: number): Promise<void> {
     const relPath = vscode.workspace.asRelativePath(this.uri, false).replace(/\\/g, "/");
-    const entry = appliedFixesFor(relPath)[index];
+    // Index against the same filtered list the panel rendered, or a hidden
+    // stale entry would shift the rows and revert the wrong change.
+    const document = await vscode.workspace.openTextDocument(this.uri);
+    const entry = appliedFixesIn(relPath, document.getText())[index];
     if (!entry) return;
 
     const restored = await revertAppliedFix(entry, this.uri);

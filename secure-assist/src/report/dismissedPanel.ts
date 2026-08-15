@@ -155,6 +155,10 @@ export class DismissedPanel {
     // Re-analyse straight away so the squiggle comes back now rather than on
     // the next project scan.
     await this.refresh(this.uri);
+    // The status bar counts dismissals for the open file, and restoring one
+    // here changes that count. The report and settings panels already do this;
+    // without it the button kept the old number until the editor was switched.
+    await vscode.commands.executeCommand("secure-assist.internal.refreshStatusBar");
     this.panel.webview.postMessage({ type: "restored", index: msg.index });
   }
 
