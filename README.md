@@ -131,7 +131,7 @@ For CLI installation, local model setup, and usage instructions, see:
 
 ## Documentation
 
-Additional project documentation available in the [`docs`](docs) directory.
+Additional project documentation available in the [`docs`](docs) directory:
 
 | Document | Description |
 |----------|-------------|
