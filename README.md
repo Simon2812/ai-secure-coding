@@ -126,7 +126,7 @@ Additional project documentation is available in the [`docs`](docs) directory.
 
 | Document | Description |
 |----------|-------------|
-| [`testing.md`](docs/testing.md) | Testing strategy, implemented tests, and validation process |
+| [`testing.md`](docs/TESTING.md) | Testing strategy, implemented tests, and validation process |
 | [`technical-documentation.md`](docs/technical-documentation.md) | Technical overview of the system architecture and components |
 | [`project-management.md`](docs/project-management.md) | Development workflow using Jira and GitHub |
 
