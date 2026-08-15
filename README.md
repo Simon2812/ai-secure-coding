@@ -1,10 +1,13 @@
 <h1 align="center">AI Secure Coding Advisor</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-Backend-blue"/>
-  <img src="https://img.shields.io/badge/AI-LLM-purple"/>
+  <img src="https://img.shields.io/badge/AI-Fine--Tuned%20LLM-blueviolet"/>
+  <img src="https://img.shields.io/badge/Static%20Analysis-AST-blue"/>
   <img src="https://img.shields.io/badge/Security-CWE-red"/>
   <img src="https://img.shields.io/badge/Analysis-Hybrid-brightgreen"/>
+  <img src="https://img.shields.io/badge/Languages-Python%20%7C%20Java%20%7C%20C%2FC%2B%2B-orange"/>
+  <img src="https://img.shields.io/badge/Integration-VS%20Code-007ACC"/>
+  <img src="https://img.shields.io/badge/Remediation-Automated-success"/>
 </p>
 
 ---
