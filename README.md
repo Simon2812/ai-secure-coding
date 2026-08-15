@@ -1,6 +1,6 @@
-<p align="center">
-  <strong>🛡️ AI Secure Coding Advisor</strong>
-</p>
+<div align="center">
+  <span style="font-size: 2em; font-weight: bold;">🛡️ AI Secure Coding Advisor</span>
+</div>
 
 ---
 ## Overview
