@@ -1,9 +1,13 @@
-<h1 align="center">🛡️ AI Secure Coding Advisor</h1>
+<h1 align="center">AI Secure Coding Advisor</h1>
 
 <p align="center">
-  <b>AI-powered vulnerability detection & automated secure code fixing</b>
-</p>---
+  <img src="https://img.shields.io/badge/Python-Backend-blue"/>
+  <img src="https://img.shields.io/badge/AI-LLM-purple"/>
+  <img src="https://img.shields.io/badge/Security-CWE-red"/>
+  <img src="https://img.shields.io/badge/Status-Active-brightgreen"/>
+</p>
 
+---
 ## Overview
 
 The **AI Secure Coding Advisor** is a hybrid security analysis system that combines static analysis and a fine-tuned Large Language Model (LLM) to improve secure software development.
