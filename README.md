@@ -1,5 +1,7 @@
 <div align="center">
-  <span style="font-size: 2em; font-weight: bold;">🛡️ AI Secure Coding Advisor</span>
+
+# 🛡️ AI Secure Coding Advisor
+
 </div>
 
 ---
