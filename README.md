@@ -1,4 +1,6 @@
-<h1 align="center">🛡️ AI Secure Coding Advisor</h1>
+<p align="center">
+  <font size="7"><b>🛡️ AI Secure Coding Advisor</b></font>
+</p>
 
 <hr>
 
