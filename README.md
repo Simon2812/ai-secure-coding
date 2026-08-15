@@ -201,4 +201,4 @@ Unlike traditional security analysis tools, SecureAssist:
 - [CLI Installation](docs/CLI-INSTALL.md)
 - [Testing Documentation](docs/TESTING.md)
 - [Technical Documentation](docs/technical-documentation.md)
-- [Project Demo Video](https://youtu.be/LwK77hh57A8?si=tmUODS5RWyVmHmh1)
+- [Project Demo Video](https://youtu.be/fPDNC3EKNuk)
