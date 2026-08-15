@@ -1,4 +1,8 @@
-<h1 align="center">🛡️ AI Secure Coding Advisor</h1>
+<p align="center">
+  <b>🛡️ AI Secure Coding Advisor</b>
+</p>
+
+<hr>
 
 ## Overview
 
@@ -127,6 +131,7 @@ For CLI installation, local model setup, and usage instructions, see:
 
 ➡️ [`docs/CLI-INSTALL.md`](docs/CLI-INSTALL.md)
 
+---
 
 ## Documentation
 
