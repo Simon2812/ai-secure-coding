@@ -1,4 +1,4 @@
-#🛡️ AI Secure Coding Advisor
+# AI Secure Coding Advisor 🛡️
 
 ## Overview
 
