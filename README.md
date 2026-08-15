@@ -1,5 +1,5 @@
 <h1 align="center">🛡️AI Secure Coding Advisor</h1>
-
+---
 ## Overview
 
 The **AI Secure Coding Advisor** is a hybrid security analysis system that combines static analysis and a fine-tuned Large Language Model (LLM) to improve secure software development.
