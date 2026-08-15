@@ -25,6 +25,8 @@ The **AI Secure Coding Advisor** is a hybrid security analysis system that combi
 
 The system analyzes source code written in **Python**, **Java**, and **C/C++**, detects supported software vulnerabilities, explains their security impact, and assists developers in applying secure fixes through both a command-line interface (CLI) and a Visual Studio Code extension.
 
+A complete demonstration of the system and its key features is available in the [project demo video](https://youtu.be/LwK77hh57A8?si=tmUODS5RWyVmHmh1).
+
 ---
 
 ## Features
@@ -217,3 +219,4 @@ Unlike traditional security analysis tools, SecureAssist:
 - [CLI Installation](docs/CLI-INSTALL.md)
 - [Testing Documentation](docs/TESTING.md)
 - [Technical Documentation](docs/technical-documentation.md)
+- [Project Demo Video](https://youtu.be/LwK77hh57A8?si=tmUODS5RWyVmHmh1)
