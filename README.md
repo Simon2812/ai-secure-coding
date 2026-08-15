@@ -1,8 +1,7 @@
-<p align="center">
-  <big><big><big><b>🛡️ AI Secure Coding Advisor</b></big></big></big>
-</p>
-
-<hr>
+<h1 align="center">
+🛡️ AI Secure Coding Advisor
+</h1>
+<br>
 
 ## Overview
 
