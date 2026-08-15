@@ -156,6 +156,7 @@ Potential future improvements include:
 - Improved LLM fine-tuning and remediation quality
 - Real-time project monitoring and continuous scanning
 - Expanded IDE capabilities and user experience improvements
+
 The full future work plan, including detailed explanations, is documented in [`TODO.md`](docs/TODO.md)
 ---
 
