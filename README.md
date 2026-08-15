@@ -1,4 +1,4 @@
-# AI Secure Coding Advisor 🛡️
+<h1 align="center"> AI Secure Coding Advisor 🛡️</h1>
 
 ## Overview
 
