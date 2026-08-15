@@ -1,7 +1,7 @@
 <h1 align="center">AI Secure Coding Advisor</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/AI-Fine--Tuned%20LLM-8A2BE2"/>
+  <img src="https://img.shields.io/badge/AI-LLM-8A2BE2"/>
   <img src="https://img.shields.io/badge/Static%20Analysis-AST-0077B6"/>
   <img src="https://img.shields.io/badge/Security-CWE-D62828"/>
   <img src="https://img.shields.io/badge/Analysis-Hybrid-green"/>
