@@ -128,6 +128,23 @@ A detailed description of the system architecture and components is available in
 
 ---
 
+## Installation
+
+### Visual Studio Code Extension
+
+SecureAssist can be used through either the **Visual Studio Code extension** or the **CLI tool**.
+
+Follow the installation instructions in:
+
+➡️ [`docs/INSTALL.md`](docs/INSTALL.md)
+
+### CLI
+
+For CLI installation, local model setup, and usage instructions, see:
+
+➡️ [`docs/CLI-INSTALL.md`](docs/CLI-INSTALL.md)
+
+
 ## Documentation
 
 Additional project documentation is available in the [`docs`](docs) directory.
